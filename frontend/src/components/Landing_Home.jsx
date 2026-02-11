@@ -3,11 +3,13 @@ import {
     Shield, Layout, Lock, ChevronRight, Star, Camera, Volume2, FileText,
     AlertTriangle, Monitor, Users2, CheckCircle2, Eye, FileCheck,
     CheckCircle, TrendingUp, Database, Key, ShieldCheck, Mail, MapPin, Phone,
-    ArrowRight, Globe, Zap, Cpu, BarChart2, Activity, HardDrive, Download, ClipboardList, Clock, ShieldAlert
+    ArrowRight, Globe, Zap, Cpu, BarChart2, Activity, HardDrive, Download, ClipboardList, Clock, ShieldAlert,
+    Plus, Minus
 } from 'lucide-react';
 
 function Landing_Home() {
     const [scrolled, setScrolled] = useState(false);
+    const [activeFaq, setActiveFaq] = useState(null);
 
     useEffect(() => {
         const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -197,6 +199,44 @@ function Landing_Home() {
                 </div>
             </section>
 
+            {/* 3.1 How it Works Section */}
+            <section className="py-32 bg-white relative z-10 overflow-hidden" id="how-it-works">
+                <div className="max-w-7xl mx-auto px-6 space-y-20">
+                    <div className="text-center space-y-6">
+                        <h2 className="text-5xl md:text-[80px] font-black tracking-tight leading-none text-charcoal">
+                            How it <span className="text-gradient">Works</span>
+                        </h2>
+                        <p className="text-xl text-slate-500 font-bold max-w-2xl mx-auto">
+                            A seamless three-step process designed for institutions and students.
+                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-12 relative">
+                        {/* Connecting Line (Desktop) */}
+                        <div className="hidden md:block absolute top-10 left-1/4 right-1/4 h-[2px] bg-slate-100 -z-10" />
+
+                        <HowItWorksStep
+                            number="01"
+                            title="Schedule Exam"
+                            desc="Examiners upload questions and set proctoring rules in seconds."
+                            icon={<ClipboardList className="w-10 h-10" />}
+                        />
+                        <HowItWorksStep
+                            number="02"
+                            title="Secure Login"
+                            desc="Students verify identity via AI face detection and enter secure mode."
+                            icon={<Users2 className="w-10 h-10" />}
+                        />
+                        <HowItWorksStep
+                            number="03"
+                            title="AI Proctoring"
+                            desc="Real-time monitoring detects violations and auto-generates reports."
+                            icon={<Activity className="w-10 h-10" />}
+                        />
+                    </div>
+                </div>
+            </section>
+
             {/* 4. Insight Intelligence Section */}
             < section className="bg-slate-50 py-32 border-y border-black/5 relative z-10 overflow-hidden text-left" >
                 <div className="max-w-7xl mx-auto px-6 space-y-20">
@@ -355,6 +395,50 @@ function Landing_Home() {
                 </div>
             </section >
 
+            {/* 5.1 Testimonials Section */}
+            <section className="py-32 px-6 bg-slate-50 relative z-10 overflow-hidden">
+                <div className="max-w-7xl mx-auto space-y-20">
+                    <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
+                        <div className="space-y-6 max-w-2xl">
+                            <h2 className="text-5xl md:text-[80px] font-black tracking-tight leading-none text-charcoal">
+                                Trusted by <br /><span className="text-gradient">Educators</span>
+                            </h2>
+                            <p className="text-xl text-slate-500 font-bold">Real stories from institutions scaling with integrity.</p>
+                        </div>
+                        <div className="flex gap-4">
+                            <div className="px-6 py-3 rounded-2xl bg-white border border-black/5 shadow-sm">
+                                <span className="text-3xl font-black text-charcoal">2k+</span>
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Institutions</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        <TestimonialCard
+                            quote="The AI proctoring is remarkably accurate. It has completely transformed our remote examination process."
+                            author="Dr. Sarah Chen"
+                            role="Dean of Academics"
+                            institution="Stanford University"
+                            image="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=150"
+                        />
+                        <TestimonialCard
+                            quote="FairExam's interface is intuitive for both students and staff. The support team is world-class."
+                            author="James Wilson"
+                            role="IT Director"
+                            institution="Oxford Academy"
+                            image="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=150"
+                        />
+                        <TestimonialCard
+                            quote="Finally, a proctoring solution that doesn't feel invasive but maintains absolute fairness."
+                            author="Elena Rodriguez"
+                            role="Student Council Head"
+                            institution="MIT"
+                            image="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&q=80&w=150"
+                        />
+                    </div>
+                </div>
+            </section>
+
             {/* 6. Security Core Section */}
             < section className="max-w-7xl mx-auto px-6 py-32 space-y-24 relative z-10 text-left" >
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
@@ -396,6 +480,47 @@ function Landing_Home() {
                     </div>
                 </div>
             </section >
+
+            {/* 6.1 FAQ Section */}
+            <section className="py-32 px-6 bg-white relative z-10" id="faq">
+                <div className="max-w-5xl mx-auto space-y-20">
+                    <div className="text-center space-y-6">
+                        <h2 className="text-5xl md:text-[80px] font-black tracking-tight leading-none text-charcoal">
+                            Common <br /><span className="text-gradient">Questions</span>
+                        </h2>
+                        <p className="text-xl text-slate-500 font-bold">Everything you need to know about FairExam.</p>
+                    </div>
+
+                    <div className="space-y-4">
+                        {[
+                            {
+                                q: "How does the AI detect cheating?",
+                                a: "Our proprietary AI engine uses face detection to ensure the registered student is present, noise monitoring to detect unauthorized communication, and browser enforcement to prevent external searching."
+                            },
+                            {
+                                q: "What happens if the internet disconnects?",
+                                a: "FairExam has a built-in 'Resilience Mode'. It continues monitoring offline and syncs data once the connection is restored, ensuring no student is unfairly penalized for technical issues."
+                            },
+                            {
+                                q: "Is the student's privacy protected?",
+                                a: "Absolutely. We are GDPR and SOC2 compliant. All data is encrypted at rest and in transit, and recordings are automatically deleted after a specified retention period set by the institution."
+                            },
+                            {
+                                q: "Which devices are supported?",
+                                a: "FairExam works on all modern desktops and laptops (Windows, macOS, ChromeOS). Chrome is our recommended browser for the best experience."
+                            }
+                        ].map((faq, index) => (
+                            <FAQItem
+                                key={index}
+                                question={faq.q}
+                                answer={faq.a}
+                                isOpen={activeFaq === index}
+                                onClick={() => setActiveFaq(activeFaq === index ? null : index)}
+                            />
+                        ))}
+                    </div>
+                </div>
+            </section>
 
             {/* 7. Premium About Us Section */}
             < section className="py-32 px-6 relative z-10 bg-white border-y border-black/5" id="about" >
@@ -618,6 +743,67 @@ function FooterList({ title, links }) {
                     </li>
                 ))}
             </ul>
+        </div>
+    );
+}
+
+function HowItWorksStep({ number, title, desc, icon }) {
+    return (
+        <div className="flex flex-col items-center text-center space-y-6 relative group">
+            <div className="w-20 h-20 rounded-3xl bg-white shadow-xl shadow-slate-200/50 flex items-center justify-center border border-black/5 group-hover:scale-110 group-hover:bg-indigo-600 transition-all duration-500 relative z-10">
+                <div className="text-indigo-600 group-hover:text-white transition-colors">
+                    {icon}
+                </div>
+                <div className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-charcoal text-white text-xs font-black flex items-center justify-center border-4 border-white">
+                    {number}
+                </div>
+            </div>
+            <div className="space-y-2">
+                <h4 className="text-xl font-black text-charcoal">{title}</h4>
+                <p className="text-slate-500 font-bold leading-relaxed max-w-[240px]">{desc}</p>
+            </div>
+        </div>
+    );
+}
+
+function TestimonialCard({ quote, author, role, institution, image }) {
+    return (
+        <div className="glass-card rounded-[40px] p-10 bg-white border-black/5 flex flex-col justify-between space-y-8 hover:shadow-2xl hover:shadow-slate-200 transition-all duration-500">
+            <div className="space-y-6">
+                <div className="flex gap-1 text-amber-400">
+                    {[...Array(5)].map((_, i) => <Star key={i} className="w-5 h-5 fill-current" />)}
+                </div>
+                <p className="text-xl font-bold text-charcoal italic leading-relaxed">"{quote}"</p>
+            </div>
+            <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-2xl overflow-hidden border-2 border-indigo-50">
+                    <img src={image} alt={author} className="w-full h-full object-cover" />
+                </div>
+                <div>
+                    <h5 className="font-black text-charcoal leading-none">{author}</h5>
+                    <p className="text-xs font-bold text-slate-400 pt-1 uppercase tracking-wider">{role}</p>
+                    <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">{institution}</p>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+function FAQItem({ question, answer, isOpen, onClick }) {
+    return (
+        <div className={`rounded-3xl border transition-all duration-500 overflow-hidden ${isOpen ? 'bg-indigo-50/30 border-indigo-100 shadow-lg shadow-indigo-100/20' : 'bg-white border-black/5 hover:border-indigo-200'}`}>
+            <button
+                onClick={onClick}
+                className="w-full px-8 py-6 flex items-center justify-between text-left cursor-pointer"
+            >
+                <span className={`text-lg font-black transition-colors ${isOpen ? 'text-indigo-600' : 'text-charcoal'}`}>{question}</span>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${isOpen ? 'bg-indigo-600 text-white rotate-180' : 'bg-slate-100 text-slate-400'}`}>
+                    {isOpen ? <Minus className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+                </div>
+            </button>
+            <div className={`px-8 transition-all duration-500 ease-in-out ${isOpen ? 'pb-8 opacity-100 max-h-[500px]' : 'max-h-0 opacity-0'}`}>
+                <p className="text-slate-500 font-bold leading-relaxed">{answer}</p>
+            </div>
         </div>
     );
 }

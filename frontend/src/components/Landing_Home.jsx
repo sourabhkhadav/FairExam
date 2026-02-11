@@ -117,17 +117,28 @@ function Landing_Home() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-8 auto-rows-[300px]">
-                    {/* Main AI Card - Clean Minimalist */}
+                    {/* Main AI Card - Masterpiece Visual Integration */}
                     <div className="md:col-span-8 md:row-span-2 glass-card rounded-[48px] relative overflow-hidden group border-black/5 bg-white shadow-2xl shadow-slate-200/50">
-                        <div className="relative z-10 h-full flex flex-col justify-between p-12 text-charcoal">
+                        {/* MASTERPIECE VISUAL: Biometric Monitoring - FULL BACKGROUND */}
+                        <div className="absolute inset-0 z-0 bg-slate-50 overflow-hidden">
+                            <img
+                                src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=2070"
+                                alt="AI Biometric Sensor"
+                                className="w-full h-full object-cover grayscale-[0.5] group-hover:grayscale-0 group-hover:scale-110 transition-all duration-1000 opacity-60 group-hover:opacity-80"
+                            />
+                            <div className="absolute inset-0 bg-indigo-500/5 mix-blend-overlay" />
+                            <div className="absolute inset-0 bg-gradient-to-r from-white via-white/60 to-transparent" />
+                        </div>
+
+                        <div className="relative z-10 w-full h-full flex flex-col justify-between p-12 text-charcoal">
                             <div className="p-4 w-fit rounded-2xl bg-indigo-50 border border-indigo-100 shadow-sm group-hover:scale-110 transition-transform duration-500">
                                 <Cpu className="w-10 h-10 text-brand-purple" />
                             </div>
                             <div className="space-y-6">
-                                <h3 className="text-4xl font-black tracking-tight">AI Proctoring Engine</h3>
-                                <p className="text-xl text-slate-500 font-bold max-w-md leading-relaxed">Continuous AI face detection and noise monitoring ensures a proxy-free environment with automated violation warnings.</p>
+                                <h3 className="text-4xl font-black tracking-tight leading-tight">AI Proctoring Engine</h3>
+                                <p className="text-xl text-slate-500 font-bold max-w-md leading-relaxed">Continuous AI face detection and noise monitoring ensures a proxy-free environment with automated alerts.</p>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
-                                    {['Face Detection', 'Noise Monitoring', 'Real-time Warnings', 'Auto-Submit'].map(feature => (
+                                    {['Face Detection', 'Noise Monitoring', 'Proctor Alerts', 'Auto-Submit'].map(feature => (
                                         <div key={feature} className="flex items-center gap-3 text-sm font-black text-slate-500">
                                             <div className="w-5 h-5 rounded-full bg-emerald-50 flex items-center justify-center border border-emerald-100">
                                                 <CheckCircle2 className="w-3 h-3 text-emerald-600" />
@@ -140,32 +151,54 @@ function Landing_Home() {
                         </div>
                     </div>
 
-                    {/* Secure Mode - Clean Minimalist */}
-                    <div className="md:col-span-4 glass-card rounded-[40px] p-10 flex flex-col justify-between group bg-slate-900 text-white overflow-hidden border-none text-left shadow-2xl shadow-indigo-200/20">
-                        <div className="w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 flex items-center justify-center relative z-10 group-hover:bg-brand-purple transition-all duration-500">
-                            <Lock className="w-7 h-7" />
+                    {/* Secure Mode - Masterpiece Visual */}
+                    <div className="md:col-span-4 glass-card rounded-[40px] p-10 flex flex-col justify-between group bg-[#0f172a] text-white overflow-hidden border-none text-left shadow-2xl shadow-indigo-900/60 relative">
+                        {/* Technical Background Overlay */}
+                        <div className="absolute inset-0 w-full h-full opacity-90 transition-opacity duration-1000">
+                            <img
+                                src="https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&q=80&w=2070"
+                                alt="Security Interface"
+                                className="w-full h-full object-cover contrast-125"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-[#0f172a] via-[#0f172a]/40 to-transparent" />
+                            <div className="absolute inset-0 bg-indigo-500/10 mix-blend-overlay" />
                         </div>
-                        <div className="relative z-10">
-                            <h4 className="text-2xl font-black pb-2 uppercase tracking-tighter">Safe Examination Browser</h4>
-                            <p className="text-slate-300 font-bold leading-relaxed">Hardened sanctuary for high-stakes assessments.</p>
+
+                        <div className="w-16 h-16 rounded-[22px] bg-indigo-600 flex items-center justify-center relative z-10 shadow-[0_0_30px_rgba(79,70,229,0.4)] transition-transform duration-500 border border-indigo-400/30">
+                            <Lock className="w-8 h-8 text-white" />
+                        </div>
+                        <div className="relative z-10 space-y-2">
+                            <h4 className="text-3xl font-black uppercase tracking-tighter text-white drop-shadow-sm">Safe Examination Browser</h4>
+                            <p className="text-indigo-100 font-bold leading-relaxed text-lg">Hardened sanctuary for high-stakes assessments.</p>
                         </div>
                     </div>
 
-                    {/* Dashboard Feature - Clean Minimalist */}
-                    <div className="md:col-span-4 glass-card rounded-[40px] p-10 flex flex-col justify-between group bg-white border-black/5 overflow-hidden text-left">
-                        <div className="w-14 h-14 rounded-2xl bg-orange-50 flex items-center justify-center border border-orange-100 shadow-sm group-hover:scale-110 transition-transform duration-500 relative z-10 text-orange-600">
-                            <Monitor className="w-7 h-7" />
+                    {/* Dashboard Feature - Masterpiece Visual - Premium Dark Mode (Static) */}
+                    <div className="md:col-span-4 glass-card rounded-[40px] p-10 flex flex-col justify-between bg-[#0f172a] border-none overflow-hidden text-left relative shadow-2xl shadow-indigo-900/40">
+                        {/* Technical Background Overlay - Static Visibility */}
+                        <div className="absolute inset-0 w-full h-full opacity-80 transition-opacity duration-1000 pointer-events-none">
+                            <img
+                                src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=2070"
+                                alt="Modern Monitoring Dashboard"
+                                className="w-full h-full object-cover brightness-100 contrast-[1.1]"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-[#0f172a] via-[#0f172a]/20 to-transparent" />
+                            <div className="absolute inset-0 bg-indigo-500/[0.1] mix-blend-multiply" />
                         </div>
-                        <div className="relative z-10">
-                            <h4 className="text-2xl font-black pb-2 text-charcoal uppercase tracking-tighter">Dashboard Suite</h4>
-                            <p className="text-slate-500 font-bold leading-relaxed">Centralized command for schedules and live monitoring.</p>
+
+                        <div className="w-16 h-16 rounded-[22px] bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center shadow-2xl shadow-orange-500/40 relative z-10 text-white border border-orange-300/30">
+                            <Monitor className="w-8 h-8" />
+                        </div>
+                        <div className="relative z-10 space-y-2">
+                            <h4 className="text-3xl font-black text-white uppercase tracking-tighter drop-shadow-sm">Dashboard Suite</h4>
+                            <p className="text-orange-50 font-bold leading-relaxed text-lg opacity-90">Centralized command for schedules and live monitoring.</p>
                         </div>
                     </div>
                 </div>
             </section>
 
             {/* 4. Insight Intelligence Section */}
-            <section className="bg-slate-50 py-32 border-y border-black/5 relative z-10 overflow-hidden text-left">
+            < section className="bg-slate-50 py-32 border-y border-black/5 relative z-10 overflow-hidden text-left" >
                 <div className="max-w-7xl mx-auto px-6 space-y-20">
                     <div className="text-center space-y-6">
                         <h2 className="text-5xl md:text-[80px] font-black tracking-tight leading-none text-charcoal">
@@ -177,25 +210,29 @@ function Landing_Home() {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-                        <div className="glass-card rounded-[48px] p-12 space-y-10 col-span-2 bg-white">
+                        <div className="glass-card rounded-[48px] p-12 space-y-10 col-span-2 bg-white border-black/10 shadow-2xl shadow-slate-200/50">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-4">
-                                    <div className="w-3 h-3 rounded-full bg-brand-purple" />
-                                    <span className="text-sm font-black tracking-[0.2em] uppercase text-slate-400">Live Result Processing</span>
+                                    <div className="w-3 h-3 rounded-full bg-brand-purple animate-pulse" />
+                                    <span className="text-sm font-black tracking-[0.2em] uppercase text-slate-900">Live Result Processing</span>
                                 </div>
-                                <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-50 border border-emerald-100">
-                                    <Activity className="w-4 h-4 text-emerald-600" />
-                                    <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Active</span>
+                                <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500 text-white shadow-lg shadow-emerald-500/20">
+                                    <Activity className="w-4 h-4" />
+                                    <span className="text-[10px] font-black uppercase tracking-widest">Active</span>
                                 </div>
                             </div>
 
-                            <div className="h-[400px] relative rounded-3xl overflow-hidden group/img border border-indigo-50 shadow-inner">
+                            <div className="h-[400px] relative rounded-[40px] overflow-hidden group/img border border-indigo-50 shadow-2xl shadow-slate-100">
                                 <img
                                     src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=2015"
                                     alt="AI Analytics Dashboard"
-                                    className="w-full h-full object-cover group-hover/img:scale-105 transition-transform duration-1000 opacity-90 backdrop-contrast-125"
+                                    className="w-full h-full object-cover group-hover/img:scale-105 transition-transform duration-1000 contrast-110"
                                 />
-                                <div className="absolute inset-0 bg-gradient-to-t from-white/80 via-transparent to-transparent opacity-80" />
+                                <div className="absolute inset-0 bg-gradient-to-t from-white/70 via-transparent to-transparent" />
+                                <div className="absolute bottom-8 left-8 p-6 glass-card rounded-2xl border-white/20 shadow-2xl">
+                                    <p className="text-sm font-black text-slate-900 uppercase tracking-widest leading-none">Global Network</p>
+                                    <p className="text-[10px] font-bold text-slate-500 pt-1">99.9% Latency Accuracy</p>
+                                </div>
                             </div>
                         </div>
 
@@ -221,10 +258,10 @@ function Landing_Home() {
                         </div>
                     </div>
                 </div>
-            </section>
+            </section >
 
             {/* 5. Powerful Analytics Section */}
-            <section className="py-32 px-6 relative z-10 text-left bg-white">
+            < section className="py-32 px-6 relative z-10 text-left bg-white" >
                 <div className="max-w-7xl mx-auto space-y-24">
                     <div className="text-center space-y-6">
                         <h2 className="text-5xl md:text-[80px] font-black tracking-tighter leading-none text-charcoal">
@@ -241,29 +278,45 @@ function Landing_Home() {
                             <div className="flex justify-between items-start">
                                 <div className="space-y-1">
                                     <h3 className="text-2xl font-black text-charcoal">Student Performance</h3>
-                                    <p className="text-sm font-bold text-slate-400">Last 6 months overview</p>
+                                    <p className="text-sm font-black text-slate-900/60">Last 6 months overview</p>
                                 </div>
                                 <TrendingUp className="w-8 h-8 text-emerald-500" />
                             </div>
 
                             <div className="relative h-[300px] w-full mt-10">
-                                <svg className="w-full h-full" viewBox="0 0 800 300">
-                                    <path
-                                        d="M0 250 L150 200 L300 180 L450 140 L600 100 L800 60"
-                                        fill="none"
-                                        stroke="url(#gradient-line)"
-                                        strokeWidth="6"
-                                        strokeLinecap="round"
-                                        className="drop-shadow-[0_0_15px_rgba(79,70,229,0.3)]"
-                                    />
+                                <svg className="w-full h-full overflow-visible" viewBox="0 0 800 300" preserveAspectRatio="none">
                                     <defs>
+                                        <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+                                            <feGaussianBlur stdDeviation="6" result="blur" />
+                                            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                                        </filter>
                                         <linearGradient id="gradient-line" x1="0%" y1="0%" x2="100%" y2="0%">
                                             <stop offset="0%" stopColor="#818cf8" />
                                             <stop offset="100%" stopColor="#4f46e5" />
                                         </linearGradient>
+                                        <linearGradient id="area-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                                            <stop offset="0%" stopColor="#4f46e5" stopOpacity="0.3" />
+                                            <stop offset="100%" stopColor="#4f46e5" stopOpacity="0" />
+                                        </linearGradient>
                                     </defs>
+                                    {/* Area Fill */}
+                                    <path
+                                        d="M0 250 C 100 220, 200 200, 300 180 S 500 120, 600 100 S 750 70, 800 60 L 800 300 L 0 300 Z"
+                                        fill="url(#area-gradient)"
+                                        className="animate-pulse-slow"
+                                    />
+                                    {/* Line Path */}
+                                    <path
+                                        d="M0 250 C 100 220, 200 200, 300 180 S 500 120, 600 100 S 750 70, 800 60"
+                                        fill="none"
+                                        stroke="url(#gradient-line)"
+                                        strokeWidth="6"
+                                        strokeLinecap="round"
+                                        filter="url(#glow)"
+                                        className="drop-shadow-2xl"
+                                    />
                                     {[0, 150, 300, 450, 600, 800].map((x, i) => (
-                                        <circle key={i} cx={x} cy={[250, 200, 180, 140, 100, 60][i]} r="8" fill="white" stroke="#4f46e5" strokeWidth="4" />
+                                        <circle key={i} cx={x} cy={[250, 200, 180, 140, 100, 60][i]} r="6" fill="white" stroke="#4f46e5" strokeWidth="4" className="filter drop-shadow-md hover:scale-150 transition-transform duration-300 cursor-pointer" />
                                     ))}
                                 </svg>
                                 <div className="absolute bottom-0 left-0 right-0 flex justify-between text-[10px] font-black text-slate-300 uppercase tracking-widest pt-6 border-t border-slate-100">
@@ -273,11 +326,11 @@ function Landing_Home() {
                         </div>
 
                         {/* Violation Detection Chart */}
-                        <div className="glass-card rounded-[48px] p-10 bg-slate-50/50 border-black/5 space-y-10">
+                        <div className="glass-card rounded-[48px] p-10 bg-slate-50/50 border-black/5 space-y-10 group/card">
                             <div className="flex justify-between items-start">
                                 <div className="space-y-1">
                                     <h3 className="text-2xl font-black text-charcoal">Violation Detection</h3>
-                                    <p className="text-sm font-bold text-slate-400">AI monitoring effectiveness</p>
+                                    <p className="text-sm font-black text-slate-900/60">AI monitoring effectiveness</p>
                                 </div>
                                 <ShieldCheck className="w-8 h-8 text-indigo-600" />
                             </div>
@@ -286,9 +339,11 @@ function Landing_Home() {
                                 {[40, 70, 50, 85, 30, 60].map((height, i) => (
                                     <div key={i} className="flex-1 h-full flex flex-col justify-end items-center group/bar">
                                         <div
-                                            className="w-full max-w-[40px] rounded-2xl bg-gradient-to-t from-indigo-500 to-brand-purple transition-all duration-700 hover:scale-x-110 shadow-lg shadow-indigo-100"
+                                            className="w-full max-w-[44px] rounded-2xl bg-gradient-to-t from-indigo-500 to-brand-purple transition-all duration-700 group-hover/card:brightness-110 group-hover/bar:scale-x-110 group-hover/bar:-translate-y-2 shadow-lg shadow-indigo-100/50 relative overflow-hidden"
                                             style={{ height: `${height}%` }}
-                                        />
+                                        >
+                                            <div className="absolute inset-0 bg-white/10 opacity-0 group-hover/bar:opacity-100 transition-opacity" />
+                                        </div>
                                     </div>
                                 ))}
                                 <div className="absolute -bottom-10 left-0 right-0 flex justify-between text-[10px] font-black text-slate-300 uppercase tracking-widest pt-6 border-t border-slate-100">
@@ -298,10 +353,10 @@ function Landing_Home() {
                         </div>
                     </div>
                 </div>
-            </section>
+            </section >
 
             {/* 6. Security Core Section */}
-            <section className="max-w-7xl mx-auto px-6 py-32 space-y-24 relative z-10 text-left">
+            < section className="max-w-7xl mx-auto px-6 py-32 space-y-24 relative z-10 text-left" >
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
                     <div className="space-y-10 order-2 lg:order-1">
                         <h2 className="text-5xl md:text-[80px] font-black tracking-tighter leading-[0.9] text-charcoal">
@@ -317,20 +372,33 @@ function Landing_Home() {
                         </div>
                     </div>
 
-                    <div className="relative order-1 lg:order-2 group">
-                        <div className="absolute inset-0 bg-indigo-500/10 rounded-[64px] blur-3xl opacity-50 group-hover:opacity-100 transition-opacity" />
-                        <div className="relative w-full h-full glass-card rounded-[64px] bg-white overflow-hidden shadow-2xl shadow-slate-200 border-black/5 aspect-square">
+                    <div className="relative order-1 lg:order-2">
+                        <div className="absolute inset-0 bg-indigo-500/10 rounded-[64px] blur-3xl opacity-50 transition-opacity" />
+                        <div className="relative w-full h-full glass-card rounded-[64px] bg-slate-900 overflow-hidden shadow-2xl shadow-indigo-900/20 border-black/5 aspect-square">
+                            {/* MASTERPIECE VISUAL: Digital Fortress */}
+                            <div className="absolute inset-0 z-0">
+                                <img
+                                    src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=2070"
+                                    alt="Cybersecurity Shield"
+                                    className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-1000 contrast-125"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/30 to-transparent" />
+                                <div className="absolute inset-0 bg-indigo-500/20 mix-blend-overlay" />
+                            </div>
+
                             <div className="relative z-10 h-full flex flex-col items-center justify-center gap-8">
-                                <Shield className="w-32 h-32 text-indigo-600 drop-shadow-2xl animate-glow" />
+                                <div className="p-8 rounded-full bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl transition-transform duration-500">
+                                    <Shield className="w-20 h-20 text-slate-200 drop-shadow-[0_0_20px_rgba(255,255,255,0.2)] animate-glow" />
+                                </div>
                                 <div className="text-2xl font-black tracking-[0.4em] uppercase text-slate-300">Protected</div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </section>
+            </section >
 
             {/* 7. Premium About Us Section */}
-            <section className="py-32 px-6 relative z-10 bg-white border-y border-black/5" id="about">
+            < section className="py-32 px-6 relative z-10 bg-white border-y border-black/5" id="about" >
                 <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-24 items-center">
                     <div className="relative group">
                         <div className="absolute -inset-4 bg-teal-500/10 rounded-[64px] blur-3xl opacity-50 group-hover:opacity-100 transition-opacity duration-700" />
@@ -391,10 +459,10 @@ function Landing_Home() {
                         </div>
                     </div>
                 </div>
-            </section>
+            </section >
 
             {/* 8. Institutional Call to Action */}
-            <section className="py-32 px-6 relative z-10 overflow-hidden bg-slate-50/30">
+            < section className="py-32 px-6 relative z-10 overflow-hidden bg-slate-50/30" >
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-indigo-50/50 blur-[120px] rounded-full -z-10" />
                 <div className="max-w-4xl mx-auto text-center space-y-12">
                     <h2 className="text-4xl md:text-6xl font-black tracking-tight leading-tight text-charcoal">
@@ -419,38 +487,30 @@ function Landing_Home() {
                 </div>
             </section >
 
-            {/* 7. Enhanced Global Footer */}
-            < footer className="pt-40 pb-20 px-6 relative z-10 bg-white border-t border-black/5" >
+            {/* 7. Enhanced Global Footer - Compact & Premium */}
+            < footer className="pt-20 pb-16 px-6 relative z-10 bg-white border-t border-black/5" >
                 <div className="max-w-7xl mx-auto">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-16 pb-24">
-                        <div className="lg:col-span-2 space-y-10 text-left">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 pb-12">
+                        <div className="lg:col-span-2 space-y-6 text-left border-r border-black/[0.03] pr-12">
                             <div className="flex items-center gap-3">
-                                <div className="w-11 h-11 rounded-xl bg-charcoal flex items-center justify-center">
-                                    <Shield className="w-6 h-6 text-white" />
+                                <div className="w-10 h-10 rounded-xl bg-charcoal flex items-center justify-center shadow-lg shadow-indigo-100">
+                                    <Shield className="w-5 h-5 text-white" />
                                 </div>
-                                <span className="text-3xl font-black tracking-tighter text-charcoal">FairExam</span>
+                                <span className="text-2xl font-black tracking-tighter text-charcoal">FairExam</span>
                             </div>
-                            <p className="text-xl text-slate-400 font-bold max-w-sm leading-relaxed">
-                                AI-powered exam proctoring for the future of education.
+                            <p className="text-sm text-slate-500 font-bold max-w-xs leading-relaxed">
+                                AI-powered exam proctoring for the future of education. Trusted by 2,000+ top institutions.
                             </p>
-                            <div className="flex items-center gap-5">
-                                <SocialLink icon={<Globe className="w-5 h-5" />} />
-                                <SocialLink icon={<Mail className="w-5 h-5" />} />
-                                <SocialLink icon={<Phone className="w-5 h-5" />} />
+                            <div className="flex items-center gap-4">
+                                <SocialLink icon={<Globe className="w-4 h-4" />} />
+                                <SocialLink icon={<Mail className="w-4 h-4" />} />
+                                <SocialLink icon={<Phone className="w-4 h-4" />} />
                             </div>
                         </div>
 
                         <FooterList title="Product" links={['Features', 'Pricing', 'Security', 'Integrations']} />
                         <FooterList title="Company" links={['About Us', 'Careers', 'Blog', 'Contact']} />
                         <FooterList title="Legal" links={['Privacy Policy', 'Terms of Service', 'GDPR', 'Compliance']} />
-                    </div>
-
-                    <div className="pt-16 border-t border-black/5 flex flex-col md:flex-row justify-between items-center gap-10 font-bold text-slate-400">
-                        <p>© 2026 FairExam. All rights reserved.</p>
-                        <div className="flex items-center gap-4 text-sm">
-                            <span>Trusted by</span>
-                            <span className="text-charcoal font-black">Universities Worldwide</span>
-                        </div>
                     </div>
                 </div>
             </footer >
@@ -501,17 +561,24 @@ function FeatureBox({ icon, title, desc, color }) {
 
 function MetricItem({ icon, label, value, image }) {
     return (
-        <div className="glass-card rounded-3xl p-8 flex items-center justify-between group bg-white border-black/5 relative overflow-hidden">
+        <div className="glass-card rounded-[32px] p-8 flex items-center justify-between group bg-white border-black/10 relative overflow-hidden shadow-xl shadow-slate-100/50">
+            {/* Visual Background Snippet */}
+            {image && (
+                <div className="absolute top-0 right-0 w-32 h-full opacity-[0.03] group-hover:opacity-[0.07] transition-opacity pointer-events-none">
+                    <img src={image} className="w-full h-full object-cover grayscale" alt="" />
+                </div>
+            )}
+
             <div className="flex items-center gap-6 relative z-10">
-                <div className="w-14 h-14 rounded-2xl bg-slate-50 flex items-center justify-center group-hover:bg-indigo-50 transition-all">
-                    <div className="text-brand-purple">{icon}</div>
+                <div className="w-14 h-14 rounded-[18px] bg-slate-50 flex items-center justify-center group-hover:bg-indigo-500 group-hover:text-white transition-all duration-500 shadow-sm">
+                    <div className="text-indigo-600 group-hover:text-white transition-colors">{icon}</div>
                 </div>
                 <div className="text-left">
-                    <div className="text-[10px] font-black tracking-[0.2em] uppercase text-slate-400 leading-none pb-1">{label}</div>
-                    <div className="text-2xl font-black text-charcoal">{value}</div>
+                    <div className="text-[10px] font-black tracking-[0.2em] uppercase text-slate-900/40 leading-none pb-1 group-hover:text-indigo-600 transition-colors">{label}</div>
+                    <div className="text-2xl font-black text-slate-900">{value}</div>
                 </div>
             </div>
-            <ChevronRight className="w-6 h-6 text-slate-300 group-hover:text-brand-purple transition-colors relative z-10" />
+            <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-indigo-600 group-hover:translate-x-1 transition-all relative z-10" />
         </div>
     );
 }
@@ -519,14 +586,14 @@ function MetricItem({ icon, label, value, image }) {
 function SecurityFeature({ title, desc }) {
     return (
         <div className="flex gap-6 group text-left">
-            <div className="pt-1.5">
-                <div className="w-6 h-6 rounded-full border-2 border-indigo-200 flex items-center justify-center group-hover:border-indigo-600 transition-colors">
-                    <div className="w-2 h-2 rounded-full bg-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="pt-2">
+                <div className="w-7 h-7 rounded-xl bg-indigo-50 flex items-center justify-center border border-indigo-100 group-hover:bg-indigo-500 group-hover:border-indigo-500 transition-all duration-500 shadow-sm">
+                    <CheckCircle2 className="w-4 h-4 text-indigo-600 group-hover:text-white transition-colors" />
                 </div>
             </div>
             <div>
-                <h4 className="text-xl font-black text-charcoal group-hover:text-indigo-600 transition-colors">{title}</h4>
-                <p className="text-lg text-slate-400 font-bold pt-1">{desc}</p>
+                <h4 className="text-xl font-black text-slate-900 group-hover:text-indigo-600 transition-colors leading-none">{title}</h4>
+                <p className="text-lg text-slate-500 font-bold pt-2 leading-relaxed">{desc}</p>
             </div>
         </div>
     );
@@ -534,7 +601,7 @@ function SecurityFeature({ title, desc }) {
 
 function SocialLink({ icon }) {
     return (
-        <div className="w-12 h-12 rounded-full border border-black/5 bg-white flex items-center justify-center text-slate-400 hover:text-white hover:bg-charcoal transition-all cursor-pointer shadow-sm">
+        <div className="w-10 h-10 rounded-full border border-black/5 bg-white flex items-center justify-center text-slate-400 hover:text-white hover:bg-indigo-600 transition-all cursor-pointer shadow-sm hover:scale-110">
             {icon}
         </div>
     );
@@ -542,12 +609,12 @@ function SocialLink({ icon }) {
 
 function FooterList({ title, links }) {
     return (
-        <div className="space-y-10 text-left">
-            <h5 className="text-[11px] font-black tracking-[0.4em] uppercase text-charcoal/30">{title}</h5>
-            <ul className="space-y-5">
+        <div className="space-y-6 text-left">
+            <h5 className="text-[10px] font-black tracking-[0.3em] uppercase text-slate-900">{title}</h5>
+            <ul className="space-y-3">
                 {links.map((link) => (
                     <li key={link}>
-                        <a href="#" className="text-lg text-slate-400 hover:text-indigo-600 font-bold transition-all inline-block hover:translate-x-2">{link}</a>
+                        <a href="#" className="text-sm text-slate-500 hover:text-indigo-600 font-bold transition-all inline-block hover:translate-x-1">{link}</a>
                     </li>
                 ))}
             </ul>

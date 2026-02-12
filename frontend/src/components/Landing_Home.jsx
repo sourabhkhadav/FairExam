@@ -34,7 +34,7 @@ function Landing_Home() {
                         <div className="w-11 h-11 rounded-xl glass-card flex items-center justify-center group-hover:scale-110 transition-all duration-500 bg-white shadow-sm border-black/5">
                             <Shield className="w-6 h-6 text-brand-purple" />
                         </div>
-                        <span className="text-2xl font-black tracking-tighter text-gradient leading-none">FairExam</span>
+                        <span className="text-2xl font-bold text-gradient leading-none">FairExam</span>
                     </div>
 
                     <div className="hidden md:flex items-center gap-10">
@@ -60,7 +60,7 @@ function Landing_Home() {
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
                         <div className="text-left space-y-10">
                             <div className="space-y-6">
-                                <h1 className="text-6xl md:text-7xl lg:text-[92px] font-black tracking-tighter leading-[0.85] text-charcoal">
+                                <h1 className="text-6xl md:text-7xl lg:text-[92px] font-bold leading-[0.85] text-charcoal">
                                     Fair & Secure <br />
                                     <span className="text-gradient">AI-Powered Exams</span>
                                 </h1>
@@ -99,7 +99,7 @@ function Landing_Home() {
             <section className="max-w-7xl mx-auto px-6 py-32 space-y-20 relative z-10 overflow-hidden">
                 <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-10">
                     <div className="space-y-6 max-w-2xl text-left">
-                        <h2 className="text-5xl md:text-[80px] font-black tracking-tight leading-none text-charcoal">
+                        <h2 className="text-5xl md:text-[80px] font-bold leading-none text-charcoal">
                             Engineered for <br /><span className="text-gradient">Absolute Trust</span>
                         </h2>
                         <p className="text-xl text-slate-500 font-bold leading-relaxed">
@@ -112,8 +112,8 @@ function Landing_Home() {
                                 <ShieldAlert className="w-6 h-6 text-brand-teal" />
                             </div>
                             <div>
-                                <div className="text-[10px] font-black tracking-[0.2em] uppercase text-slate-400">Violation Shield</div>
-                                <div className="text-xl font-black text-charcoal">Real-Time Alerts</div>
+                                <div className="text-[10px] font-bold tracking-wider uppercase text-slate-400">Violation Shield</div>
+                                <div className="text-xl font-bold text-charcoal">Real-Time Alerts</div>
                             </div>
                         </div>
                     </div>
@@ -138,11 +138,11 @@ function Landing_Home() {
                                 <Cpu className="w-10 h-10 text-brand-purple" />
                             </div>
                             <div className="space-y-6">
-                                <h3 className="text-4xl font-black tracking-tight leading-tight">AI Proctoring Engine</h3>
+                                <h3 className="text-4xl font-bold leading-tight">AI Proctoring Engine</h3>
                                 <p className="text-xl text-slate-500 font-bold max-w-md leading-relaxed">Continuous AI face detection and noise monitoring ensures a proxy-free environment with automated alerts.</p>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
                                     {['Face Detection', 'Noise Monitoring', 'Proctor Alerts', 'Auto-Submit'].map(feature => (
-                                        <div key={feature} className="flex items-center gap-3 text-sm font-black text-slate-500">
+                                        <div key={feature} className="flex items-center gap-3 text-sm font-bold text-slate-500">
                                             <div className="w-5 h-5 rounded-full bg-emerald-50 flex items-center justify-center border border-emerald-100">
                                                 <CheckCircle2 className="w-3 h-3 text-emerald-600" />
                                             </div>
@@ -171,7 +171,7 @@ function Landing_Home() {
                             <Lock className="w-8 h-8 text-white" />
                         </div>
                         <div className="relative z-10 space-y-2">
-                            <h4 className="text-3xl font-black uppercase tracking-tighter text-white drop-shadow-sm">Safe Examination Browser</h4>
+                            <h4 className="text-3xl font-bold uppercase text-white drop-shadow-sm">Safe Examination Browser</h4>
                             <p className="text-indigo-100 font-bold leading-relaxed text-lg">Hardened sanctuary for high-stakes assessments.</p>
                         </div>
                     </div>
@@ -193,7 +193,7 @@ function Landing_Home() {
                             <Monitor className="w-8 h-8" />
                         </div>
                         <div className="relative z-10 space-y-2">
-                            <h4 className="text-3xl font-black text-white uppercase tracking-tighter drop-shadow-sm">Dashboard Suite</h4>
+                            <h4 className="text-3xl font-bold text-white uppercase drop-shadow-sm">Dashboard Suite</h4>
                             <p className="text-orange-50 font-bold leading-relaxed text-lg opacity-90">Centralized command for schedules and live monitoring.</p>
                         </div>
                     </div>
@@ -622,7 +622,7 @@ function Landing_Home() {
                                 <div className="w-10 h-10 rounded-xl bg-charcoal flex items-center justify-center shadow-lg shadow-indigo-100">
                                     <Shield className="w-5 h-5 text-white" />
                                 </div>
-                                <span className="text-2xl font-black tracking-tighter text-charcoal">FairExam</span>
+                                <span className="text-2xl font-bold text-gradient leading-none">FairExam</span>
                             </div>
                             <p className="text-sm text-slate-500 font-bold max-w-xs leading-relaxed">
                                 AI-powered exam proctoring for the future of education. Trusted by 2,000+ top institutions.

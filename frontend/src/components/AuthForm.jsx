@@ -37,7 +37,7 @@ const AuthForm = ({ initialMode = 'login' }) => {
                         <Shield className="w-8 h-8 text-brand-purple" />
                     </div>
                     <div className="text-center">
-                        <h1 className="text-4xl font-black tracking-tighter text-charcoal">
+                        <h1 className="text-4xl font-bold text-charcoal">
                             {isLogin ? 'Welcome Back' : 'Create Account'}
                         </h1>
                         <p className="text-slate-500 font-bold mt-2">
@@ -53,7 +53,7 @@ const AuthForm = ({ initialMode = 'login' }) => {
                     <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
                         {!isLogin && (
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Full Name</label>
+                                <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 ml-1">Full Name</label>
                                 <div className="relative group overflow-hidden">
                                     <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-brand-purple transition-colors duration-300">
                                         <User className="w-5 h-5" />
@@ -140,7 +140,7 @@ const AuthForm = ({ initialMode = 'login' }) => {
                     {isLogin ? "Don't have an account?" : "Already have an account?"}{' '}
                     <button
                         onClick={toggleMode}
-                        className="text-brand-purple uppercase tracking-widest text-sm font-black ml-2"
+                        className="text-brand-purple uppercase tracking-wider text-sm font-bold ml-2"
                     >
                         {isLogin ? 'Get Started' : 'Sign In'}
                     </button>

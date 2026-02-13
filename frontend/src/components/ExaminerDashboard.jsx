@@ -44,11 +44,9 @@ const ExaminerDashboard = () => {
     return (
         <div className="max-w-7xl mx-auto">
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
                 <StatCard icon={FileText} label="Total Exams Created" value="24" iconColor="bg-[#6366F1]" />
                 <StatCard icon={Clock} label="Active Exams" value="3" iconColor="bg-[#3B82F6]" />
-                <StatCard icon={UserPlus} label="Total Students" value="1,247" iconColor="bg-[#A855F7]" />
-                <StatCard icon={ClipboardCheck} label="Pending Evaluations" value="18" iconColor="bg-[#FB923C]" />
             </div>
 
             {/* Quick Actions */}

@@ -24,10 +24,10 @@ const ResultsPublishing = () => {
     const navigate = useNavigate();
     const [cutoff, setCutoff] = useState(70);
     const [exams, setExams] = useState([
-        { id: 1, name: "Database Management Final", date: "Feb 12, 2026", participants: 124, avgScore: "78%", status: "Ready to Publish" },
-        { id: 2, name: "Data Structures Mid-Term", date: "Feb 10, 2026", participants: 110, avgScore: "82%", status: "Published" },
-        { id: 3, name: "Web Development Quiz", date: "Feb 8, 2026", participants: 95, avgScore: "65%", status: "Under Review" },
-        { id: 4, name: "Operating Systems Final", date: "Feb 5, 2026", participants: 118, avgScore: "74%", status: "Published" },
+        { id: 1, name: "Database Management Final", date: "Feb 12, 2026", participants: 124, avgScore: "78%", status: "Draft", isCalculated: true },
+        { id: 2, name: "Data Structures Mid-Term", date: "Feb 10, 2026", participants: 110, avgScore: "82%", status: "Published", isCalculated: true },
+        { id: 3, name: "Web Development Quiz", date: "Feb 8, 2026", participants: 95, avgScore: "65%", status: "Draft", isCalculated: false },
+        { id: 4, name: "Operating Systems Final", date: "Feb 5, 2026", participants: 118, avgScore: "74%", status: "Published", isCalculated: true },
     ]);
 
     const handleBulkNotify = () => {
@@ -35,8 +35,19 @@ const ResultsPublishing = () => {
         // Backend integration point for NodeMailer
     };
 
+    // Load status from localStorage on mount
+    React.useEffect(() => {
+        const storedStatuses = JSON.parse(localStorage.getItem('exam_statuses') || '{}');
+        setExams(prev => prev.map(e => {
+            if (storedStatuses[e.id]) {
+                return { ...e, status: storedStatuses[e.id] };
+            }
+            return e;
+        }));
+    }, []);
+
     const handlePublish = (id) => {
-        setExams(prev => prev.map(e => e.id === id ? { ...e, status: "Published" } : e));
+        navigate(`/exam-results/${id}`);
     };
 
     // Sort passed students to top
@@ -57,34 +68,7 @@ const ResultsPublishing = () => {
 
                 {/* Main Action Cards */}
                 <div className="flex flex-wrap gap-4 sm:gap-6 mb-8 sm:mb-10">
-                    <ActionCard icon={TrendingUp} label="Pass Cutoff" color="bg-gradient-to-br from-[#6366F1] to-[#4F46E5] shadow-lg shadow-indigo-200">
-                        <div className="flex items-center gap-3">
-                            <div className="relative group/input flex-1 max-w-[100px]">
-                                <input
-                                    type="number"
-                                    value={cutoff}
-                                    onChange={(e) => setCutoff(e.target.value)}
-                                    className="w-full bg-[#F8FAFC] border-2 border-[#E2E8F0] rounded-xl px-3 py-2 text-xl font-bold text-[#4F46E5] outline-none focus:border-[#4F46E5] focus:ring-4 focus:ring-indigo-50 transition-all text-center"
-                                />
-                            </div>
-                            <span className="text-xl font-medium text-[#0F172A]">%</span>
-                        </div>
-                    </ActionCard>
-                    <ActionCard icon={Send} label="Notifications" color="bg-gradient-to-br from-[#3B82F6] to-[#2563EB] shadow-lg shadow-blue-200">
-                        <button
-                            onClick={handleBulkNotify}
-                            className="w-full px-5 py-3 bg-[#4F46E5] text-white font-medium text-sm rounded-xl hover:bg-[#4338CA] hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 cursor-pointer shadow-lg shadow-indigo-200 group/btn"
-                        >
-                            <Send className="w-4 h-4 group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
-                            <span>Send Results via Mail</span>
-                        </button>
-                    </ActionCard>
-                    <ActionCard icon={Download} label="Final Reporting" color="bg-gradient-to-br from-[#A855F7] to-[#8B5CF6] shadow-lg shadow-purple-200">
-                        <button className="w-full px-5 py-3 bg-white border-2 border-[#E2E8F0] text-[#0F172A] font-medium text-sm rounded-xl hover:bg-[#F8FAFC] hover:border-[#4F46E5]/30 active:scale-95 transition-all flex items-center justify-center gap-3 cursor-pointer group/dl">
-                            <Download className="w-4 h-4 group-hover/dl:translate-y-0.5 transition-transform" />
-                            <span>Export Passed List</span>
-                        </button>
-                    </ActionCard>
+
                 </div>
 
                 {/* Results Table */}
@@ -101,8 +85,9 @@ const ResultsPublishing = () => {
                                     <th className="pb-6">Exam Name</th>
                                     <th className="pb-6">Date Conducted</th>
                                     <th className="pb-6 text-center">Participants</th>
-                                    <th className="pb-6 text-center">Avg. Score</th>
-                                    <th className="pb-6 text-center">Status</th>
+
+
+                                    <th className="pb-6 text-center">Result Status</th>
                                     <th className="pb-6 text-right">Actions</th>
                                 </tr>
                             </thead>
@@ -111,38 +96,40 @@ const ResultsPublishing = () => {
                                     <tr key={exam.id} className={`group hover:bg-[#F8FAFC]/50 transition-all duration-300 ${parseInt(exam.avgScore) >= cutoff ? 'bg-indigo-50/30' : ''}`}>
                                         <td className="py-6 font-medium text-[#0F172A] whitespace-nowrap">
                                             <div className="flex items-center gap-2">
-                                                {exam.name}
+                                                <button
+                                                    onClick={() => navigate(`/exam-results/${exam.id}`)}
+                                                    className="font-medium text-[#0F172A] hover:text-[#4F46E5] hover:underline transition-colors text-left"
+                                                >
+                                                    {exam.name}
+                                                </button>
                                                 {parseInt(exam.avgScore) >= cutoff && <CheckCircle2 className="w-4 h-4 text-[#22C55E]" />}
                                             </div>
                                         </td>
                                         <td className="py-6 text-[#0F172A]/70 font-medium whitespace-nowrap">{exam.date}</td>
                                         <td className="py-6 text-center text-[#0F172A]/70 font-medium whitespace-nowrap">{exam.participants}</td>
+
+
                                         <td className="py-6 text-center whitespace-nowrap">
-                                            <span className={`font-medium ${parseInt(exam.avgScore) >= cutoff ? 'text-[#22C55E]' : 'text-[#EF4444]'}`}>
-                                                {exam.avgScore}
-                                            </span>
-                                        </td>
-                                        <td className="py-6 text-center whitespace-nowrap">
-                                            <span className={`px-4 py-1.5 rounded-full text-[11px] sm:text-[12px] font-bold flex items-center gap-1.5 justify-center w-fit mx-auto ${exam.status === 'Published' ? 'bg-[#F0FDF4] text-[#22C55E]' :
-                                                exam.status === 'Ready to Publish' ? 'bg-[#EEF2FF] text-[#4F46E5]' :
-                                                    'bg-[#FFFBEB] text-[#D97706]'
-                                                }`}>
-                                                {exam.status === 'Published' ? <CheckCircle2 className="w-3 h-3" /> :
-                                                    exam.status === 'Under Review' ? <AlertTriangle className="w-3 h-3" /> : null}
-                                                {exam.status}
+                                            <span className={`px-4 py-1.5 rounded-full text-[11px] sm:text-[12px] font-bold flex items-center gap-1.5 justify-center w-fit mx-auto ${exam.isCalculated ? 'bg-blue-50 text-blue-600 border border-blue-200' : 'bg-slate-100 text-slate-500 border border-slate-200'}`}>
+                                                {exam.isCalculated ? <CheckCircle2 className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
+                                                {exam.isCalculated ? 'Calculated' : 'Pending'}
                                             </span>
                                         </td>
                                         <td className="py-6 text-right whitespace-nowrap">
-                                            {exam.status !== 'Published' ? (
+                                            {exam.status !== 'Results Sent' ? (
                                                 <button
                                                     onClick={() => handlePublish(exam.id)}
-                                                    className="px-6 py-2 bg-[#4F46E5] text-white font-medium text-[11px] rounded-lg hover:bg-[#4338CA] transition-all shadow-sm flex items-center gap-2 ml-auto cursor-pointer"
+                                                    disabled={!exam.isCalculated}
+                                                    className={`px-6 py-2 font-medium text-[11px] rounded-lg transition-all shadow-sm flex items-center gap-2 ml-auto cursor-pointer ${exam.isCalculated
+                                                        ? 'bg-[#4F46E5] text-white hover:bg-[#4338CA]'
+                                                        : 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                                                        }`}
                                                 >
-                                                    <Send className="w-3 h-3" /> Publish
+                                                    <Send className="w-3 h-3" /> Send Results
                                                 </button>
                                             ) : (
                                                 <button className="px-6 py-2 bg-white border border-[#E2E8F0] text-[#0F172A] font-medium text-[11px] rounded-lg hover:bg-[#F8FAFC] transition-all flex items-center gap-2 ml-auto cursor-pointer">
-                                                    <Eye className="w-3 h-3" /> View Analytics
+                                                    <CheckCircle2 className="w-3 h-3 text-emerald-500" /> Results Sent
                                                 </button>
                                             )}
                                         </td>

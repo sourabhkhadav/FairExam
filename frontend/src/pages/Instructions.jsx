@@ -1,6 +1,20 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Shield, Clock, BookOpen, CheckSquare, ArrowRight, FileText, CheckCircle, Zap } from 'lucide-react';
+import { Shield, Clock, FileText, CheckSquare, ArrowRight, AlertTriangle, Monitor, MousePointer } from 'lucide-react';
+
+const InstructionCard = ({ icon: Icon, title, desc, delay }) => (
+    <div className={`flex gap-4 p-4 rounded-lg border border-slate-100 bg-slate-50/50`}>
+        <div className="flex-shrink-0">
+            <div className="w-10 h-10 rounded-md bg-white border border-slate-200 flex items-center justify-center text-blue-600 shadow-sm">
+                <Icon className="w-5 h-5" />
+            </div>
+        </div>
+        <div>
+            <h4 className="font-semibold text-slate-800 text-sm mb-1">{title}</h4>
+            <p className="text-sm text-slate-600 leading-relaxed">{desc}</p>
+        </div>
+    </div>
+);
 
 const Instructions = () => {
     const navigate = useNavigate();
@@ -15,117 +29,99 @@ const Instructions = () => {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 relative font-sans selection:bg-blue-100 selection:text-blue-900 overflow-hidden flex flex-col items-center justify-center p-6">
+        <div className="min-h-screen bg-slate-50 font-sans text-slate-900 py-12 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-4xl mx-auto space-y-8">
 
-            {/* Background Gradients */}
-            <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden z-0">
-                <div className="absolute top-[-20%] right-[-10%] w-[60%] h-[60%] bg-indigo-100/60 rounded-full blur-[150px] animate-pulse" style={{ animationDuration: '15s' }} />
-                <div className="absolute bottom-[-20%] left-[-10%] w-[60%] h-[60%] bg-blue-100/60 rounded-full blur-[150px] animate-pulse" style={{ animationDuration: '12s' }} />
-            </div>
-
-            <div className="relative z-10 max-w-6xl w-full bg-white/90 backdrop-blur-3xl border border-white/40 rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row h-auto min-h-[80vh]">
-
-                {/* Left Panel: Exam Details */}
-                <div className="w-full md:w-2/3 p-8 md:p-12 flex flex-col border-b md:border-b-0 md:border-r border-slate-200">
-                    <header className="mb-10">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-semibold mb-4 uppercase tracking-wider">
-                            <Zap className="w-3 h-3" /> Examination Portal
-                        </div>
-                        <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-2 leading-tight">
-                            Welcome, <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-indigo-700">{userName}</span>
-                        </h1>
-                        <p className="text-slate-600 text-lg max-w-xl leading-relaxed">Please review the examination structure and guidelines below carefully before proceeding.</p>
-                    </header>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-                        <div className="group bg-slate-50 hover:bg-white p-5 rounded-2xl border border-slate-200 hover:border-blue-300 hover:shadow-md transition-all duration-300">
-                            <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600 mb-3 group-hover:scale-110 transition-transform">
-                                <BookOpen className="w-5 h-5" />
+                {/* Header */}
+                <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-8">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-slate-100 pb-8 mb-8">
+                        <div>
+                            <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 text-xs font-medium border border-blue-100 mb-4">
+                                Assessment ID: #SWE-2026-X1
                             </div>
-                            <h3 className="text-slate-900 font-semibold text-lg">Section 1: MCQ</h3>
-                            <p className="text-slate-500 text-xs mt-1">10 Questions • 1 Mark Each</p>
+                            <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Examination Guidelines</h1>
+                            <p className="mt-2 text-slate-500">
+                                Welcome, <span className="font-semibold text-slate-700">{userName}</span>. Please review the following protocols before commencing.
+                            </p>
                         </div>
-                        <div className="group bg-slate-50 hover:bg-white p-5 rounded-2xl border border-slate-200 hover:border-purple-300 hover:shadow-md transition-all duration-300">
-                            <div className="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center text-purple-600 mb-3 group-hover:scale-110 transition-transform">
-                                <FileText className="w-5 h-5" />
+                        <div className="flex items-center gap-4 bg-slate-50 p-4 rounded-lg border border-slate-200">
+                            <Clock className="w-8 h-8 text-blue-600" />
+                            <div>
+                                <div className="text-sm font-semibold text-slate-900">Duration: 90 Minutes</div>
+                                <div className="text-xs text-slate-500">Total Questions: 10</div>
                             </div>
-                            <h3 className="text-slate-900 font-semibold text-lg">Section 2: Written</h3>
-                            <p className="text-slate-500 text-xs mt-1">10 Questions • 2 Marks Each</p>
-                        </div>
-                        <div className="group bg-slate-50 hover:bg-white p-5 rounded-2xl border border-slate-200 hover:border-pink-300 hover:shadow-md transition-all duration-300">
-                            <div className="w-10 h-10 rounded-xl bg-pink-100 flex items-center justify-center text-pink-600 mb-3 group-hover:scale-110 transition-transform">
-                                <div className="font-mono font-bold text-sm">&lt;/&gt;</div>
-                            </div>
-                            <h3 className="text-slate-900 font-semibold text-lg">Section 3: Code</h3>
-                            <p className="text-slate-500 text-xs mt-1">10 Questions • 3 Marks Each</p>
                         </div>
                     </div>
 
-                    <div className="mt-auto bg-slate-50 rounded-2xl p-6 border border-slate-200 flex items-center gap-5">
-                        <div className="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 animate-pulse">
-                            <Clock className="w-7 h-7 text-blue-600" />
-                        </div>
+                    <div className="space-y-8">
                         <div>
-                            <h4 className="text-xl font-bold text-slate-900">90 Minutes Duration</h4>
-                            <p className="text-sm text-slate-500 max-w-sm">The timer begins automatically once you click 'Start Examination'. There are no pauses allowed.</p>
+                            <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+                                <Monitor className="w-5 h-5 text-slate-500" />
+                                Section Breakdown
+                            </h3>
+                            <InstructionCard
+                                icon={MousePointer}
+                                title="Multiple Choice Questions"
+                                desc="10 Questions. Single correct option. Analytical & Logical reasoning."
+                            />
+                        </div>
+
+                        <div>
+                            <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+                                <Shield className="w-5 h-5 text-slate-500" />
+                                Code of Conduct
+                            </h3>
+                            <div className="bg-amber-50 border border-amber-200 rounded-lg p-6">
+                                <ul className="space-y-3">
+                                    {[
+                                        "Strict Prohibition: No generic materials, external sites, or communication tools.",
+                                        "Monitoring: Your webcam, microphone, and screen activity are recorded.",
+                                        "Fullscreen Mode: Exiting fullscreen will trigger a warning log.",
+                                        "Identity Verification: Ensure your face is clearly visible at all times."
+                                    ].map((rule, i) => (
+                                        <li key={i} className="flex gap-3 text-sm text-slate-700">
+                                            <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0" />
+                                            <span>{rule}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Right Panel: Code of Conduct */}
-                <div className="w-full md:w-1/3 bg-slate-100/80 p-8 md:p-12 flex flex-col border-l border-slate-200">
-                    <div className="flex items-center gap-3 mb-8">
-                        <div className="p-2 bg-amber-100 rounded-lg text-amber-600 border border-amber-200">
-                            <Shield className="w-6 h-6" />
+                {/* Footer Action */}
+                <div className="bg-white rounded-lg shadow-sm border border-slate-200 p-6 flex flex-col md:flex-row items-center justify-between gap-6">
+                    <label className="flex items-center gap-3 cursor-pointer select-none">
+                        <div className="relative flex items-center">
+                            <input
+                                type="checkbox"
+                                className="peer sr-only"
+                                checked={agreed}
+                                onChange={(e) => setAgreed(e.target.checked)}
+                            />
+                            <div className={`w-5 h-5 border-2 rounded transition-colors ${agreed ? 'bg-blue-600 border-blue-600' : 'bg-white border-slate-300'}`}>
+                                {agreed && <CheckSquare className="w-4 h-4 text-white absolute top-0 left-0" />}
+                            </div>
                         </div>
-                        <h2 className="text-xl font-bold text-slate-900 uppercase tracking-wide">Code of Conduct</h2>
-                    </div>
+                        <span className="text-sm text-slate-600 font-medium">I have read and agree to follow the examination protocols.</span>
+                    </label>
 
-                    <div className="flex-1 space-y-4 overflow-y-auto pr-2 custom-scrollbar mb-8">
-                        {[
-                            "No external tabs or windows allowed.",
-                            "Audio/Video recording is strictly prohibited.",
-                            "Webcam monitoring is active throughout.",
-                            "Independent completion required.",
-                            "Unauthorized devices are banned.",
-                            "Suspicious activity = Disqualification."
-                        ].map((rule, idx) => (
-                            <div key={idx} className="flex gap-3 text-sm text-slate-600 p-3 rounded-lg bg-white border border-slate-200 shadow-sm hover:shadow-md transition-all">
-                                <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0" />
-                                <span className="leading-snug">{rule}</span>
-                            </div>
-                        ))}
-                    </div>
+                    <button
+                        onClick={handleStart}
+                        disabled={!agreed}
+                        className={`px-8 py-3 rounded-md font-semibold text-sm transition-all flex items-center gap-2
+                            ${agreed
+                                ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-sm'
+                                : 'bg-slate-100 text-slate-400 cursor-not-allowed'}`}
+                    >
+                        Start Assessment
+                        <ArrowRight className="w-4 h-4" />
+                    </button>
+                </div>
 
-                    <div className="pt-6 border-t border-slate-200 mt-auto">
-                        <label className="flex items-start gap-4 cursor-pointer group mb-6 select-none">
-                            <div className="relative flex items-center mt-0.5">
-                                <input
-                                    type="checkbox"
-                                    className="peer sr-only"
-                                    checked={agreed}
-                                    onChange={(e) => setAgreed(e.target.checked)}
-                                />
-                                <div className="w-6 h-6 border-2 border-slate-400 rounded-md peer-checked:bg-blue-600 peer-checked:border-blue-600 transition-all group-hover:border-blue-500 bg-white"></div>
-                                <CheckSquare className="w-4 h-4 text-white absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 peer-checked:opacity-100 transition-opacity" />
-                            </div>
-                            <span className="text-xs text-slate-500 group-hover:text-slate-700 transition-colors leading-relaxed">
-                                I verify that I have read and understood all instructions and agree to follow the code of conduct during this examination.
-                            </span>
-                        </label>
-
-                        <button
-                            onClick={handleStart}
-                            disabled={!agreed}
-                            className={`w-full py-4 rounded-xl font-bold text-sm tracking-widest uppercase flex items-center justify-center gap-3 shadow-lg transition-all duration-300
-                                ${agreed
-                                    ? 'bg-blue-600 hover:bg-blue-700 hover:shadow-blue-500/25 text-white scale-[1.02]'
-                                    : 'bg-slate-300 text-slate-500 cursor-not-allowed opacity-70'}`}
-                        >
-                            Start Examination
-                            <ArrowRight className={`w-5 h-5 ${agreed ? 'animate-pulse' : ''}`} />
-                        </button>
-                    </div>
+                <div className="text-center text-xs text-slate-400">
+                    Session ID: {Math.random().toString(36).substr(2, 9).toUpperCase()} • Server Time: {new Date().toUTCString()}
                 </div>
             </div>
         </div>

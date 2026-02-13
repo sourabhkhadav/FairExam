@@ -96,7 +96,7 @@ const ExaminerLayout = () => {
                     ))}
                 </div>
 
-                <div className="p-4 border-t border-[#F1F5F9] space-y-1.5">
+                <div className="p-4 border-t border-[#F1F5F9] space-y-1.5 pt-6">
                     <SidebarItem
                         icon={UserCircle}
                         label="Profile"
@@ -105,18 +105,15 @@ const ExaminerLayout = () => {
                         collapsed={isCollapsed}
                         onClick={closeMobileMenu}
                     />
-                    <button
-                        onClick={() => setIsCollapsed(!isCollapsed)}
-                        className="w-full hidden lg:flex items-center gap-3 px-4 py-3 rounded-lg text-[#64748B] hover:bg-[#F8FAFC] hover:text-[#0F172A] transition-all duration-200 group cursor-pointer"
-                    >
-                        {isCollapsed ? <Menu className="w-5 h-5 mx-auto" /> : (
-                            <>
-                                <ChevronLeft className="w-5 h-5" />
-                                <span className="font-semibold text-[15px]">Collapse Menu</span>
-                            </>
-                        )}
-                    </button>
                 </div>
+
+                {/* Industry-Level Floating Toggle */}
+                <button
+                    onClick={() => setIsCollapsed(!isCollapsed)}
+                    className={`hidden lg:flex absolute -right-4 top-24 w-8 h-8 bg-white border border-[#E2E8F0] rounded-full items-center justify-center shadow-sm hover:shadow-md hover:border-[#4F46E5]/30 transition-all duration-300 z-[60] cursor-pointer group/toggle ${isCollapsed ? 'rotate-180' : ''}`}
+                >
+                    <ChevronLeft className="w-4 h-4 text-[#64748B] group-hover/toggle:text-[#4F46E5] transition-colors" />
+                </button>
             </aside>
 
             {/* Main Content Area */}

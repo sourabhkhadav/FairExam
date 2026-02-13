@@ -301,100 +301,7 @@ function Landing_Home() {
                 </div>
             </section >
 
-            {/* 5. Powerful Analytics Section */}
-            < section className="py-32 px-6 relative z-10 text-left bg-white" >
-                <div className="max-w-7xl mx-auto space-y-24">
-                    <div className="text-center space-y-6">
-                        <h2 className="text-5xl md:text-[80px] font-black tracking-tighter leading-none text-charcoal">
-                            Powerful <span className="text-gradient">Analytics</span>
-                        </h2>
-                        <p className="text-xl md:text-2xl text-slate-500 font-bold max-w-2xl mx-auto">
-                            Comprehensive insights and auto-generated reports.
-                        </p>
-                    </div>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-                        {/* Student Performance Chart */}
-                        <div className="glass-card rounded-[48px] p-10 bg-slate-50/50 border-black/5 space-y-10 group">
-                            <div className="flex justify-between items-start">
-                                <div className="space-y-1">
-                                    <h3 className="text-2xl font-black text-charcoal">Student Performance</h3>
-                                    <p className="text-sm font-black text-slate-900/60">Last 6 months overview</p>
-                                </div>
-                                <TrendingUp className="w-8 h-8 text-emerald-500" />
-                            </div>
-
-                            <div className="relative h-[300px] w-full mt-10">
-                                <svg className="w-full h-full overflow-visible" viewBox="0 0 800 300" preserveAspectRatio="none">
-                                    <defs>
-                                        <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-                                            <feGaussianBlur stdDeviation="6" result="blur" />
-                                            <feComposite in="SourceGraphic" in2="blur" operator="over" />
-                                        </filter>
-                                        <linearGradient id="gradient-line" x1="0%" y1="0%" x2="100%" y2="0%">
-                                            <stop offset="0%" stopColor="#818cf8" />
-                                            <stop offset="100%" stopColor="#4f46e5" />
-                                        </linearGradient>
-                                        <linearGradient id="area-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                                            <stop offset="0%" stopColor="#4f46e5" stopOpacity="0.3" />
-                                            <stop offset="100%" stopColor="#4f46e5" stopOpacity="0" />
-                                        </linearGradient>
-                                    </defs>
-                                    {/* Area Fill */}
-                                    <path
-                                        d="M0 250 C 100 220, 200 200, 300 180 S 500 120, 600 100 S 750 70, 800 60 L 800 300 L 0 300 Z"
-                                        fill="url(#area-gradient)"
-                                        className="animate-pulse-slow"
-                                    />
-                                    {/* Line Path */}
-                                    <path
-                                        d="M0 250 C 100 220, 200 200, 300 180 S 500 120, 600 100 S 750 70, 800 60"
-                                        fill="none"
-                                        stroke="url(#gradient-line)"
-                                        strokeWidth="6"
-                                        strokeLinecap="round"
-                                        filter="url(#glow)"
-                                        className="drop-shadow-2xl"
-                                    />
-                                    {[0, 150, 300, 450, 600, 800].map((x, i) => (
-                                        <circle key={i} cx={x} cy={[250, 200, 180, 140, 100, 60][i]} r="6" fill="white" stroke="#4f46e5" strokeWidth="4" className="filter drop-shadow-md hover:scale-150 transition-transform duration-300 cursor-pointer" />
-                                    ))}
-                                </svg>
-                                <div className="absolute bottom-0 left-0 right-0 flex justify-between text-[10px] font-black text-slate-300 uppercase tracking-widest pt-6 border-t border-slate-100">
-                                    <span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Violation Detection Chart */}
-                        <div className="glass-card rounded-[48px] p-10 bg-slate-50/50 border-black/5 space-y-10 group/card">
-                            <div className="flex justify-between items-start">
-                                <div className="space-y-1">
-                                    <h3 className="text-2xl font-black text-charcoal">Violation Detection</h3>
-                                    <p className="text-sm font-black text-slate-900/60">AI monitoring effectiveness</p>
-                                </div>
-                                <ShieldCheck className="w-8 h-8 text-indigo-600" />
-                            </div>
-
-                            <div className="relative h-[250px] w-full mt-10 flex items-end justify-between gap-4 px-2">
-                                {[40, 70, 50, 85, 30, 60].map((height, i) => (
-                                    <div key={i} className="flex-1 h-full flex flex-col justify-end items-center group/bar">
-                                        <div
-                                            className="w-full max-w-[44px] rounded-2xl bg-gradient-to-t from-indigo-500 to-brand-purple transition-all duration-700 group-hover/card:brightness-110 group-hover/bar:scale-x-110 group-hover/bar:-translate-y-2 shadow-lg shadow-indigo-100/50 relative overflow-hidden"
-                                            style={{ height: `${height}%` }}
-                                        >
-                                            <div className="absolute inset-0 bg-white/10 opacity-0 group-hover/bar:opacity-100 transition-opacity" />
-                                        </div>
-                                    </div>
-                                ))}
-                                <div className="absolute -bottom-10 left-0 right-0 flex justify-between text-[10px] font-black text-slate-300 uppercase tracking-widest pt-6 border-t border-slate-100">
-                                    <span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span><span>Jun</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section >
 
             {/* 5.1 Testimonials Section */}
             <section className="py-32 px-6 bg-slate-50 relative z-10 overflow-hidden">
@@ -402,7 +309,7 @@ function Landing_Home() {
                     <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
                         <div className="space-y-6 max-w-2xl">
                             <h2 className="text-5xl md:text-[80px] font-black tracking-tight leading-none text-charcoal">
-                                Trusted by <br /><span className="text-gradient">Educators</span>
+                                Trusted by <br /><span className="text-gradient">Big Organizations</span>
                             </h2>
                             <p className="text-xl text-slate-500 font-bold">Real stories from institutions scaling with integrity.</p>
                         </div>
@@ -440,47 +347,7 @@ function Landing_Home() {
                 </div>
             </section>
 
-            {/* 6. Security Core Section */}
-            < section className="max-w-7xl mx-auto px-6 py-32 space-y-24 relative z-10 text-left" >
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
-                    <div className="space-y-10 order-2 lg:order-1">
-                        <h2 className="text-5xl md:text-[80px] font-black tracking-tighter leading-[0.9] text-charcoal">
-                            The <span className="text-gradient">Fortress</span> <br /> Architecture
-                        </h2>
-                        <p className="text-xl md:text-2xl text-slate-500 font-bold leading-relaxed">
-                            Hardened security features designed to prevent cheating at every layer.
-                        </p>
-                        <div className="space-y-8 pt-4">
-                            <SecurityFeature title="Roll Number Secure Access" desc="Unique access control for students." />
-                            <SecurityFeature title="Encrypted Result Publishing" desc="Secure PDF generation." />
-                            <SecurityFeature title="Tamper-Proof Proctoring" desc="AI face and audio verification." />
-                        </div>
-                    </div>
 
-                    <div className="relative order-1 lg:order-2">
-                        <div className="absolute inset-0 bg-indigo-500/10 rounded-[64px] blur-3xl opacity-50 transition-opacity" />
-                        <div className="relative w-full h-full glass-card rounded-[64px] bg-slate-900 overflow-hidden shadow-2xl shadow-indigo-900/20 border-black/5 aspect-square">
-                            {/* MASTERPIECE VISUAL: Digital Fortress */}
-                            <div className="absolute inset-0 z-0">
-                                <img
-                                    src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=2070"
-                                    alt="Cybersecurity Shield"
-                                    className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-1000 contrast-125"
-                                />
-                                <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/30 to-transparent" />
-                                <div className="absolute inset-0 bg-indigo-500/20 mix-blend-overlay" />
-                            </div>
-
-                            <div className="relative z-10 h-full flex flex-col items-center justify-center gap-8">
-                                <div className="p-8 rounded-full bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl transition-transform duration-500">
-                                    <Shield className="w-20 h-20 text-slate-200 drop-shadow-[0_0_20px_rgba(255,255,255,0.2)] animate-glow" />
-                                </div>
-                                <div className="text-2xl font-black tracking-[0.4em] uppercase text-slate-300">Protected</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section >
 
             {/* 6.1 FAQ Section */}
             <section className="py-32 px-6 bg-white relative z-10" id="faq">
@@ -523,95 +390,9 @@ function Landing_Home() {
                 </div>
             </section>
 
-            {/* 7. Premium About Us Section */}
-            < section className="py-32 px-6 relative z-10 bg-white border-y border-black/5" id="about" >
-                <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-24 items-center">
-                    <div className="relative group">
-                        <div className="absolute -inset-4 bg-teal-500/10 rounded-[64px] blur-3xl opacity-50 group-hover:opacity-100 transition-opacity duration-700" />
-                        <div className="relative rounded-[56px] overflow-hidden border border-black/5 shadow-2xl shadow-teal-100/50 aspect-[4/5]">
-                            <img
-                                src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&q=80&w=2071"
-                                alt="Our Mission"
-                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-teal-900/40 to-transparent" />
-                            <div className="absolute bottom-12 left-12 right-12 p-8 glass-card bg-white/90 border-white/20">
-                                <p className="text-sm font-black text-brand-teal uppercase tracking-widest mb-2">Our Vision</p>
-                                <p className="text-xl font-bold text-charcoal italic leading-relaxed">
-                                    "To democratize world-class proctoring technology for every academic institution."
-                                </p>
-                            </div>
-                        </div>
-                    </div>
 
-                    <div className="space-y-12 text-left">
-                        <div className="space-y-6">
-                            <h2 className="text-5xl md:text-[80px] font-black tracking-tighter leading-none text-charcoal">
-                                We Are <br /><span className="text-gradient">Integrity Pioneers</span>
-                            </h2>
-                            <p className="text-xl text-slate-500 font-bold leading-relaxed max-w-xl">
-                                FairExam was founded by educators and engineers with a single mission: to protect the value of modern degrees in an increasingly remote world.
-                            </p>
-                        </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-                            <ValuePoint
-                                icon={<Star className="w-6 h-6 text-brand-purple" />}
-                                title="Academic Truth"
-                                desc="We believe in fair opportunity for every honest student."
-                            />
-                            <ValuePoint
-                                icon={<Zap className="w-6 h-6 text-brand-teal" />}
-                                title="AI Excellence"
-                                desc="Proprietary models built for 99.9% detection accuracy."
-                            />
-                            <ValuePoint
-                                icon={<Users2 className="w-6 h-6 text-indigo-500" />}
-                                title="Privacy First"
-                                desc="EU-GDPR and SOC2 compliant data architecture."
-                            />
-                            <ValuePoint
-                                icon={<Globe className="w-6 h-6 text-amber-500" />}
-                                title="Global Impact"
-                                desc="Empowering 500+ universities across 6 continents."
-                            />
-                        </div>
 
-                        <div className="pt-6">
-                            <button className="flex items-center gap-3 text-charcoal font-black text-lg group hover:text-brand-purple transition-colors cursor-pointer">
-                                Learn more about our story
-                                <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform" />
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </section >
-
-            {/* 8. Institutional Call to Action */}
-            < section className="py-32 px-6 relative z-10 overflow-hidden bg-slate-50/30" >
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-indigo-50/50 blur-[120px] rounded-full -z-10" />
-                <div className="max-w-4xl mx-auto text-center space-y-12">
-                    <h2 className="text-4xl md:text-6xl font-black tracking-tight leading-tight text-charcoal">
-                        Join thousands of institutions worldwide using <span className="text-indigo-600">FairExam</span> to maintain academic integrity
-                    </h2>
-
-                    <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-                        <Link to="/register" className="px-12 py-6 rounded-3xl bg-gradient-to-r from-indigo-500 to-brand-purple text-white font-black text-xl flex items-center justify-center gap-3 hover:scale-105 transition-all shadow-2xl shadow-indigo-200 cursor-pointer">
-                            Start Free Trial
-                            <ChevronRight className="w-6 h-6" />
-                        </Link>
-                        <button className="px-12 py-6 rounded-3xl border border-black/10 bg-white font-black text-xl hover:bg-slate-50 transition-all text-charcoal flex items-center justify-center gap-3 cursor-pointer">
-                            Contact Sales
-                        </button>
-                    </div>
-
-                    <div className="flex flex-wrap justify-center gap-10 pt-4">
-                        <TrustMarker text="No credit card required" />
-                        <TrustMarker text="14-day free trial" />
-                        <TrustMarker text="Cancel anytime" />
-                    </div>
-                </div>
-            </section >
 
             {/* 7. Enhanced Global Footer - Compact & Premium */}
             < footer className="pt-20 pb-16 px-6 relative z-10 bg-white border-t border-black/5" >
@@ -644,46 +425,11 @@ function Landing_Home() {
     );
 }
 
-{/* Refined Helper Components */ }
-function ValuePoint({ icon, title, desc }) {
-    return (
-        <div className="flex flex-col gap-4 group/value">
-            <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center border border-black/5 group-hover/value:bg-white group-hover/value:shadow-lg transition-all duration-500">
-                {icon}
-            </div>
-            <div className="space-y-1">
-                <h4 className="text-lg font-black text-charcoal">{title}</h4>
-                <p className="text-sm font-bold text-slate-400 group-hover/value:text-slate-500 transition-colors">{desc}</p>
-            </div>
-        </div>
-    );
-}
 
-function TrustMarker({ text }) {
-    return (
-        <div className="flex items-center gap-2">
-            <div className="w-5 h-5 rounded-full bg-emerald-50 flex items-center justify-center border border-emerald-100">
-                <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-            </div>
-            <span className="text-sm font-bold text-slate-500">{text}</span>
-        </div>
-    );
-}
 
-{/* Refined Helper Components */ }
-function FeatureBox({ icon, title, desc, color }) {
-    return (
-        <div className="md:col-span-4 glass-card rounded-[40px] p-10 flex flex-col justify-between group bg-white border-black/5 overflow-hidden">
-            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center border ${color} shadow-sm group-hover:scale-110 transition-transform duration-500 relative z-10`}>
-                {icon}
-            </div>
-            <div className="relative z-10">
-                <h4 className="text-2xl font-black pb-2 text-charcoal uppercase tracking-tighter">{title}</h4>
-                <p className="text-slate-500 font-bold leading-relaxed">{desc}</p>
-            </div>
-        </div>
-    );
-}
+
+
+
 
 function MetricItem({ icon, label, value, image }) {
     return (
@@ -709,21 +455,7 @@ function MetricItem({ icon, label, value, image }) {
     );
 }
 
-function SecurityFeature({ title, desc }) {
-    return (
-        <div className="flex gap-6 group text-left">
-            <div className="pt-2">
-                <div className="w-7 h-7 rounded-xl bg-indigo-50 flex items-center justify-center border border-indigo-100 group-hover:bg-indigo-500 group-hover:border-indigo-500 transition-all duration-500 shadow-sm">
-                    <CheckCircle2 className="w-4 h-4 text-indigo-600 group-hover:text-white transition-colors" />
-                </div>
-            </div>
-            <div>
-                <h4 className="text-xl font-black text-slate-900 group-hover:text-indigo-600 transition-colors leading-none">{title}</h4>
-                <p className="text-lg text-slate-500 font-bold pt-2 leading-relaxed">{desc}</p>
-            </div>
-        </div>
-    );
-}
+
 
 function SocialLink({ icon }) {
     return (

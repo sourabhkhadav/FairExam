@@ -23,7 +23,7 @@ const FormSection = ({ title, icon: Icon, children }) => (
     </div>
 );
 
-const CreateExam = () => {
+const Examiner_CreateExam = () => {
     const navigate = useNavigate();
 
     // Form State
@@ -157,4 +157,4 @@ const CreateExam = () => {
     );
 };
 
-export default CreateExam;
+export default Examiner_CreateExam;

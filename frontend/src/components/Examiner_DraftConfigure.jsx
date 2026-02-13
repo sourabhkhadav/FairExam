@@ -29,7 +29,7 @@ const Toggle = ({ label, enabled, setEnabled }) => (
     </div>
 );
 
-const DraftConfigure = () => {
+const Examiner_DraftConfigure = () => {
     const navigate = useNavigate();
     const { id } = useParams();
 
@@ -258,4 +258,4 @@ const DraftConfigure = () => {
     );
 };
 
-export default DraftConfigure;
+export default Examiner_DraftConfigure;

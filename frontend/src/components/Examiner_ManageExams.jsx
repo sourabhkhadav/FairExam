@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 
-const ManageExams = () => {
+const Examiner_ManageExams = () => {
     const navigate = useNavigate();
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedStatus, setSelectedStatus] = useState('All');
@@ -313,4 +313,4 @@ const ManageExams = () => {
     );
 };
 
-export default ManageExams;
+export default Examiner_ManageExams;

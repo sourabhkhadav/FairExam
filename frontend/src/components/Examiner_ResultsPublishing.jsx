@@ -20,7 +20,7 @@ const ActionCard = ({ icon: Icon, label, color, children }) => (
     </div>
 );
 
-const ResultsPublishing = () => {
+const Examiner_ResultsPublishing = () => {
     const navigate = useNavigate();
     const [cutoff, setCutoff] = useState(70);
     const [exams, setExams] = useState([
@@ -144,4 +144,4 @@ const ResultsPublishing = () => {
     );
 };
 
-export default ResultsPublishing;
+export default Examiner_ResultsPublishing;

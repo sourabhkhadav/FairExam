@@ -18,7 +18,7 @@ const MetricCard = ({ label, value, colorClass, icon: Icon }) => (
     </div>
 );
 
-const StudentViolations = () => {
+const Examiner_StudentViolations = () => {
     const navigate = useNavigate();
     const { id } = useParams();
     const [loading, setLoading] = useState(true);
@@ -107,8 +107,8 @@ const StudentViolations = () => {
                                     <div className="flex-1 space-y-4">
                                         <div className="flex items-center gap-3">
                                             <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${v.severity === 'High' ? 'bg-[#FEF2F2] text-[#EF4444] border border-red-100' :
-                                                    v.severity === 'Medium' ? 'bg-[#FFFBEB] text-[#D97706] border border-amber-100' :
-                                                        'bg-[#EFF6FF] text-[#3B82F6] border border-blue-100'
+                                                v.severity === 'Medium' ? 'bg-[#FFFBEB] text-[#D97706] border border-amber-100' :
+                                                    'bg-[#EFF6FF] text-[#3B82F6] border border-blue-100'
                                                 }`}>
                                                 {v.severity} Severity
                                             </span>
@@ -156,4 +156,4 @@ const StudentViolations = () => {
     );
 };
 
-export default StudentViolations;
+export default Examiner_StudentViolations;

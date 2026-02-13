@@ -14,7 +14,7 @@ const MetricCard = ({ label, value, colorClass }) => (
     </div>
 );
 
-const ViolationReports = () => {
+const Examiner_ViolationReports = () => {
     const navigate = useNavigate();
     const [violations] = useState([
         { id: 1, name: "Charlie Brown", exam: "Database Management Final", type: "Multiple Face Detected", time: "Feb 12, 2026 - 10:45 AM", severity: "High" },
@@ -113,4 +113,4 @@ const ViolationReports = () => {
     );
 };
 
-export default ViolationReports;
+export default Examiner_ViolationReports;

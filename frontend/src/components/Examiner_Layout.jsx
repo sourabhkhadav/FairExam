@@ -21,7 +21,7 @@ const SidebarItem = ({ icon: Icon, label, active = false, to = "#", collapsed = 
     </Link>
 );
 
-const ExaminerLayout = () => {
+const Examiner_Layout = () => {
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const location = useLocation();
@@ -130,4 +130,4 @@ const ExaminerLayout = () => {
     );
 };
 
-export default ExaminerLayout;
+export default Examiner_Layout;

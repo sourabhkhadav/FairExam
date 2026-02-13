@@ -12,11 +12,49 @@ function Landing_Home() {
     const [scrolled, setScrolled] = useState(false);
     const [activeFaq, setActiveFaq] = useState(null);
 
+    const [visibleSections, setVisibleSections] = useState(['solutions', 'features', 'security', 'enterprise']);
+
+    const navItems = [
+        { name: 'Solutions', id: 'solutions' },
+        { name: 'Features', id: 'features' },
+        { name: 'Security', id: 'security' },
+        { name: 'Enterprise', id: 'enterprise' }
+    ];
+
     useEffect(() => {
         const handleScroll = () => setScrolled(window.scrollY > 20);
         window.addEventListener('scroll', handleScroll);
+
+        // Check which sections exist in the DOM
+        const checkSections = () => {
+            const existing = navItems
+                .filter(item => document.getElementById(item.id))
+                .map(item => item.id);
+            setVisibleSections(existing);
+        };
+
+        // Initial check and occasional re-check if content changes (simulated for dev)
+        checkSections();
+
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
+
+    const scrollToSection = (e, id) => {
+        e.preventDefault();
+        const element = document.getElementById(id);
+        if (element) {
+            const offset = 80; // Navbar height offset
+            const bodyRect = document.body.getBoundingClientRect().top;
+            const elementRect = element.getBoundingClientRect().top;
+            const elementPosition = elementRect - bodyRect;
+            const offsetPosition = elementPosition - offset;
+
+            window.scrollTo({
+                top: offsetPosition,
+                behavior: 'smooth'
+            });
+        }
+    };
 
     return (
         <div className="min-h-screen bg-white text-charcoal selection:bg-indigo-100 relative font-sans overflow-hidden">
@@ -38,9 +76,14 @@ function Landing_Home() {
                     </div>
 
                     <div className="hidden md:flex items-center gap-10">
-                        {['Solutions', 'Features', 'Security', 'Enterprise'].map((item) => (
-                            <a key={item} href={`#${item.toLowerCase()}`} className="text-[13px] font-bold text-slate-500 hover:text-charcoal transition-colors tracking-widest uppercase">
-                                {item}
+                        {navItems.filter(item => visibleSections.includes(item.id)).map((item) => (
+                            <a
+                                key={item.id}
+                                href={`#${item.id}`}
+                                onClick={(e) => scrollToSection(e, item.id)}
+                                className="text-[13px] font-bold text-slate-500 hover:text-charcoal transition-colors tracking-widest uppercase"
+                            >
+                                {item.name}
                             </a>
                         ))}
                     </div>
@@ -96,7 +139,7 @@ function Landing_Home() {
             </header>
 
             {/* 3. Feature Bento Grid with Visuals */}
-            <section className="max-w-7xl mx-auto px-6 py-32 space-y-20 relative z-10 overflow-hidden">
+            <section id="features" className="max-w-7xl mx-auto px-6 py-32 space-y-20 relative z-10 overflow-hidden">
                 <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-10">
                     <div className="space-y-6 max-w-2xl text-left">
                         <h2 className="text-5xl md:text-[80px] font-bold leading-none text-charcoal">
@@ -239,7 +282,7 @@ function Landing_Home() {
             </section>
 
             {/* 4. Insight Intelligence Section */}
-            < section className="bg-slate-50 py-32 border-y border-black/5 relative z-10 overflow-hidden text-left" >
+            < section id="solutions" className="bg-slate-50 py-32 border-y border-black/5 relative z-10 overflow-hidden text-left" >
                 <div className="max-w-7xl mx-auto px-6 space-y-20">
                     <div className="text-center space-y-6">
                         <h2 className="text-5xl md:text-[80px] font-black tracking-tight leading-none text-charcoal">

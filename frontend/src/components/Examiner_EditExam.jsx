@@ -18,7 +18,7 @@ const FormSection = ({ title, icon: Icon, children }) => (
     </div>
 );
 
-const EditExam = () => {
+const Examiner_EditExam = () => {
     const navigate = useNavigate();
     const { id } = useParams();
     const [examData, setExamData] = useState({
@@ -156,8 +156,8 @@ const EditExam = () => {
                                                         </div>
                                                         <div className="flex items-center gap-3">
                                                             <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${q.difficulty === 'Hard' ? 'bg-rose-50 text-rose-600' :
-                                                                    q.difficulty === 'Medium' ? 'bg-amber-50 text-amber-600' :
-                                                                        'bg-emerald-50 text-emerald-600'
+                                                                q.difficulty === 'Medium' ? 'bg-amber-50 text-amber-600' :
+                                                                    'bg-emerald-50 text-emerald-600'
                                                                 }`}>
                                                                 {q.difficulty}
                                                             </span>
@@ -212,4 +212,4 @@ const EditExam = () => {
     );
 };
 
-export default EditExam;
+export default Examiner_EditExam;

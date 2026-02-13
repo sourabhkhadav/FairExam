@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 
-const ExamResultDetails = () => {
+const Examiner_ExamResultDetails = () => {
     const navigate = useNavigate();
     const { examId } = useParams();
     const [searchQuery, setSearchQuery] = useState('');
@@ -250,4 +250,4 @@ const ExamResultDetails = () => {
     );
 };
 
-export default ExamResultDetails;
+export default Examiner_ExamResultDetails;

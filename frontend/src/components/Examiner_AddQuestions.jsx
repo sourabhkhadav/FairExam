@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-const AddQuestions = () => {
+const Examiner_AddQuestions = () => {
     const navigate = useNavigate();
     const [metaData, setMetaData] = useState(null);
     const [focusedIndex, setFocusedIndex] = useState(0);
@@ -487,4 +487,4 @@ const AddQuestions = () => {
     );
 };
 
-export default AddQuestions;
+export default Examiner_AddQuestions;

@@ -19,7 +19,7 @@ const StatCard = ({ icon: Icon, label, value, iconColor }) => (
     </div>
 );
 
-const ExaminerDashboard = () => {
+const Examiner_Dashboard = () => {
     const navigate = useNavigate();
     const [recentExams, setRecentExams] = useState([
         { name: "Database Management Final", date: "Feb 15, 2026", students: 85, status: "Scheduled" },
@@ -118,4 +118,4 @@ const ExaminerDashboard = () => {
     );
 };
 
-export default ExaminerDashboard;
+export default Examiner_Dashboard;

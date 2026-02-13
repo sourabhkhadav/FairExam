@@ -17,10 +17,10 @@ const MetricCard = ({ label, value, colorClass }) => (
 const ViolationReports = () => {
     const navigate = useNavigate();
     const [violations] = useState([
-        { id: 1, name: "Charlie Brown", roll: "CS2022003", exam: "Database Management Final", type: "Multiple Face Detected", time: "Feb 12, 2026 - 10:45 AM", severity: "High" },
-        { id: 2, name: "Bob Smith", roll: "CS2022002", exam: "Database Management Final", type: "Tab Switch", time: "Feb 12, 2026 - 10:30 AM", severity: "Medium" },
-        { id: 3, name: "Edward Lee", roll: "CS2022005", exam: "Computer Networks Test", type: "Unusual Noise Detected", time: "Feb 12, 2026 - 10:20 AM", severity: "Low" },
-        { id: 4, name: "Alice Wagner", roll: "CS2022003", exam: "Database Management Final", type: "Camera Disabled", time: "Feb 12, 2026 - 10:15 AM", severity: "High" },
+        { id: 1, name: "Charlie Brown", exam: "Database Management Final", type: "Multiple Face Detected", time: "Feb 12, 2026 - 10:45 AM", severity: "High" },
+        { id: 2, name: "Bob Smith", exam: "Database Management Final", type: "Tab Switch", time: "Feb 12, 2026 - 10:30 AM", severity: "Medium" },
+        { id: 3, name: "Edward Lee", exam: "Computer Networks Test", type: "Unusual Noise Detected", time: "Feb 12, 2026 - 10:20 AM", severity: "Low" },
+        { id: 4, name: "Alice Wagner", exam: "Database Management Final", type: "Camera Disabled", time: "Feb 12, 2026 - 10:15 AM", severity: "High" },
     ]);
 
     return (
@@ -74,7 +74,6 @@ const ViolationReports = () => {
                             <thead>
                                 <tr className="text-left text-[#0F172A] text-[13px] font-medium uppercase tracking-wider border-b border-[#F1F5F9]">
                                     <th className="pb-6">Student Name</th>
-                                    <th className="pb-6">Roll Number</th>
                                     <th className="pb-6">Exam</th>
                                     <th className="pb-6">Violation Type</th>
                                     <th className="pb-6">Timestamp</th>
@@ -84,8 +83,14 @@ const ViolationReports = () => {
                             <tbody className="divide-y divide-[#F1F5F9]">
                                 {violations.map((v) => (
                                     <tr key={v.id} className="group hover:bg-[#F8FAFC]/50 transition-colors">
-                                        <td className="py-5 font-medium text-[#0F172A] whitespace-nowrap">{v.name}</td>
-                                        <td className="py-5 text-[#0F172A]/70 font-medium whitespace-nowrap">{v.roll}</td>
+                                        <td className="py-5 font-medium whitespace-nowrap">
+                                            <Link
+                                                to={`/student-violations/${v.name}`}
+                                                className="text-[#4F46E5] hover:text-[#4338CA] hover:underline transition-colors"
+                                            >
+                                                {v.name}
+                                            </Link>
+                                        </td>
                                         <td className="py-5 text-[#0F172A]/70 font-medium whitespace-nowrap">{v.exam}</td>
                                         <td className="py-5 text-[#0F172A] font-medium italic whitespace-nowrap">"{v.type}"</td>
                                         <td className="py-5 text-[#0F172A]/70 font-medium text-sm whitespace-nowrap">{v.time}</td>

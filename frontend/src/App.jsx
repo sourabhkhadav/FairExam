@@ -10,6 +10,7 @@ import ViolationReports from './components/ViolationReports'
 import ResultsPublishing from './components/ResultsPublishing'
 import DraftConfigure from './components/DraftConfigure'
 import EditExam from './components/EditExam'
+import StudentViolations from './components/StudentViolations'
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
           <Route path="/results-publishing" element={<ResultsPublishing />} />
           <Route path="/configure-exam/:id" element={<DraftConfigure />} />
           <Route path="/edit-exam/:id" element={<EditExam />} />
+          <Route path="/student-violations/:id" element={<StudentViolations />} />
         </Route>
       </Routes>
     </BrowserRouter>

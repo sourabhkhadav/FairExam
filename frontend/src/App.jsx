@@ -8,6 +8,8 @@ import AddQuestions from './components/AddQuestions'
 import ManageExams from './components/ManageExams'
 import ViolationReports from './components/ViolationReports'
 import ResultsPublishing from './components/ResultsPublishing'
+import DraftConfigure from './components/DraftConfigure'
+import EditExam from './components/EditExam'
 
 function App() {
   return (
@@ -25,6 +27,8 @@ function App() {
           <Route path="/manage-exams" element={<ManageExams />} />
           <Route path="/violation-reports" element={<ViolationReports />} />
           <Route path="/results-publishing" element={<ResultsPublishing />} />
+          <Route path="/configure-exam/:id" element={<DraftConfigure />} />
+          <Route path="/edit-exam/:id" element={<EditExam />} />
         </Route>
       </Routes>
     </BrowserRouter>

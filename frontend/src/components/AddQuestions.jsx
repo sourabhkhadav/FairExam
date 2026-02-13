@@ -4,7 +4,7 @@ import {
     Settings2, HelpCircle, GripVertical, Sparkles,
     ChevronRight, Layout, ListTodo, BrainCircuit,
     Search, Zap, MoreHorizontal, Copy, Eye,
-    Target, Clock, BarChart, Info, AlertTriangle
+    Target, Clock, BarChart, Info, AlertTriangle, Pencil
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -13,12 +13,9 @@ const AddQuestions = () => {
     const [metaData, setMetaData] = useState(null);
     const [focusedIndex, setFocusedIndex] = useState(0);
     const [isNavOpen, setIsNavOpen] = useState(false);
-    const [showSetup, setShowSetup] = useState(true);
-    const [sectionConfig, setSectionConfig] = useState({
-        count: 1,
-        perSection: { 0: 1 }
-    });
-
+    const [sections, setSections] = useState([
+        { id: 0, name: 'Section 1' }
+    ]);
     const [questions, setQuestions] = useState([
         {
             id: 1,
@@ -38,43 +35,39 @@ const AddQuestions = () => {
         if (draftStr) {
             const draft = JSON.parse(draftStr);
             setMetaData(draft);
+            if (draft.sections && draft.sections.length > 0) {
+                setSections(draft.sections);
+            }
             if (draft.questions && draft.questions.length > 0) {
                 setQuestions(draft.questions);
-                setShowSetup(false);
-                if (draft.sectionConfig) {
-                    setSectionConfig(draft.sectionConfig);
-                }
             }
         }
     }, []);
 
-    const handleSetupSubmit = () => {
-        let newQuestions = [];
-        let qId = 1;
-        for (let sIdx = 0; sIdx < sectionConfig.count; sIdx++) {
-            const numQs = sectionConfig.perSection[sIdx] || 1;
-            for (let qIdx = 0; qIdx < numQs; qIdx++) {
-                newQuestions.push({
-                    id: qId++,
-                    sectionId: sIdx,
-                    type: 'MCQ',
-                    text: '',
-                    options: ['', '', '', ''],
-                    correct: 0,
-                    marks: 2,
-                    difficulty: 'Medium',
-                    tags: []
-                });
-            }
-        }
-        setQuestions(newQuestions);
-        setShowSetup(false);
+    const addSection = () => {
+        const newSectionId = sections.length > 0 ? Math.max(...sections.map(s => s.id)) + 1 : 0;
+        const newSection = {
+            id: newSectionId,
+            name: `Section ${sections.length + 1}`
+        };
+        setSections([...sections, newSection]);
+    };
+
+    const removeSection = (sectionId) => {
+        if (sections.length === 1) return;
+        setSections(sections.filter(s => s.id !== sectionId));
+        setQuestions(questions.filter(q => q.sectionId !== sectionId));
+        setFocusedIndex(0);
+    };
+
+    const updateSectionName = (sectionId, name) => {
+        setSections(sections.map(s => s.id === sectionId ? { ...s, name } : s));
     };
 
     const addQuestion = (sectionId) => {
         const newQ = {
             id: Date.now(),
-            sectionId: sectionId ?? 0,
+            sectionId: sectionId ?? (sections[0]?.id || 0),
             type: 'MCQ',
             text: '',
             options: ['', '', '', ''],
@@ -83,10 +76,26 @@ const AddQuestions = () => {
             difficulty: 'Medium',
             tags: []
         };
+
+        // Find insert index: after the last question of this section
+        const sectionQuestions = questions.filter(q => q.sectionId === sectionId);
+        let insertIdx;
+        if (sectionQuestions.length > 0) {
+            const lastOfSection = sectionQuestions[sectionQuestions.length - 1];
+            insertIdx = questions.findIndex(q => q.id === lastOfSection.id) + 1;
+        } else {
+            // Find insertion point based on section order
+            const sectionIdx = sections.findIndex(s => s.id === sectionId);
+            if (sectionIdx === 0) {
+                insertIdx = 0;
+            } else {
+                const prevSectionsIds = sections.slice(0, sectionIdx).map(s => s.id);
+                const prevQuestions = questions.filter(q => prevSectionsIds.includes(q.sectionId));
+                insertIdx = prevQuestions.length;
+            }
+        }
+
         const nextQs = [...questions];
-        // Insert after the last question of this section
-        const lastIdxOfSection = [...nextQs].reverse().findIndex(q => q.sectionId === sectionId);
-        const insertIdx = lastIdxOfSection === -1 ? nextQs.length : nextQs.length - lastIdxOfSection;
         nextQs.splice(insertIdx, 0, newQ);
         setQuestions(nextQs);
         setFocusedIndex(insertIdx);
@@ -124,11 +133,21 @@ const AddQuestions = () => {
         setFocusedIndex(Math.max(0, focusedIndex - 1));
     };
 
+    const handleSaveDraft = () => {
+        const draft = {
+            ...metaData,
+            sections,
+            questions
+        };
+        localStorage.setItem('examDraft', JSON.stringify(draft));
+        alert('Draft saved successfully!');
+    };
+
     const handlePublish = () => {
         const newExam = {
             ...metaData,
             questions,
-            sectionConfig,
+            sections,
             id: metaData.id || Date.now()
         };
         const existingExams = JSON.parse(localStorage.getItem('publishedExams') || '[]');
@@ -144,62 +163,6 @@ const AddQuestions = () => {
         localStorage.removeItem('examDraft');
         navigate('/manage-exams');
     };
-
-    if (showSetup) {
-        return (
-            <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center p-4">
-                <div className="max-w-md w-full bg-white rounded-[32px] border border-[#E2E8F0] shadow-xl p-8 sm:p-10 space-y-8 animate-in fade-in zoom-in duration-300">
-                    <div className="text-center space-y-2">
-                        <div className="w-16 h-16 bg-[#F5F3FF] rounded-2xl flex items-center justify-center mx-auto mb-4">
-                            <Layout className="w-8 h-8 text-[#4F46E5]" />
-                        </div>
-                        <h2 className="text-2xl font-medium text-[#0F172A]">Exam Blueprint</h2>
-                        <p className="text-[#64748B] font-medium text-sm">Configure your exam sections and structure.</p>
-                    </div>
-
-                    <div className="space-y-6">
-                        <div className="space-y-3">
-                            <label className="text-sm font-medium text-[#0F172A] uppercase tracking-wider ml-1">How many sections?</label>
-                            <input
-                                type="number"
-                                min="1"
-                                max="10"
-                                className="w-full px-5 py-4 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] focus:bg-white focus:border-[#4F46E5]/40 outline-none text-[#0F172A] font-medium transition-all"
-                                value={sectionConfig.count}
-                                onChange={(e) => setSectionConfig({ ...sectionConfig, count: parseInt(e.target.value) || 1 })}
-                            />
-                        </div>
-
-                        <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
-                            {Array.from({ length: sectionConfig.count }).map((_, i) => (
-                                <div key={i} className="space-y-2 animate-in slide-in-from-top-2 duration-300">
-                                    <label className="text-xs font-medium text-[#0F172A] uppercase tracking-wider ml-1">Section {i + 1} Questions</label>
-                                    <input
-                                        type="number"
-                                        min="1"
-                                        className="w-full px-5 py-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] focus:bg-white focus:border-[#4F46E5]/40 outline-none text-[#0F172A] font-medium text-sm transition-all"
-                                        value={sectionConfig.perSection[i] || ''}
-                                        placeholder="e.g., 5"
-                                        onChange={(e) => setSectionConfig({
-                                            ...sectionConfig,
-                                            perSection: { ...sectionConfig.perSection, [i]: parseInt(e.target.value) || 0 }
-                                        })}
-                                    />
-                                </div>
-                            ))}
-                        </div>
-
-                        <button
-                            onClick={handleSetupSubmit}
-                            className="w-full py-4 bg-[#4F46E5] text-white font-medium rounded-2xl shadow-lg shadow-indigo-100 hover:bg-[#4338CA] hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 cursor-pointer"
-                        >
-                            Start Building Exam <ChevronRight className="w-5 h-5" />
-                        </button>
-                    </div>
-                </div>
-            </div>
-        );
-    }
 
     const currentQuestion = questions[focusedIndex];
 
@@ -220,8 +183,8 @@ const AddQuestions = () => {
                                 {metaData?.title || 'System Design Final'}
                             </h1>
                             <span className="flex items-center gap-2 px-3 py-1.5 bg-[#F8FAFC] text-[#6366F1] text-[11px] font-bold uppercase rounded-xl tracking-widest border border-[#E2E8F0]/50 whitespace-nowrap">
-                                <div className="w-1.5 h-1.5 bg-[#6366F1] rounded-full animate-pulse shadow-[0_0_8px_rgba(99,102,241,0.4)]" />
-                                Draft Mode
+                                <div className="w-1.5 h-1.5 bg-[#6366F1] rounded-full shadow-[0_0_8px_rgba(99,102,241,0.4)]" />
+                                {sections.length} {sections.length === 1 ? 'Section' : 'Sections'}
                             </span>
                         </div>
                         <div className="flex items-center gap-5 text-[#475569]">
@@ -239,14 +202,11 @@ const AddQuestions = () => {
                 </div>
 
                 <div className="flex items-center gap-4">
-                    <button className="flex-1 sm:flex-none justify-center px-6 py-3 bg-white border border-[#E2E8F0] text-[#1E293B] font-semibold text-[14px] rounded-2xl hover:bg-[#F8FAFC] hover:text-[#4F46E5] transition-all flex items-center gap-2.5 shadow-sm active:scale-95 whitespace-nowrap">
-                        <Save className="w-4 h-4 text-[#64748B]" /> Save Draft
-                    </button>
                     <button
-                        onClick={handlePublish}
-                        className="flex-1 sm:flex-none justify-center px-8 py-3 bg-[#4F46E5] text-white font-bold text-[14px] rounded-2xl shadow-xl shadow-indigo-100 flex items-center gap-2.5 hover:bg-[#4338CA] hover:translate-y-[-1px] active:translate-y-[0px] transition-all whitespace-nowrap"
+                        onClick={handleSaveDraft}
+                        className="flex-1 sm:flex-none justify-center px-6 py-3 bg-white border border-[#E2E8F0] text-[#1E293B] font-semibold text-[14px] rounded-2xl hover:bg-[#F8FAFC] hover:text-[#4F46E5] transition-all flex items-center gap-2.5 shadow-sm active:scale-95 whitespace-nowrap"
                     >
-                        Publish Exam <Send className="w-4 h-4" />
+                        <Save className="w-4 h-4 text-[#64748B]" /> Save Draft
                     </button>
                 </div>
             </div>
@@ -283,7 +243,7 @@ const AddQuestions = () => {
                         </button>
                     </div>
 
-                    <div className="p-4 border-b border-[#F1F5F9]">
+                    <div className="p-4 border-b border-[#F1F5F9] space-y-3">
                         <div className="relative group">
                             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#94A3B8] group-focus-within:text-[#6366F1] transition-colors" />
                             <input
@@ -291,25 +251,56 @@ const AddQuestions = () => {
                                 className="w-full pl-10 pr-4 py-2.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl text-[13.5px] outline-none focus:bg-white focus:border-[#6366F1]/30 transition-all font-medium placeholder:text-[#94A3B8]/70"
                             />
                         </div>
+                        <button
+                            onClick={addSection}
+                            className="w-full py-2.5 bg-[#F5F3FF] border border-[#6366F1]/20 rounded-2xl text-[#6366F1] font-bold text-[12px] hover:bg-[#6366F1] hover:text-white transition-all flex items-center justify-center gap-2 group shadow-sm active:scale-[0.98]"
+                        >
+                            <Plus className="w-4 h-4" /> Add New Section
+                        </button>
                     </div>
 
                     <div className="flex-1 overflow-y-auto p-5 space-y-8 custom-scrollbar">
-                        {Array.from({ length: sectionConfig.count }).map((_, sIdx) => (
-                            <div key={sIdx} className="space-y-4">
-                                <div className="flex items-center justify-between px-1">
-                                    <h3 className="text-[10px] font-medium text-[#0F172A] uppercase tracking-[0.15em] flex items-center gap-2.5">
-                                        <div className="w-1 h-1 bg-[#6366F1] rounded-full" />
-                                        Section {sIdx + 1}
-                                    </h3>
-                                    <button
-                                        onClick={() => addQuestion(sIdx)}
-                                        className="p-1 text-[#0F172A] hover:text-[#6366F1] transition-colors"
-                                    >
-                                        <Plus className="w-4 h-4" />
-                                    </button>
+                        {sections.map((section, sIdx) => (
+                            <div key={section.id} className="space-y-4">
+                                <div className="flex items-center justify-between px-1 group/section">
+                                    <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                                        <div className="w-1.5 h-1.5 bg-[#6366F1] rounded-full shrink-0" />
+                                        <input
+                                            id={`section-input-${section.id}`}
+                                            value={section.name}
+                                            onChange={(e) => updateSectionName(section.id, e.target.value)}
+                                            className="text-[10px] font-bold text-[#0F172A] uppercase tracking-[0.15em] bg-transparent border-none outline-none focus:text-[#6366F1] w-full"
+                                        />
+                                    </div>
+                                    <div className="flex items-center gap-1.5">
+                                        <button
+                                            onClick={() => addQuestion(section.id)}
+                                            className="p-1 px-2.5 bg-[#F5F3FF] text-[#6366F1] hover:bg-[#6366F1] hover:text-white rounded-lg transition-all flex items-center gap-1"
+                                            title="Add Question"
+                                        >
+                                            <Plus className="w-3 h-3" />
+                                            <span className="text-[9px] font-bold">Add</span>
+                                        </button>
+                                        <button
+                                            onClick={() => document.getElementById(`section-input-${section.id}`)?.focus()}
+                                            className="p-1 text-[#64748B] hover:text-[#6366F1] transition-colors"
+                                            title="Rename Section"
+                                        >
+                                            <Pencil className="w-3 h-3" />
+                                        </button>
+                                        {sections.length > 1 && (
+                                            <button
+                                                onClick={() => removeSection(section.id)}
+                                                className="p-1 text-[#64748B] hover:text-[#EF4444] transition-colors"
+                                                title="Delete Section"
+                                            >
+                                                <Trash2 className="w-3 h-3" />
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
                                 <div className="space-y-3">
-                                    {questions.filter(q => q.sectionId === sIdx).map((q) => {
+                                    {questions.filter(q => q.sectionId === section.id).map((q) => {
                                         const globalIdx = questions.findIndex(item => item.id === q.id);
                                         return (
                                             <div
@@ -411,7 +402,9 @@ const AddQuestions = () => {
                             <div className="space-y-4">
                                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
                                     <div className="flex items-center gap-3">
-                                        <label className="text-[11px] font-medium text-[#0F172A] uppercase tracking-[0.1em]">Section {currentQuestion.sectionId + 1}</label>
+                                        <label className="text-[11px] font-medium text-[#0F172A] uppercase tracking-[0.1em]">
+                                            {sections.find(s => s.id === currentQuestion.sectionId)?.name || 'No Section'}
+                                        </label>
                                         <div className="w-1 h-1 bg-[#E2E8F0] rounded-full" />
                                         <label className="text-[11px] font-medium text-[#0F172A] uppercase tracking-[0.1em]">Question Context</label>
                                     </div>

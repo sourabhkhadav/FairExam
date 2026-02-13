@@ -1,0 +1,261 @@
+import React, { useState, useEffect } from 'react';
+import {
+    PlusCircle, ArrowLeft, Calendar, Clock, Globe, Eye,
+    ShieldCheck, Save, Users, Database, FileCheck, Info, Play
+} from 'lucide-react';
+import { useNavigate, useParams } from 'react-router-dom';
+
+const FormSection = ({ title, icon: Icon, children }) => (
+    <div className="bg-white p-5 sm:p-8 rounded-2xl sm:rounded-[32px] border border-[#E2E8F0] shadow-sm">
+        <div className="flex items-center gap-3 mb-6 sm:mb-8">
+            <div className="w-10 h-10 rounded-xl bg-[#F5F3FF] flex items-center justify-center">
+                <Icon className="w-5 h-5 text-[#4F46E5]" />
+            </div>
+            <h2 className="text-lg sm:text-xl font-medium text-[#0F172A]">{title}</h2>
+        </div>
+        {children}
+    </div>
+);
+
+const Toggle = ({ label, enabled, setEnabled }) => (
+    <div className="flex items-center justify-between p-3 sm:p-4 rounded-xl hover:bg-[#F8FAFC] transition-colors group">
+        <span className="text-[14px] font-medium text-[#0F172A] transition-colors">{label}</span>
+        <button
+            onClick={() => setEnabled(!enabled)}
+            className={`w-12 h-6 rounded-full transition-all relative ${enabled ? 'bg-[#4F46E5]' : 'bg-[#E2E8F0]'}`}
+        >
+            <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${enabled ? 'left-7' : 'left-1'}`} />
+        </button>
+    </div>
+);
+
+const DraftConfigure = () => {
+    const navigate = useNavigate();
+    const { id } = useParams();
+
+    const [examData, setExamData] = useState({
+        title: '',
+        startDate: '',
+        startTime: '',
+        endDate: '',
+        endTime: '',
+        timezone: '(UTC+05:30) Mumbai, Kolkata, New Delhi',
+        graceTime: 15,
+        visibility: 'Draft',
+        aiProctoring: true,
+        fullScreen: true,
+        camera: false,
+        tabSwitchDetection: true,
+    });
+
+    useEffect(() => {
+        // Mock loading data
+        const draft = localStorage.getItem('examDraft');
+        if (draft) {
+            setExamData(prev => ({ ...prev, ...JSON.parse(draft) }));
+        }
+    }, [id]);
+
+    const updateField = (field, value) => {
+        setExamData(prev => ({ ...prev, [field]: value }));
+    };
+
+    const handleSave = () => {
+        // Save logic (mock)
+        const published = JSON.parse(localStorage.getItem('publishedExams') || '[]');
+        const updatedExams = [...published, { ...examData, id: id || Date.now() }];
+        localStorage.setItem('publishedExams', JSON.stringify(updatedExams));
+        navigate('/manage-exams');
+    };
+
+    return (
+        <div className="max-w-5xl mx-auto px-4 sm:px-0 py-10">
+            <div className="flex items-center gap-4 sm:gap-6 mb-8 sm:mb-10">
+                <button
+                    onClick={() => navigate('/manage-exams')}
+                    className="p-2.5 bg-white border border-[#E2E8F0] rounded-xl shadow-sm cursor-pointer hover:bg-[#F8FAFC] transition-colors group"
+                >
+                    <ArrowLeft className="w-5 h-5 text-[#64748B] group-hover:text-[#4F46E5]" />
+                </button>
+                <div className="min-w-0">
+                    <h1 className="text-2xl sm:text-3xl font-medium text-[#0F172A] tracking-tight truncate">Finalize Configuration</h1>
+                    <p className="text-[#0F172A]/70 text-sm sm:text-[15px] font-medium mt-1">Configure scheduling, candidates, and security for: <span className="text-[#4F46E5]">{examData.title}</span></p>
+                </div>
+            </div>
+
+            <div className="space-y-8">
+                {/* Schedule */}
+                <FormSection title="Exam Schedule" icon={Calendar}>
+                    <div className="flex flex-col lg:flex-row gap-8">
+                        <div className="flex-1 bg-[#F8FAFC]/50 p-6 rounded-2xl border border-[#E2E8F0] space-y-6">
+                            <div className="flex items-center gap-2 px-3 py-1.5 bg-indigo-50 rounded-lg w-fit">
+                                <Play className="w-3.5 h-3.5 text-[#4F46E5]" />
+                                <span className="text-[11px] font-bold text-[#4F46E5] uppercase tracking-wider">Start Configuration</span>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-1.5">
+                                    <label className="text-[11px] font-bold text-[#64748B] uppercase tracking-widest ml-1">Start Date</label>
+                                    <input type="date" className="w-full px-4 py-3 rounded-xl bg-white border border-[#E2E8F0] outline-none"
+                                        value={examData.startDate} onChange={e => updateField('startDate', e.target.value)} />
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-[11px] font-bold text-[#64748B] uppercase tracking-widest ml-1">Start Time</label>
+                                    <input type="time" className="w-full px-4 py-3 rounded-xl bg-white border border-[#E2E8F0] outline-none"
+                                        value={examData.startTime} onChange={e => updateField('startTime', e.target.value)} />
+                                </div>
+                            </div>
+                            <div className="space-y-1.5">
+                                <label className="text-[11px] font-bold text-[#64748B] uppercase tracking-widest ml-1">Time Zone</label>
+                                <select className="w-full px-4 py-3 rounded-xl bg-white border border-[#E2E8F0] outline-none"
+                                    value={examData.timezone} onChange={e => updateField('timezone', e.target.value)}>
+                                    <option>(UTC+05:30) Mumbai, Kolkata, New Delhi</option>
+                                    <option>(UTC+00:00) London</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div className="flex-1 bg-[#F8FAFC]/50 p-6 rounded-2xl border border-[#E2E8F0] space-y-6">
+                            <div className="flex items-center gap-2 px-3 py-1.5 bg-rose-50 rounded-lg w-fit">
+                                <Save className="w-3.5 h-3.5 text-[#EF4444]" />
+                                <span className="text-[11px] font-bold text-[#EF4444] uppercase tracking-wider">End Configuration</span>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-1.5">
+                                    <label className="text-[11px] font-bold text-[#64748B] uppercase tracking-widest ml-1">End Date</label>
+                                    <input type="date" className="w-full px-4 py-3 rounded-xl bg-white border border-[#E2E8F0] outline-none"
+                                        value={examData.endDate} onChange={e => updateField('endDate', e.target.value)} />
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-[11px] font-bold text-[#64748B] uppercase tracking-widest ml-1">End Time</label>
+                                    <input type="time" className="w-full px-4 py-3 rounded-xl bg-white border border-[#E2E8F0] outline-none"
+                                        value={examData.endTime} onChange={e => updateField('endTime', e.target.value)} />
+                                </div>
+                            </div>
+                            <div className="space-y-1.5">
+                                <label className="text-[11px] font-bold text-[#64748B] uppercase tracking-widest ml-1">Grace Time (Min)</label>
+                                <input type="number" className="w-full px-4 py-3 rounded-xl bg-white border border-[#E2E8F0] outline-none"
+                                    value={examData.graceTime} onChange={e => updateField('graceTime', e.target.value)} />
+                            </div>
+                        </div>
+                    </div>
+                </FormSection>
+
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    {/* Visibility */}
+                    <FormSection title="Visibility" icon={Eye}>
+                        <div className="space-y-3">
+                            {['Draft', 'Public', 'Scheduled'].map(status => (
+                                <button
+                                    key={status}
+                                    onClick={() => updateField('visibility', status)}
+                                    className={`w-full px-4 py-3 rounded-xl border-2 transition-all flex items-center justify-between ${examData.visibility === status ? 'border-[#4F46E5] bg-[#F5F3FF]/50 text-[#4F46E5]' : 'border-[#E2E8F0] text-[#0F172A]'
+                                        }`}
+                                >
+                                    <span className="text-[13px] font-medium">{status}</span>
+                                    {examData.visibility === status && <div className="w-2 h-2 rounded-full bg-[#4D44E5]" />}
+                                </button>
+                            ))}
+                        </div>
+                    </FormSection>
+
+                    {/* Candidates */}
+                    <FormSection title="Candidates" icon={Users}>
+                        <div className="space-y-3">
+                            <div className="relative group">
+                                <input
+                                    type="file"
+                                    accept=".csv,.xlsx,.xls"
+                                    onChange={(e) => {
+                                        const file = e.target.files[0];
+                                        if (file) {
+                                            updateField('candidateFile', file.name);
+                                            updateField('students', Math.floor(Math.random() * 50) + 10); // Mocking candidate count
+                                            alert(`Successfully imported: ${file.name}`);
+                                        }
+                                    }}
+                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                />
+                                <button className={`w-full px-4 py-3 bg-[#F8FAFC] border-2 border-dashed rounded-xl flex items-center justify-between group-hover:bg-white transition-all ${examData.candidateFile?.endsWith('.csv') || examData.candidateFile?.endsWith('.xlsx') ? 'border-[#4F46E5] bg-[#F5F3FF]/30' : 'border-[#E2E8F0]'}`}>
+                                    <div className="flex items-center gap-3">
+                                        <Database className={`w-4 h-4 ${examData.candidateFile?.endsWith('.csv') || examData.candidateFile?.endsWith('.xlsx') ? 'text-[#4F46E5]' : 'text-[#64748B]'}`} />
+                                        <span className="text-[13px] font-medium text-[#0F172A]">
+                                            {examData.candidateFile?.endsWith('.csv') || examData.candidateFile?.endsWith('.xlsx') ? examData.candidateFile : 'Excel / CSV'}
+                                        </span>
+                                    </div>
+                                    {examData.candidateFile && (examData.candidateFile.endsWith('.csv') || examData.candidateFile.endsWith('.xlsx')) && <div className="w-2 h-2 rounded-full bg-[#4F46E5]" />}
+                                </button>
+                            </div>
+
+                            <div className="relative group">
+                                <input
+                                    type="file"
+                                    accept=".pdf"
+                                    onChange={(e) => {
+                                        const file = e.target.files[0];
+                                        if (file) {
+                                            updateField('candidateFile', file.name);
+                                            updateField('students', Math.floor(Math.random() * 50) + 10);
+                                            alert(`Successfully imported: ${file.name}`);
+                                        }
+                                    }}
+                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                />
+                                <button className={`w-full px-4 py-3 bg-[#F8FAFC] border-2 border-dashed rounded-xl flex items-center justify-between group-hover:bg-white transition-all ${examData.candidateFile?.endsWith('.pdf') ? 'border-[#4F46E5] bg-[#F5F3FF]/30' : 'border-[#E2E8F0]'}`}>
+                                    <div className="flex items-center gap-3">
+                                        <FileCheck className={`w-4 h-4 ${examData.candidateFile?.endsWith('.pdf') ? 'text-[#4F46E5]' : 'text-[#64748B]'}`} />
+                                        <span className="text-[13px] font-medium text-[#0F172A]">
+                                            {examData.candidateFile?.endsWith('.pdf') ? examData.candidateFile : 'PDF List'}
+                                        </span>
+                                    </div>
+                                    {examData.candidateFile?.endsWith('.pdf') && <div className="w-2 h-2 rounded-full bg-[#4F46E5]" />}
+                                </button>
+                            </div>
+                        </div>
+                    </FormSection>
+
+                    {/* Questions Overview */}
+                    <FormSection title="Questions Overview" icon={FileCheck}>
+                        <div className="space-y-4 max-h-[220px] overflow-y-auto custom-scrollbar pr-2">
+                            {(examData.questions || []).length > 0 ? (
+                                examData.questions.map((q, idx) => (
+                                    <div key={idx} className="p-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl flex items-center justify-between">
+                                        <div className="flex items-center gap-3 min-w-0">
+                                            <span className="text-[10px] font-bold text-[#94A3B8]">Q{idx + 1}</span>
+                                            <p className="text-[12px] font-medium text-[#0F172A] truncate">
+                                                {q.text || "No content..."}
+                                            </p>
+                                        </div>
+                                        <span className="text-[9px] font-bold px-1.5 py-0.5 bg-indigo-50 text-[#4F46E5] rounded">
+                                            {q.difficulty}
+                                        </span>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="py-10 text-center bg-[#F8FAFC] rounded-2xl border-2 border-dashed border-[#E2E8F0]">
+                                    <p className="text-[13px] font-medium text-[#94A3B8]">No questions added yet</p>
+                                    <button
+                                        onClick={() => navigate('/add-questions')}
+                                        className="mt-2 text-[11px] font-bold text-[#4F46E5] uppercase tracking-wider hover:underline"
+                                    >
+                                        Add Now
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    </FormSection>
+                </div>
+
+                <div className="flex justify-end pt-10 border-t border-[#E2E8F0]">
+                    <button
+                        onClick={handleSave}
+                        className="px-10 py-3 bg-[#4D44E5] text-white font-medium rounded-xl hover:bg-[#4338CA] transition-all shadow-sm"
+                    >
+                        Publish / Schedule Exam
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default DraftConfigure;

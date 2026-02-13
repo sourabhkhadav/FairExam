@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
     LayoutDashboard, PlusCircle, BookOpen, Monitor,
     AlertCircle, FileCheck, BarChart3, UserCircle, Shield,
-    Search, Calendar, Clock, Users, Eye, Edit3, Trash2, ChevronDown, Settings
+    Search, Calendar, Clock, Users, Edit3, Trash2, ChevronDown, Settings
 } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 
@@ -230,13 +230,7 @@ const ManageExams = () => {
                                             </button>
                                         </div>
                                     )}
-                                    <button
-                                        onClick={() => handleEdit(exam)}
-                                        className="flex-1 sm:flex-none p-3 text-[#6366F1] hover:bg-[#EEF2FF] rounded-xl transition-colors cursor-pointer flex justify-center"
-                                        title="View Details"
-                                    >
-                                        <Eye className="w-5 h-5" />
-                                    </button>
+
                                     <button
                                         onClick={() => handleEdit(exam)}
                                         className="flex-1 sm:flex-none p-3 text-[#3B82F6] hover:bg-[#EFF6FF] rounded-xl transition-colors cursor-pointer flex justify-center"

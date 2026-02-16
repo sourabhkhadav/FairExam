@@ -15,35 +15,55 @@ const Examiner_ManageExams = () => {
     const [selectedExam, setSelectedExam] = useState(null);
     const [scheduleDate, setScheduleDate] = useState('');
     const [scheduleTime, setScheduleTime] = useState('');
-    const [exams, setExams] = useState([
-        {
-            id: 1, title: "Database Management Final", date: "2026-02-15", startTime: "10:00", duration: "120 min", students: 85, status: "Scheduled",
-            examData: { title: "Database Management Final", duration: "120", questions: [], startDate: "2026-02-15", startTime: "10:00" }
-        },
-        {
-            id: 2, title: "Data Structures Mid-Term", date: "2026-02-10", startTime: "09:00", duration: "90 min", students: 120, status: "Completed",
-            examData: { title: "Data Structures Mid-Term", duration: "90", questions: [] }
-        },
-        {
-            id: 4, title: "Operating Systems Final", date: "2026-02-20", startTime: "14:00", duration: "120 min", students: 110, status: "Draft",
-            examData: { title: "Operating Systems Final", duration: "120", questions: [] }
-        },
-    ]);
+    const [exams, setExams] = useState([]);
+
+    const fetchExams = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch('http://localhost:5000/api/exams', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            const data = await response.json();
+            if (data.success) {
+                // Transform backend data to frontend structure if needed
+                const formattedExams = data.data.map(e => {
+                    let status = "Draft";
+                    if (e.status === 'published') {
+                        status = 'Public';
+                        // Check if effectively scheduled (future date)
+                        if (e.startDate) {
+                            const start = new Date(`${e.startDate}T${e.startTime || '00:00'}`);
+                            if (start > new Date()) status = 'Scheduled';
+                        }
+                    } else if (e.status === 'draft') {
+                        status = 'Draft';
+                    } else if (e.status) {
+                        // Capitalize other statuses
+                        status = e.status.charAt(0).toUpperCase() + e.status.slice(1);
+                    }
+
+                    return {
+                        id: e._id,
+                        title: e.title,
+                        date: e.startDate || "TBD",
+                        startTime: e.startTime || "TBD",
+                        duration: `${e.duration || 0} min`,
+                        students: 0, // Placeholder
+                        status: status,
+                        examData: e
+                    };
+                });
+                setExams(formattedExams);
+            }
+        } catch (error) {
+            console.error("Failed to fetch exams", error);
+        }
+    };
 
     useEffect(() => {
-        const published = JSON.parse(localStorage.getItem('publishedExams') || '[]');
-        if (published.length > 0) {
-            setExams(prev => [...published.map((e, i) => ({
-                id: e.id || `pub-${i}`,
-                examData: e,
-                title: e.title,
-                date: e.startDate || "Today",
-                startTime: e.startTime,
-                duration: `${e.duration || 0} min`,
-                students: 0,
-                status: e.visibility || "Published"
-            })), ...prev]);
-        }
+        fetchExams();
     }, []);
 
     // Scheduling Logic: Check every minute if an exam should go Public
@@ -83,43 +103,64 @@ const Examiner_ManageExams = () => {
         setShowScheduleModal(true);
     };
 
-    const handleConfirmSchedule = () => {
+    const handleConfirmSchedule = async () => {
         if (!scheduleDate || !scheduleTime) {
             alert("Please select both date and time");
             return;
         }
 
-        const scheduledAt = `${scheduleDate}T${scheduleTime}`;
-        const updatedExams = exams.map(exam => {
-            if (exam.id === selectedExam.id) {
-                const updatedExamData = {
-                    ...(exam.examData || {}),
+        try {
+            const token = localStorage.getItem('token');
+            const scheduledAt = `${scheduleDate}T${scheduleTime}`;
+
+            // Optimistic update or refetch? Let's use API update
+            const response = await fetch(`http://localhost:5000/api/exams/${selectedExam.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
                     startDate: scheduleDate,
                     startTime: scheduleTime,
-                    visibility: 'Scheduled'
-                };
-                return {
-                    ...exam,
-                    status: 'Scheduled',
-                    date: scheduleDate,
-                    startTime: scheduleTime,
-                    examData: updatedExamData
-                };
+                    status: 'Scheduled'
+                })
+            });
+
+            if (response.ok) {
+                alert("Exam scheduled successfully!");
+                fetchExams(); // Refresh list
+                setShowScheduleModal(false);
+                setSelectedExam(null);
+            } else {
+                throw new Error("Failed to update exam");
             }
-            return exam;
-        });
+        } catch (error) {
+            console.error("Scheduling error:", error);
+            alert("Failed to schedule exam.");
+        }
+    };
 
-        setExams(updatedExams);
+    const handleDelete = async (id) => {
+        if (!window.confirm("Are you sure you want to delete this exam?")) return;
 
-        // Update localStorage
-        const published = JSON.parse(localStorage.getItem('publishedExams') || '[]');
-        const updatedPublished = published.filter(e => e.id !== selectedExam.id);
-        const examToUpdate = updatedExams.find(e => e.id === selectedExam.id);
-        updatedPublished.push(examToUpdate.examData);
-        localStorage.setItem('publishedExams', JSON.stringify(updatedPublished));
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`http://localhost:5000/api/exams/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
 
-        setShowScheduleModal(false);
-        setSelectedExam(null);
+            if (response.ok) {
+                setExams(prev => prev.filter(e => e.id !== id));
+            } else {
+                alert("Failed to delete exam");
+            }
+        } catch (error) {
+            console.error("Delete error:", error);
+        }
     };
 
     const filteredExams = exams.filter(exam => {
@@ -210,7 +251,7 @@ const Examiner_ManageExams = () => {
                                 </div>
 
                                 <div className="flex items-center gap-2 border-t sm:border-t-0 pt-4 sm:pt-0">
-                                    {exam.status === 'Draft' && (
+                                    {(exam.status === 'Draft' || exam.status === 'Scheduled') && (
                                         <div className="flex gap-2">
                                             <button
                                                 onClick={() => handleConfigure(exam)}
@@ -237,7 +278,11 @@ const Examiner_ManageExams = () => {
                                     >
                                         <Edit3 className="w-5 h-5" />
                                     </button>
-                                    <button className="flex-1 sm:flex-none p-3 text-[#EF4444] hover:bg-[#FEF2F2] rounded-xl transition-colors cursor-pointer flex justify-center" title="Delete Exam">
+                                    <button
+                                        onClick={() => handleDelete(exam.id)}
+                                        className="flex-1 sm:flex-none p-3 text-[#EF4444] hover:bg-[#FEF2F2] rounded-xl transition-colors cursor-pointer flex justify-center"
+                                        title="Delete Exam"
+                                    >
                                         <Trash2 className="w-5 h-5" />
                                     </button>
                                 </div>

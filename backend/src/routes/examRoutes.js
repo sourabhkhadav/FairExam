@@ -1,0 +1,38 @@
+import express from 'express';
+import multer from 'multer';
+import {
+    createExam,
+    getExams,
+    getExam,
+    updateExam,
+    deleteExam,
+    importQuestions
+} from '../controllers/examController.js';
+import { protect, authorize } from '../middleware/authMiddleware.js';
+
+const router = express.Router();
+
+// Memory storage for file upload (buffer)
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
+
+// All routes are protected
+router.use(protect);
+router.use(authorize('examiner'));
+
+router
+    .route('/')
+    .get(getExams)
+    .post(createExam);
+
+router
+    .route('/import-questions')
+    .post(upload.single('file'), importQuestions);
+
+router
+    .route('/:id')
+    .get(getExam)
+    .put(updateExam)
+    .delete(deleteExam);
+
+export default router;

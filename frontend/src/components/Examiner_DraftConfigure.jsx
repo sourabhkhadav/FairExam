@@ -32,6 +32,7 @@ const Toggle = ({ label, enabled, setEnabled }) => (
 const Examiner_DraftConfigure = () => {
     const navigate = useNavigate();
     const { id } = useParams();
+    const [showScheduleModal, setShowScheduleModal] = useState(false);
 
     const [examData, setExamData] = useState({
         title: '',
@@ -165,12 +166,36 @@ const Examiner_DraftConfigure = () => {
                                 <input
                                     type="file"
                                     accept=".csv,.xlsx,.xls"
-                                    onChange={(e) => {
+                                    onChange={async (e) => {
                                         const file = e.target.files[0];
                                         if (file) {
-                                            updateField('candidateFile', file.name);
-                                            updateField('students', Math.floor(Math.random() * 50) + 10); // Mocking candidate count
-                                            alert(`Successfully imported: ${file.name}`);
+                                            const formData = new FormData();
+                                            formData.append('file', file);
+                                            formData.append('examId', id || 'temp-exam-id');
+
+                                            try {
+                                                console.log('Uploading file:', file.name);
+                                                const response = await fetch('http://localhost:5000/api/candidates/upload', {
+                                                    method: 'POST',
+                                                    body: formData
+                                                });
+                                                
+                                                console.log('Response status:', response.status);
+                                                const data = await response.json();
+                                                console.log('Response data:', data);
+                                                
+                                                if (data.success) {
+                                                    updateField('candidateFile', file.name);
+                                                    updateField('students', data.count);
+                                                    alert(`✅ Successfully uploaded ${data.count} candidates to database!`);
+                                                } else {
+                                                    console.error('Upload failed:', data);
+                                                    alert(`❌ Error: ${data.message}`);
+                                                }
+                                            } catch (error) {
+                                                console.error('Upload error:', error);
+                                                alert(`❌ Upload failed: ${error.message}\n\nMake sure backend is running on port 5000`);
+                                            }
                                         }
                                     }}
                                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
@@ -195,7 +220,7 @@ const Examiner_DraftConfigure = () => {
                                         if (file) {
                                             updateField('candidateFile', file.name);
                                             updateField('students', Math.floor(Math.random() * 50) + 10);
-                                            alert(`Successfully imported: ${file.name}`);
+                                            alert(`PDF upload coming soon: ${file.name}`);
                                         }
                                     }}
                                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
@@ -245,15 +270,94 @@ const Examiner_DraftConfigure = () => {
                     </FormSection>
                 </div>
 
-                <div className="flex justify-end pt-10 border-t border-[#E2E8F0]">
+                <div className="flex justify-end gap-4 pt-10 border-t border-[#E2E8F0]">
                     <button
-                        onClick={handleSave}
+                        onClick={() => {
+                            const updatedData = { ...examData, visibility: 'Public' };
+                            const published = JSON.parse(localStorage.getItem('publishedExams') || '[]');
+                            const updatedExams = [...published, { ...updatedData, id: id || Date.now() }];
+                            localStorage.setItem('publishedExams', JSON.stringify(updatedExams));
+                            alert('✅ Exam Published Successfully!');
+                            navigate('/manage-exams');
+                        }}
                         className="px-10 py-3 bg-[#0F172A] text-white font-medium rounded-xl hover:bg-[#1E293B] transition-all shadow-sm"
                     >
-                        Publish / Schedule Exam
+                        Publish Exam
+                    </button>
+                    <button
+                        onClick={() => setShowScheduleModal(true)}
+                        className="px-10 py-3 bg-[#334155] text-white font-medium rounded-xl hover:bg-[#475569] transition-all shadow-sm"
+                    >
+                        Schedule Exam
                     </button>
                 </div>
             </div>
+
+            {/* Schedule Modal */}
+            {showScheduleModal && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl">
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center">
+                                <Calendar className="w-6 h-6 text-[#0F172A]" />
+                            </div>
+                            <div>
+                                <h2 className="text-xl font-medium text-[#0F172A]">Schedule Exam</h2>
+                                <p className="text-sm text-[#64748B]">Set start date and time</p>
+                            </div>
+                        </div>
+
+                        <div className="space-y-5">
+                            <div>
+                                <label className="text-[11px] font-bold text-[#64748B] uppercase tracking-widest ml-1 block mb-2">Start Date</label>
+                                <input 
+                                    type="date" 
+                                    className="w-full px-4 py-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] outline-none focus:border-[#0F172A] transition-colors"
+                                    value={examData.startDate} 
+                                    onChange={e => updateField('startDate', e.target.value)} 
+                                />
+                            </div>
+
+                            <div>
+                                <label className="text-[11px] font-bold text-[#64748B] uppercase tracking-widest ml-1 block mb-2">Start Time</label>
+                                <input 
+                                    type="time" 
+                                    className="w-full px-4 py-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] outline-none focus:border-[#0F172A] transition-colors"
+                                    value={examData.startTime} 
+                                    onChange={e => updateField('startTime', e.target.value)} 
+                                />
+                            </div>
+                        </div>
+
+                        <div className="flex gap-3 mt-8">
+                            <button
+                                onClick={() => setShowScheduleModal(false)}
+                                className="flex-1 px-6 py-3 bg-white border border-[#E2E8F0] text-[#0F172A] font-medium rounded-xl hover:bg-[#F8FAFC] transition-all"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={() => {
+                                    if (!examData.startDate || !examData.startTime) {
+                                        alert('❌ Please set start date and time for scheduling');
+                                        return;
+                                    }
+                                    const updatedData = { ...examData, visibility: 'Scheduled' };
+                                    const published = JSON.parse(localStorage.getItem('publishedExams') || '[]');
+                                    const updatedExams = [...published, { ...updatedData, id: id || Date.now() }];
+                                    localStorage.setItem('publishedExams', JSON.stringify(updatedExams));
+                                    setShowScheduleModal(false);
+                                    alert('✅ Exam Scheduled Successfully!');
+                                    navigate('/manage-exams');
+                                }}
+                                className="flex-1 px-6 py-3 bg-[#0F172A] text-white font-medium rounded-xl hover:bg-[#1E293B] transition-all"
+                            >
+                                Schedule
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

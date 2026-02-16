@@ -62,10 +62,16 @@ const Examiner_Dashboard = () => {
                     >
                         Create New Exam
                     </button>
-                    <button className="px-8 py-3.5 bg-white border border-[#E2E8F0] text-[#0F172A] font-semibold text-[15px] rounded-xl hover:bg-[#F8FAFC] transition-colors cursor-pointer">
+                    <button 
+                        onClick={() => navigate('/violation-reports')}
+                        className="px-8 py-3.5 bg-white border border-[#E2E8F0] text-[#0F172A] font-semibold text-[15px] rounded-xl hover:bg-[#F8FAFC] transition-colors cursor-pointer"
+                    >
                         View Violation Reports
                     </button>
-                    <button className="px-8 py-3.5 bg-white border border-[#E2E8F0] text-[#0F172A] font-semibold text-[15px] rounded-xl hover:bg-[#F8FAFC] transition-colors cursor-pointer">
+                    <button 
+                        onClick={() => navigate('/results-publishing')}
+                        className="px-8 py-3.5 bg-white border border-[#E2E8F0] text-[#0F172A] font-semibold text-[15px] rounded-xl hover:bg-[#F8FAFC] transition-colors cursor-pointer"
+                    >
                         Publish Results
                     </button>
                 </div>

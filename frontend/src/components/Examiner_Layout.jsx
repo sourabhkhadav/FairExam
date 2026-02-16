@@ -9,7 +9,7 @@ import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 const SidebarItem = ({ icon: Icon, label, active = false, to, collapsed = false, onClick }) => {
     const content = (
         <>
-            <Icon className={`w-5 h-5 ${active ? 'text-[#4F46E5]' : 'text-[#64748B]'}`} />
+            <Icon className={`w-5 h-5 ${active ? 'text-[#0F172A]' : 'text-[#64748B]'}`} />
             <span className={`font-medium text-[15px] whitespace-nowrap ${collapsed ? 'hidden' : 'block'}`}>{label}</span>
             {collapsed && (
                 <div className="absolute left-full ml-2 px-2 py-1 bg-[#1E293B] text-white text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 whitespace-nowrap">
@@ -20,7 +20,7 @@ const SidebarItem = ({ icon: Icon, label, active = false, to, collapsed = false,
     );
 
     const classes = `flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-all duration-200 group w-full text-left ${active
-        ? 'bg-[#F1F5F9] text-[#4F46E5]'
+        ? 'bg-[#F1F5F9] text-[#0F172A]'
         : 'text-[#475569] hover:bg-[#F8FAFC] hover:text-[#0F172A]'
         }`;
 
@@ -75,7 +75,7 @@ const Examiner_Layout = () => {
             {/* Sidebar toggle for mobile when header is removed */}
             <button
                 onClick={() => setIsMobileMenuOpen(true)}
-                className="fixed top-4 left-4 p-2.5 bg-white border border-[#E2E8F0] text-[#64748B] hover:text-[#4F46E5] rounded-xl shadow-sm z-30 lg:hidden transition-all active:scale-95"
+                className="fixed top-4 left-4 p-2.5 bg-white border border-[#E2E8F0] text-[#64748B] hover:text-[#0F172A] rounded-xl shadow-sm z-30 lg:hidden transition-all active:scale-95"
             >
                 <Menu className="w-5 h-5" />
             </button>
@@ -88,11 +88,11 @@ const Examiner_Layout = () => {
             >
                 <div className="flex items-center justify-between h-20 px-6 border-b border-[#F1F5F9]">
                     <div className={`flex flex-col animate-in fade-in duration-300 ${isCollapsed ? 'lg:hidden' : 'block'}`}>
-                        <div className="text-2xl font-bold text-[#4F46E5] tracking-tight">FairExam</div>
+                        <div className="text-2xl font-bold text-[#0F172A] tracking-tight">FairExam</div>
                         <div className="text-[11px] font-bold text-[#94A3B8] uppercase tracking-wider">Examiner Portal</div>
                     </div>
                     {isCollapsed && (
-                        <div className="text-xl font-bold text-[#4F46E5] mx-auto hidden lg:block">FE</div>
+                        <div className="text-xl font-bold text-[#0F172A] mx-auto hidden lg:block">FE</div>
                     )}
                     <button
                         onClick={closeMobileMenu}
@@ -141,9 +141,9 @@ const Examiner_Layout = () => {
                 {/* Industry-Level Floating Toggle */}
                 <button
                     onClick={() => setIsCollapsed(!isCollapsed)}
-                    className={`hidden lg:flex absolute -right-4 top-24 w-8 h-8 bg-white border border-[#E2E8F0] rounded-full items-center justify-center shadow-sm hover:shadow-md hover:border-[#4F46E5]/30 transition-all duration-300 z-[60] cursor-pointer group/toggle ${isCollapsed ? 'rotate-180' : ''}`}
+                    className={`hidden lg:flex absolute -right-4 top-24 w-8 h-8 bg-white border border-[#E2E8F0] rounded-full items-center justify-center shadow-sm hover:shadow-md hover:border-[#0F172A]/30 transition-all duration-300 z-[60] cursor-pointer group/toggle ${isCollapsed ? 'rotate-180' : ''}`}
                 >
-                    <ChevronLeft className="w-4 h-4 text-[#64748B] group-hover/toggle:text-[#4F46E5] transition-colors" />
+                    <ChevronLeft className="w-4 h-4 text-[#64748B] group-hover/toggle:text-[#0F172A] transition-colors" />
                 </button>
             </aside>
 

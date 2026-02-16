@@ -58,11 +58,10 @@ function Landing_Home() {
 
     return (
         <div className="min-h-screen bg-white text-charcoal selection:bg-indigo-100 relative font-sans overflow-hidden">
-            {/* Cinematic Light Background */}
-            <div className="fixed inset-0 z-0">
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1200px] h-[600px] bg-radial from-indigo-50/60 via-transparent to-transparent blur-[120px] opacity-80" />
-                <div className="absolute top-[30%] right-[-10%] w-[600px] h-[600px] bg-radial from-blue-50/40 via-transparent to-transparent blur-[120px] opacity-60 animate-pulse-slow" />
-                <div className="absolute bottom-[-10%] left-[-10%] w-[800px] h-[800px] bg-radial from-cyan-50/30 via-transparent to-transparent blur-[120px] opacity-50" />
+            <div className="fixed inset-0 z-0 text-left">
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1200px] h-[600px] bg-radial from-slate-100/60 via-transparent to-transparent blur-[120px] opacity-80" />
+                <div className="absolute top-[30%] right-[-10%] w-[600px] h-[600px] bg-radial from-slate-50/40 via-transparent to-transparent blur-[120px] opacity-60 animate-pulse-slow" />
+                <div className="absolute bottom-[-10%] left-[-10%] w-[800px] h-[800px] bg-radial from-slate-50/30 via-transparent to-transparent blur-[120px] opacity-50" />
             </div>
 
             {/* 1. Navbar */}
@@ -70,7 +69,7 @@ function Landing_Home() {
                 <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
                     <div className="flex items-center gap-3 group cursor-pointer">
                         <div className="w-11 h-11 rounded-xl glass-card flex items-center justify-center group-hover:scale-110 transition-all duration-500 bg-white shadow-sm border-black/5">
-                            <Shield className="w-6 h-6 text-brand-purple" />
+                            <Shield className="w-6 h-6 text-brand-black" />
                         </div>
                         <span className="text-2xl font-bold text-gradient leading-none">FairExam</span>
                     </div>
@@ -90,7 +89,7 @@ function Landing_Home() {
 
                     <div className="flex items-center gap-5">
                         <Link to="/login" className="hidden sm:block text-sm font-bold text-slate-500 hover:text-charcoal transition-colors tracking-widest uppercase">Sign In</Link>
-                        <Link to="/register" className="px-6 py-3 rounded-full bg-charcoal text-white text-sm font-bold hover:bg-indigo-600 hover:scale-105 active:scale-95 transition-all shadow-xl shadow-indigo-200 cursor-pointer tracking-wider uppercase">
+                        <Link to="/register" className="px-6 py-3 rounded-full bg-charcoal text-white text-sm font-bold hover:bg-slate-800 hover:scale-105 active:scale-95 transition-all shadow-xl shadow-slate-100 cursor-pointer tracking-wider uppercase">
                             Get Started
                         </Link>
                     </div>
@@ -113,7 +112,7 @@ function Landing_Home() {
                             </div>
 
                             <div className="flex flex-col sm:flex-row items-center gap-6 pt-4">
-                                <Link to="/login" className="w-full sm:w-auto px-12 py-6 rounded-3xl bg-charcoal text-white font-black text-xl flex items-center justify-center gap-3 group hover:bg-brand-purple hover:scale-[1.05] transition-all shadow-2xl shadow-indigo-100 cursor-pointer">
+                                <Link to="/login" className="w-full sm:w-auto px-12 py-6 rounded-3xl bg-charcoal text-white font-black text-xl flex items-center justify-center gap-3 group hover:bg-[#1E293B] hover:scale-[1.05] transition-all shadow-2xl shadow-slate-100 cursor-pointer">
                                     Secure Login
                                     <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform" />
                                 </Link>
@@ -124,8 +123,8 @@ function Landing_Home() {
                         </div>
 
                         <div className="relative group">
-                            <div className="absolute -inset-4 bg-indigo-500/10 rounded-[64px] blur-3xl opacity-50 group-hover:opacity-100 transition-opacity duration-700" />
-                            <div className="relative rounded-[48px] overflow-hidden border border-black/5 shadow-2xl shadow-indigo-100/50 bg-white aspect-[4/3]">
+                            <div className="absolute -inset-4 bg-slate-200/10 rounded-[64px] blur-3xl opacity-50 group-hover:opacity-100 transition-opacity duration-700" />
+                            <div className="relative rounded-[48px] overflow-hidden border border-black/5 shadow-2xl shadow-slate-200/50 bg-white aspect-[4/3]">
                                 <img
                                     src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&q=80&w=2070"
                                     alt="Modern Online Examination"
@@ -172,13 +171,13 @@ function Landing_Home() {
                                 alt="AI Biometric Sensor"
                                 className="w-full h-full object-cover grayscale-[0.5] group-hover:grayscale-0 group-hover:scale-110 transition-all duration-1000 opacity-60 group-hover:opacity-80"
                             />
-                            <div className="absolute inset-0 bg-indigo-500/5 mix-blend-overlay" />
+                            <div className="absolute inset-0 bg-slate-200/5 mix-blend-overlay" />
                             <div className="absolute inset-0 bg-gradient-to-r from-white via-white/60 to-transparent" />
                         </div>
 
                         <div className="relative z-10 w-full h-full flex flex-col justify-between p-12 text-charcoal">
-                            <div className="p-4 w-fit rounded-2xl bg-indigo-50 border border-indigo-100 shadow-sm group-hover:scale-110 transition-transform duration-500">
-                                <Cpu className="w-10 h-10 text-brand-purple" />
+                            <div className="p-4 w-fit rounded-2xl bg-slate-50 border border-slate-100 shadow-sm group-hover:scale-110 transition-transform duration-500">
+                                <Cpu className="w-10 h-10 text-brand-black" />
                             </div>
                             <div className="space-y-6">
                                 <h3 className="text-4xl font-bold leading-tight">AI Proctoring Engine</h3>
@@ -198,7 +197,7 @@ function Landing_Home() {
                     </div>
 
                     {/* Secure Mode - Masterpiece Visual */}
-                    <div className="md:col-span-4 glass-card rounded-[40px] p-10 flex flex-col justify-between group bg-[#0f172a] text-white overflow-hidden border-none text-left shadow-2xl shadow-indigo-900/60 relative">
+                    <div className="md:col-span-4 glass-card rounded-[40px] p-10 flex flex-col justify-between group bg-[#0f172a] text-white overflow-hidden border-none text-left shadow-2xl shadow-slate-900/60 relative">
                         {/* Technical Background Overlay */}
                         <div className="absolute inset-0 w-full h-full opacity-90 transition-opacity duration-1000">
                             <img
@@ -207,10 +206,10 @@ function Landing_Home() {
                                 className="w-full h-full object-cover contrast-125"
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-[#0f172a] via-[#0f172a]/40 to-transparent" />
-                            <div className="absolute inset-0 bg-indigo-500/10 mix-blend-overlay" />
+                            <div className="absolute inset-0 bg-slate-500/10 mix-blend-overlay" />
                         </div>
 
-                        <div className="w-16 h-16 rounded-[22px] bg-indigo-600 flex items-center justify-center relative z-10 shadow-[0_0_30px_rgba(79,70,229,0.4)] transition-transform duration-500 border border-indigo-400/30">
+                        <div className="w-16 h-16 rounded-[22px] bg-slate-800 flex items-center justify-center relative z-10 shadow-[0_0_30px_rgba(30,41,59,0.4)] transition-transform duration-500 border border-slate-700/30">
                             <Lock className="w-8 h-8 text-white" />
                         </div>
                         <div className="relative z-10 space-y-2">
@@ -229,7 +228,7 @@ function Landing_Home() {
                                 className="w-full h-full object-cover brightness-100 contrast-[1.1]"
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-[#0f172a] via-[#0f172a]/20 to-transparent" />
-                            <div className="absolute inset-0 bg-indigo-500/[0.1] mix-blend-multiply" />
+                            <div className="absolute inset-0 bg-slate-500/[0.1] mix-blend-multiply" />
                         </div>
 
                         <div className="w-16 h-16 rounded-[22px] bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center shadow-2xl shadow-orange-500/40 relative z-10 text-white border border-orange-300/30">
@@ -297,7 +296,7 @@ function Landing_Home() {
                         <div className="glass-card rounded-[48px] p-12 space-y-10 col-span-2 bg-white border-black/10 shadow-2xl shadow-slate-200/50">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-4">
-                                    <div className="w-3 h-3 rounded-full bg-brand-purple animate-pulse" />
+                                    <div className="w-3 h-3 rounded-full bg-brand-black animate-pulse" />
                                     <span className="text-sm font-black tracking-[0.2em] uppercase text-slate-900">Live Result Processing</span>
                                 </div>
                                 <div className="flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500 text-white shadow-lg shadow-emerald-500/20">
@@ -443,7 +442,7 @@ function Landing_Home() {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 pb-12">
                         <div className="lg:col-span-2 space-y-6 text-left border-r border-black/[0.03] pr-12">
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-xl bg-charcoal flex items-center justify-center shadow-lg shadow-indigo-100">
+                                <div className="w-10 h-10 rounded-xl bg-charcoal flex items-center justify-center shadow-lg shadow-slate-100">
                                     <Shield className="w-5 h-5 text-white" />
                                 </div>
                                 <span className="text-2xl font-bold text-gradient leading-none">FairExam</span>
@@ -485,15 +484,15 @@ function MetricItem({ icon, label, value, image }) {
             )}
 
             <div className="flex items-center gap-6 relative z-10">
-                <div className="w-14 h-14 rounded-[18px] bg-slate-50 flex items-center justify-center group-hover:bg-indigo-500 group-hover:text-white transition-all duration-500 shadow-sm">
-                    <div className="text-indigo-600 group-hover:text-white transition-colors">{icon}</div>
+                <div className="w-14 h-14 rounded-[18px] bg-slate-50 flex items-center justify-center group-hover:bg-[#1E293B] group-hover:text-white transition-all duration-500 shadow-sm">
+                    <div className="text-slate-600 group-hover:text-white transition-colors">{icon}</div>
                 </div>
                 <div className="text-left">
-                    <div className="text-[10px] font-black tracking-[0.2em] uppercase text-slate-900/40 leading-none pb-1 group-hover:text-indigo-600 transition-colors">{label}</div>
+                    <div className="text-[10px] font-black tracking-[0.2em] uppercase text-slate-900/40 leading-none pb-1 group-hover:text-[#0F172A] transition-colors">{label}</div>
                     <div className="text-2xl font-black text-slate-900">{value}</div>
                 </div>
             </div>
-            <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-indigo-600 group-hover:translate-x-1 transition-all relative z-10" />
+            <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-[#0F172A] group-hover:translate-x-1 transition-all relative z-10" />
         </div>
     );
 }
@@ -502,7 +501,7 @@ function MetricItem({ icon, label, value, image }) {
 
 function SocialLink({ icon }) {
     return (
-        <div className="w-10 h-10 rounded-full border border-black/5 bg-white flex items-center justify-center text-slate-400 hover:text-white hover:bg-indigo-600 transition-all cursor-pointer shadow-sm hover:scale-110">
+        <div className="w-10 h-10 rounded-full border border-black/5 bg-white flex items-center justify-center text-slate-400 hover:text-white hover:bg-[#1E293B] transition-all cursor-pointer shadow-sm hover:scale-110">
             {icon}
         </div>
     );
@@ -515,7 +514,7 @@ function FooterList({ title, links }) {
             <ul className="space-y-3">
                 {links.map((link) => (
                     <li key={link}>
-                        <a href="#" className="text-sm text-slate-500 hover:text-indigo-600 font-bold transition-all inline-block hover:translate-x-1">{link}</a>
+                        <a href="#" className="text-sm text-slate-500 hover:text-[#0F172A] font-bold transition-all inline-block hover:translate-x-1">{link}</a>
                     </li>
                 ))}
             </ul>
@@ -526,8 +525,8 @@ function FooterList({ title, links }) {
 function HowItWorksStep({ number, title, desc, icon }) {
     return (
         <div className="flex flex-col items-center text-center space-y-6 relative group">
-            <div className="w-20 h-20 rounded-3xl bg-white shadow-xl shadow-slate-200/50 flex items-center justify-center border border-black/5 group-hover:scale-110 group-hover:bg-indigo-600 transition-all duration-500 relative z-10">
-                <div className="text-indigo-600 group-hover:text-white transition-colors">
+            <div className="w-20 h-20 rounded-3xl bg-white shadow-xl shadow-slate-200/50 flex items-center justify-center border border-black/5 group-hover:scale-110 group-hover:bg-[#1E293B] transition-all duration-500 relative z-10">
+                <div className="text-slate-600 group-hover:text-white transition-colors">
                     {icon}
                 </div>
                 <div className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-charcoal text-white text-xs font-black flex items-center justify-center border-4 border-white">
@@ -558,7 +557,7 @@ function TestimonialCard({ quote, author, role, institution, image }) {
                 <div>
                     <h5 className="font-black text-charcoal leading-none">{author}</h5>
                     <p className="text-xs font-bold text-slate-400 pt-1 uppercase tracking-wider">{role}</p>
-                    <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">{institution}</p>
+                    <p className="text-[10px] font-black text-slate-900 uppercase tracking-widest">{institution}</p>
                 </div>
             </div>
         </div>
@@ -567,13 +566,13 @@ function TestimonialCard({ quote, author, role, institution, image }) {
 
 function FAQItem({ question, answer, isOpen, onClick }) {
     return (
-        <div className={`rounded-3xl border transition-all duration-500 overflow-hidden ${isOpen ? 'bg-indigo-50/30 border-indigo-100 shadow-lg shadow-indigo-100/20' : 'bg-white border-black/5 hover:border-indigo-200'}`}>
+        <div className={`rounded-3xl border transition-all duration-500 overflow-hidden ${isOpen ? 'bg-slate-50 border-slate-200 shadow-lg shadow-slate-100' : 'bg-white border-black/5 hover:border-slate-200'}`}>
             <button
                 onClick={onClick}
                 className="w-full px-8 py-6 flex items-center justify-between text-left cursor-pointer"
             >
-                <span className={`text-lg font-black transition-colors ${isOpen ? 'text-indigo-600' : 'text-charcoal'}`}>{question}</span>
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${isOpen ? 'bg-indigo-600 text-white rotate-180' : 'bg-slate-100 text-slate-400'}`}>
+                <span className={`text-lg font-black transition-colors ${isOpen ? 'text-[#0F172A]' : 'text-charcoal'}`}>{question}</span>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${isOpen ? 'bg-[#0F172A] text-white rotate-180' : 'bg-slate-100 text-slate-400'}`}>
                     {isOpen ? <Minus className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
                 </div>
             </button>

@@ -175,26 +175,26 @@ const Examiner_AddQuestions = () => {
                         onClick={() => navigate('/create-exam')}
                         className="mt-1.5 p-3 bg-white border border-[#F1F5F9] hover:bg-[#F8FAFC] rounded-2xl transition-all shadow-sm group active:scale-95"
                     >
-                        <ArrowLeft className="w-5 h-5 text-[#94A3B8] group-hover:text-[#4F46E5]" />
+                        <ArrowLeft className="w-5 h-5 text-[#94A3B8] group-hover:text-[#0F172A]" />
                     </button>
                     <div className="min-w-0 space-y-2">
                         <div className="flex items-center gap-4 flex-wrap">
                             <h1 className="text-xl sm:text-[22px] font-medium text-[#0F172A] tracking-tight truncate max-w-[280px] sm:max-w-none">
                                 {metaData?.title || 'System Design Final'}
                             </h1>
-                            <span className="flex items-center gap-2 px-3 py-1.5 bg-[#F8FAFC] text-[#6366F1] text-[11px] font-bold uppercase rounded-xl tracking-widest border border-[#E2E8F0]/50 whitespace-nowrap">
-                                <div className="w-1.5 h-1.5 bg-[#6366F1] rounded-full shadow-[0_0_8px_rgba(99,102,241,0.4)]" />
+                            <span className="flex items-center gap-2 px-3 py-1.5 bg-[#F8FAFC] text-[#0F172A] text-[11px] font-bold uppercase rounded-xl tracking-widest border border-[#E2E8F0]/50 whitespace-nowrap">
+                                <div className="w-1.5 h-1.5 bg-[#0F172A] rounded-full shadow-[0_0_8px_rgba(15,23,42,0.4)]" />
                                 {sections.length} {sections.length === 1 ? 'Section' : 'Sections'}
                             </span>
                         </div>
                         <div className="flex items-center gap-5 text-[#475569]">
                             <div className="flex items-center gap-2.5 text-[14px]">
-                                <ListTodo className="w-4 h-4 text-[#6366F1]" />
+                                <ListTodo className="w-4 h-4 text-[#0F172A]" />
                                 <span className="font-medium text-[#0F172A]">{questions.length} Questions</span>
                             </div>
                             <div className="w-1 h-1 bg-[#E2E8F0] rounded-full" />
                             <div className="flex items-center gap-2.5 text-[14px]">
-                                <Target className="w-4 h-4 text-[#6366F1]" />
+                                <Target className="w-4 h-4 text-[#0F172A]" />
                                 <span className="font-medium text-[#0F172A]">{questions.reduce((a, b) => a + Number(b.marks || 0), 0)} Marks Total</span>
                             </div>
                         </div>
@@ -204,7 +204,7 @@ const Examiner_AddQuestions = () => {
                 <div className="flex items-center gap-4">
                     <button
                         onClick={handleSaveDraft}
-                        className="flex-1 sm:flex-none justify-center px-6 py-3 bg-white border border-[#E2E8F0] text-[#1E293B] font-semibold text-[14px] rounded-2xl hover:bg-[#F8FAFC] hover:text-[#4F46E5] transition-all flex items-center gap-2.5 shadow-sm active:scale-95 whitespace-nowrap"
+                        className="flex-1 sm:flex-none justify-center px-6 py-3 bg-white border border-[#E2E8F0] text-[#1E293B] font-semibold text-[14px] rounded-2xl hover:bg-[#F8FAFC] hover:text-[#0F172A] transition-all flex items-center gap-2.5 shadow-sm active:scale-95 whitespace-nowrap"
                     >
                         <Save className="w-4 h-4 text-[#64748B]" /> Save Draft
                     </button>
@@ -217,7 +217,7 @@ const Examiner_AddQuestions = () => {
                 {/* Mobile Navigation Trigger */}
                 <button
                     onClick={() => setIsNavOpen(true)}
-                    className="lg:hidden absolute bottom-6 right-6 z-30 w-14 h-14 bg-white border border-[#E2E8F0] rounded-full shadow-lg flex items-center justify-center text-[#4F46E5]"
+                    className="lg:hidden absolute bottom-6 right-6 z-30 w-14 h-14 bg-white border border-[#E2E8F0] rounded-full shadow-lg flex items-center justify-center text-[#0F172A]"
                 >
                     <ListTodo className="w-6 h-6" />
                 </button>
@@ -245,15 +245,15 @@ const Examiner_AddQuestions = () => {
 
                     <div className="p-4 border-b border-[#F1F5F9] space-y-3">
                         <div className="relative group">
-                            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#94A3B8] group-focus-within:text-[#6366F1] transition-colors" />
+                            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#94A3B8] group-focus-within:text-[#0F172A] transition-colors" />
                             <input
                                 placeholder="Find question..."
-                                className="w-full pl-10 pr-4 py-2.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl text-[13.5px] outline-none focus:bg-white focus:border-[#6366F1]/30 transition-all font-medium placeholder:text-[#94A3B8]/70"
+                                className="w-full pl-10 pr-4 py-2.5 bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl text-[13.5px] outline-none focus:bg-white focus:border-[#0F172A]/30 transition-all font-medium placeholder:text-[#94A3B8]/70"
                             />
                         </div>
                         <button
                             onClick={addSection}
-                            className="w-full py-2.5 bg-[#F5F3FF] border border-[#6366F1]/20 rounded-2xl text-[#6366F1] font-bold text-[12px] hover:bg-[#6366F1] hover:text-white transition-all flex items-center justify-center gap-2 group shadow-sm active:scale-[0.98]"
+                            className="w-full py-2.5 bg-slate-50 border border-[#0F172A]/20 rounded-2xl text-[#0F172A] font-bold text-[12px] hover:bg-[#0F172A] hover:text-white transition-all flex items-center justify-center gap-2 group shadow-sm active:scale-[0.98]"
                         >
                             <Plus className="w-4 h-4" /> Add New Section
                         </button>
@@ -264,18 +264,18 @@ const Examiner_AddQuestions = () => {
                             <div key={section.id} className="space-y-4">
                                 <div className="flex items-center justify-between px-1 group/section">
                                     <div className="flex items-center gap-2.5 flex-1 min-w-0">
-                                        <div className="w-1.5 h-1.5 bg-[#6366F1] rounded-full shrink-0" />
+                                        <div className="w-1.5 h-1.5 bg-[#0F172A] rounded-full shrink-0" />
                                         <input
                                             id={`section-input-${section.id}`}
                                             value={section.name}
                                             onChange={(e) => updateSectionName(section.id, e.target.value)}
-                                            className="text-[10px] font-bold text-[#0F172A] uppercase tracking-[0.15em] bg-transparent border-none outline-none focus:text-[#6366F1] w-full"
+                                            className="text-[10px] font-bold text-[#0F172A] uppercase tracking-[0.15em] bg-transparent border-none outline-none focus:text-[#0F172A] w-full"
                                         />
                                     </div>
                                     <div className="flex items-center gap-1.5">
                                         <button
                                             onClick={() => addQuestion(section.id)}
-                                            className="p-1 px-2.5 bg-[#F5F3FF] text-[#6366F1] hover:bg-[#6366F1] hover:text-white rounded-lg transition-all flex items-center gap-1"
+                                            className="p-1 px-2.5 bg-slate-50 text-[#0F172A] hover:bg-[#0F172A] hover:text-white rounded-lg transition-all flex items-center gap-1"
                                             title="Add Question"
                                         >
                                             <Plus className="w-3 h-3" />
@@ -310,12 +310,12 @@ const Examiner_AddQuestions = () => {
                                                     setIsNavOpen(false);
                                                 }}
                                                 className={`group p-4 rounded-2xl border transition-all cursor-pointer relative ${focusedIndex === globalIdx
-                                                    ? 'border-[#6366F1]/30 bg-[#F5F3FF]/50 shadow-sm'
+                                                    ? 'border-[#0F172A]/30 bg-slate-50 shadow-sm'
                                                     : 'border-[#F1F5F9] hover:border-[#E2E8F0] bg-white'
                                                     }`}
                                             >
                                                 <div className="flex items-center justify-between mb-2">
-                                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${focusedIndex === globalIdx ? 'bg-[#6366F1] text-white' : 'bg-[#F1F5F9] text-[#64748B]'
+                                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${focusedIndex === globalIdx ? 'bg-[#0F172A] text-white' : 'bg-[#F1F5F9] text-[#64748B]'
                                                         }`}>
                                                         Q{globalIdx + 1}
                                                     </span>
@@ -396,7 +396,7 @@ const Examiner_AddQuestions = () => {
                         {/* Focused Question Editor */}
                         <div className="bg-white rounded-2xl sm:rounded-[32px] border border-[#E2E8F0] shadow-sm p-6 sm:p-10 space-y-6 sm:space-y-8 relative overflow-hidden">
                             <div className="absolute top-0 right-0 p-10 opacity-[0.03] pointer-events-none hidden sm:block">
-                                <Zap className="w-64 h-64 text-[#4F46E5]" />
+                                <Zap className="w-64 h-64 text-[#0F172A]" />
                             </div>
 
                             <div className="space-y-4">
@@ -410,7 +410,7 @@ const Examiner_AddQuestions = () => {
                                     </div>
                                     <div className="flex items-center gap-3">
                                         <select
-                                            className="bg-[#F8FAFC] border border-[#E2E8F0] text-[12px] font-medium text-[#6366F1] outline-none cursor-pointer px-3 py-1.5 rounded-xl hover:bg-white transition-colors"
+                                            className="bg-[#F8FAFC] border border-[#E2E8F0] text-[12px] font-medium text-[#0F172A] outline-none cursor-pointer px-3 py-1.5 rounded-xl hover:bg-white transition-colors"
                                             value={currentQuestion.difficulty}
                                             onChange={(e) => updateQuestion(focusedIndex, 'difficulty', e.target.value)}
                                         >
@@ -422,7 +422,7 @@ const Examiner_AddQuestions = () => {
                                             <span className="text-[12px] font-normal text-[#475569]">Marks:</span>
                                             <input
                                                 type="number"
-                                                className="w-8 bg-transparent border-none text-[12px] font-medium text-[#6366F1] outline-none"
+                                                className="w-8 bg-transparent border-none text-[12px] font-medium text-[#0F172A] outline-none"
                                                 value={currentQuestion.marks}
                                                 onChange={(e) => updateQuestion(focusedIndex, 'marks', e.target.value)}
                                             />
@@ -445,15 +445,15 @@ const Examiner_AddQuestions = () => {
                                         <div
                                             key={oIdx}
                                             className={`flex items-start sm:items-center gap-4 sm:gap-6 p-5 sm:p-6 rounded-2xl border transition-all ${currentQuestion.correct === oIdx
-                                                ? 'border-[#6366F1]/30 bg-[#F5F3FF]/30'
-                                                : 'border-[#E2E8F0]/80 hover:border-[#6366F1]/50 bg-white'
+                                                ? 'border-[#0F172A]/30 bg-slate-50'
+                                                : 'border-[#E2E8F0]/80 hover:border-[#0F172A]/50 bg-white'
                                                 }`}
                                         >
                                             <div
                                                 onClick={() => updateQuestion(focusedIndex, 'correct', oIdx)}
                                                 className={`mt-1 sm:mt-0 w-6 h-6 rounded-full border-2 flex items-center justify-center cursor-pointer transition-all ${currentQuestion.correct === oIdx
-                                                    ? 'bg-[#6366F1] border-[#6366F1]'
-                                                    : 'border-[#E2E8F0] hover:border-[#6366F1]'
+                                                    ? 'bg-[#0F172A] border-[#0F172A]'
+                                                    : 'border-[#E2E8F0] hover:border-[#0F172A]'
                                                     }`}
                                             >
                                                 {currentQuestion.correct === oIdx && <div className="w-2 h-2 bg-white rounded-full" />}

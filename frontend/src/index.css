@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brand-purple: #4F46E5;
+  --color-brand-black: #0F172A;
   --color-brand-teal: #0D9488;
   --color-brand-blue: #2563EB;
   --color-light-bg: #FFFFFF;
@@ -55,7 +55,7 @@ body {
   margin: 0;
   min-height: 100vh;
   overflow-x: hidden;
-  background: radial-gradient(circle at 50% 0%, #f0f9ff 0%, #ffffff 100%);
+  background: #FFFFFF;
 }
 
 /* Elite Glass 2.0 (Light) */
@@ -75,20 +75,20 @@ body {
 }
 
 .glass-card:hover {
-  border: 1px solid rgba(79, 70, 229, 0.2);
+  border: 1px solid rgba(15, 23, 42, 0.2);
   transform: translateY(-8px);
-  box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.08), 0 18px 36px -18px rgba(79, 70, 229, 0.1);
+  box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.08), 0 18px 36px -18px rgba(15, 23, 42, 0.1);
 }
 
 .text-gradient {
-  background: linear-gradient(135deg, #0F172A 0%, #4F46E5 100%);
+  background: linear-gradient(135deg, #0F172A 0%, #334155 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-.text-gradient-cyan {
-  background: linear-gradient(135deg, #0284C7 0%, #4F46E5 100%);
+.text-gradient-purple {
+  background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -114,6 +114,14 @@ body {
 
 .bento-gap {
   gap: 1.5rem;
+}
+
+.premium-gradient {
+  background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
+}
+
+.premium-gradient-hover:hover {
+  background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%);
 }
 
 @media (min-width: 1024px) {

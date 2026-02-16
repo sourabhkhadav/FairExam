@@ -12,8 +12,8 @@ import { useNavigate, Link } from 'react-router-dom';
 const FormSection = ({ title, icon: Icon, children }) => (
     <div className="bg-white p-5 sm:p-8 rounded-[32px] border border-[#E2E8F0] shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
         <div className="flex items-center gap-3 mb-6 sm:mb-8">
-            <div className="w-10 h-10 rounded-xl bg-[#F5F3FF] flex items-center justify-center">
-                <Icon className="w-5 h-5 text-[#4F46E5]" />
+            <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center">
+                <Icon className="w-5 h-5 text-[#0F172A]" />
             </div>
             <h2 className="text-lg sm:text-xl font-medium text-[#0F172A] tracking-tight">{title}</h2>
         </div>
@@ -65,7 +65,7 @@ const Examiner_CreateExam = () => {
                     <div className="flex items-center gap-6">
                         <button
                             onClick={() => navigate('/dashboard')}
-                            className="w-11 h-11 flex items-center justify-center bg-white border border-[#E2E8F0] rounded-xl shadow-sm hover:shadow-md hover:-translate-x-0.5 transition-all text-[#64748B] hover:text-[#4F46E5] group"
+                            className="w-11 h-11 flex items-center justify-center bg-white border border-[#E2E8F0] rounded-xl shadow-sm hover:shadow-md hover:-translate-x-0.5 transition-all text-[#64748B] hover:text-[#0F172A] group"
                         >
                             <ArrowLeft className="w-5 h-5" />
                         </button>
@@ -84,7 +84,7 @@ const Examiner_CreateExam = () => {
                                 <div className="space-y-3">
                                     <label className="text-[13px] font-medium text-[#0F172A] ml-1 uppercase tracking-wider">Exam Title</label>
                                     <input
-                                        className="w-full px-5 py-3.5 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] focus:bg-white focus:border-[#4F46E5]/40 transition-all outline-none text-[#0F172A] font-medium"
+                                        className="w-full px-5 py-3.5 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] focus:bg-white focus:border-[#0F172A]/40 transition-all outline-none text-[#0F172A] font-medium"
                                         placeholder="e.g., Advanced Database Systems 2026"
                                         value={examData.title}
                                         onChange={(e) => updateField('title', e.target.value)}
@@ -94,7 +94,7 @@ const Examiner_CreateExam = () => {
                                 <div className="space-y-3">
                                     <label className="text-[13px] font-medium text-[#0F172A] ml-1 uppercase tracking-wider">Category / Subject</label>
                                     <input
-                                        className="w-full px-5 py-3.5 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] focus:bg-white focus:border-[#4F46E5]/40 transition-all outline-none text-[#0F172A] font-medium"
+                                        className="w-full px-5 py-3.5 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] focus:bg-white focus:border-[#0F172A]/40 transition-all outline-none text-[#0F172A] font-medium"
                                         placeholder="e.g., Computer Science"
                                         value={examData.category}
                                         onChange={(e) => updateField('category', e.target.value)}
@@ -106,7 +106,7 @@ const Examiner_CreateExam = () => {
                         {/* Status Bar / Step Indicator */}
                         <div className="bg-white p-5 sm:p-6 rounded-[32px] border border-[#E2E8F0] shadow-sm flex items-center justify-between sm:px-10">
                             <div className="flex items-center gap-4">
-                                <div className="w-10 h-10 rounded-full bg-[#4F46E5] text-white flex items-center justify-center font-bold text-lg">1</div>
+                                <div className="w-10 h-10 rounded-full bg-[#0F172A] text-white flex items-center justify-center font-bold text-lg">1</div>
                                 <span className="text-[15px] font-bold text-[#0F172A]">Core Setup</span>
                             </div>
                             <div className="flex-1 mx-6 h-px bg-[#E2E8F0]" />
@@ -129,10 +129,10 @@ const Examiner_CreateExam = () => {
                                 ].map((feature, i) => (
                                     <div
                                         key={i}
-                                        className="p-4 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] flex items-center gap-4 group/item hover:bg-white hover:border-[#4338CA]/20 transition-all"
+                                        className="p-4 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] flex items-center gap-4 group/item hover:bg-white hover:border-[#0F172A]/20 transition-all"
                                     >
-                                        <div className="w-9 h-9 rounded-lg bg-white border border-[#E2E8F0] flex items-center justify-center group-hover/item:border-[#4F46E5]/20 transition-colors">
-                                            <feature.icon className="w-4.5 h-4.5 text-[#64748B] group-hover/item:text-[#4F46E5]" />
+                                        <div className="w-9 h-9 rounded-lg bg-white border border-[#E2E8F0] flex items-center justify-center group-hover/item:border-[#0F172A]/20 transition-colors">
+                                            <feature.icon className="w-4.5 h-4.5 text-[#64748B] group-hover/item:text-[#0F172A]" />
                                         </div>
                                         <div className="text-[13px] font-bold text-[#0F172A]">{feature.label}</div>
                                     </div>
@@ -146,7 +146,7 @@ const Examiner_CreateExam = () => {
                 <div className="mt-16 pt-10 border-t border-[#E2E8F0] flex justify-end">
                     <button
                         onClick={handleContinue}
-                        className="group px-10 py-3.5 bg-[#4F46E5] text-white font-medium rounded-xl hover:bg-[#4338CA] transition-all shadow-sm hover:shadow-md cursor-pointer flex items-center gap-3"
+                        className="group px-10 py-3.5 bg-[#0F172A] text-white font-medium rounded-xl hover:bg-[#1E293B] transition-all shadow-sm hover:shadow-md cursor-pointer flex items-center gap-3"
                     >
                         Continue to Questions
                         <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />

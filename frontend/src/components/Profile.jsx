@@ -8,8 +8,8 @@ import {
 const ProfileCard = ({ title, icon: Icon, children }) => (
     <div className="bg-white p-6 sm:p-8 rounded-[32px] border border-[#E2E8F0] shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
         <div className="flex items-center gap-3 mb-6 sm:mb-8">
-            <div className="w-10 h-10 rounded-xl bg-[#F5F3FF] flex items-center justify-center">
-                <Icon className="w-5 h-5 text-[#4F46E5]" />
+            <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center">
+                <Icon className="w-5 h-5 text-[#0F172A]" />
             </div>
             <h2 className="text-lg sm:text-xl font-medium text-[#0F172A] tracking-tight">{title}</h2>
         </div>
@@ -23,12 +23,12 @@ const InputField = ({ label, icon: Icon, type = "text", placeholder, value, onCh
     <div className="space-y-2">
         <label className="text-[13px] font-semibold text-[#64748B] ml-1 uppercase tracking-wider">{label}</label>
         <div className="relative group/field">
-            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#94A3B8] group-focus-within/field:text-[#4F46E5] transition-colors">
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#94A3B8] group-focus-within/field:text-[#0F172A] transition-colors">
                 <Icon className="w-4.5 h-4.5" />
             </div>
             <input
                 type={type}
-                className={`w-full pl-11 pr-5 py-3.5 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] focus:bg-white focus:border-[#4F46E5]/40 transition-all outline-none text-[#0F172A] font-medium ${disabled ? 'opacity-60 cursor-not-allowed' : ''}`}
+                className={`w-full pl-11 pr-5 py-3.5 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] focus:bg-white focus:border-[#0F172A]/40 transition-all outline-none text-[#0F172A] font-medium ${disabled ? 'opacity-60 cursor-not-allowed' : ''}`}
                 placeholder={placeholder}
                 value={value}
                 onChange={onChange}
@@ -78,7 +78,7 @@ const Profile = () => {
                     <h1 className="text-2xl sm:text-3xl font-medium text-[#0F172A] tracking-tight">Profile Settings</h1>
                     <p className="text-[#64748B] text-[15px] font-medium mt-1">Manage your account details and security preferences.</p>
                 </div>
-                <button className="flex items-center gap-2 px-6 py-3 bg-[#4F46E5] text-white rounded-xl font-medium hover:bg-[#4338CA] transition-all shadow-sm hover:shadow-md active:scale-95">
+                <button className="flex items-center gap-2 px-6 py-3 bg-[#0F172A] text-white rounded-xl font-medium hover:bg-[#1E293B] transition-all shadow-sm hover:shadow-md active:scale-95">
                     <Save className="w-5 h-5" />
                     Save Changes
                 </button>
@@ -90,10 +90,10 @@ const Profile = () => {
                     <ProfileCard title="Account Information" icon={User}>
                         <div className="flex flex-col sm:flex-row items-center gap-6 mb-4">
                             <div className="relative group">
-                                <div className="w-24 h-24 rounded-3xl bg-[#EEF2FF] border-2 border-[#E0E7FF] flex items-center justify-center text-[#4F46E5] overflow-hidden">
+                                <div className="w-24 h-24 rounded-3xl bg-slate-50 border-2 border-[#0F172A]/10 flex items-center justify-center text-[#0F172A] overflow-hidden">
                                     <User className="w-12 h-12" />
                                 </div>
-                                <button className="absolute -bottom-2 -right-2 p-2 bg-white border border-[#E2E8F0] rounded-xl shadow-lg text-[#64748B] hover:text-[#4F46E5] transition-all active:scale-90">
+                                <button className="absolute -bottom-2 -right-2 p-2 bg-white border border-[#E2E8F0] rounded-xl shadow-lg text-[#64748B] hover:text-[#0F172A] transition-all active:scale-90">
                                     <Camera className="w-4 h-4" />
                                 </button>
                             </div>

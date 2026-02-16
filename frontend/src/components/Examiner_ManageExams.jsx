@@ -140,9 +140,9 @@ const Examiner_ManageExams = () => {
                 {/* Filters */}
                 <div className="flex flex-col sm:flex-row gap-4 mb-8">
                     <div className="flex-1 relative group">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#94A3B8] group-focus-within:text-[#4F46E5] transition-colors" />
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#94A3B8] group-focus-within:text-[#0F172A] transition-colors" />
                         <input
-                            className="w-full pl-12 pr-4 py-4 rounded-2xl bg-white border border-[#E2E8F0] focus:border-[#4F46E5]/40 focus:bg-white outline-none text-[#0F172A] font-medium transition-all shadow-sm"
+                            className="w-full pl-12 pr-4 py-4 rounded-2xl bg-white border border-[#E2E8F0] focus:border-[#0F172A]/40 focus:bg-white outline-none text-[#0F172A] font-medium transition-all shadow-sm"
                             placeholder="Search exams..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
@@ -214,7 +214,7 @@ const Examiner_ManageExams = () => {
                                         <div className="flex gap-2">
                                             <button
                                                 onClick={() => handleConfigure(exam)}
-                                                className="flex-1 sm:flex-none p-3 text-[#4F46E5] hover:bg-[#F5F3FF] rounded-xl transition-colors cursor-pointer flex justify-center items-center gap-2"
+                                                className="flex-1 sm:flex-none p-3 text-[#0F172A] hover:bg-slate-50 rounded-xl transition-colors cursor-pointer flex justify-center items-center gap-2"
                                                 title="Configure & Publish"
                                             >
                                                 <Settings className="w-5 h-5" />
@@ -230,10 +230,9 @@ const Examiner_ManageExams = () => {
                                             </button>
                                         </div>
                                     )}
-
                                     <button
                                         onClick={() => handleEdit(exam)}
-                                        className="flex-1 sm:flex-none p-3 text-[#3B82F6] hover:bg-[#EFF6FF] rounded-xl transition-colors cursor-pointer flex justify-center"
+                                        className="flex-1 sm:flex-none p-3 text-slate-600 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer flex justify-center"
                                         title="Edit Exam"
                                     >
                                         <Edit3 className="w-5 h-5" />
@@ -253,8 +252,8 @@ const Examiner_ManageExams = () => {
                         <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden border border-[#E2E8F0] animate-in fade-in zoom-in duration-200">
                             <div className="p-8">
                                 <div className="flex items-center gap-4 mb-8">
-                                    <div className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center">
-                                        <Calendar className="w-6 h-6 text-[#4F46E5]" />
+                                    <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center">
+                                        <Calendar className="w-6 h-6 text-[#0F172A]" />
                                     </div>
                                     <div>
                                         <h3 className="text-xl font-bold text-[#0F172A]">Schedule Exam</h3>
@@ -266,10 +265,10 @@ const Examiner_ManageExams = () => {
                                     <div className="space-y-2">
                                         <label className="text-[11px] font-bold text-[#64748B] uppercase tracking-widest ml-1">Start Date</label>
                                         <div className="relative group">
-                                            <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#94A3B8] group-focus-within:text-[#4F46E5] transition-colors" />
+                                            <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#94A3B8] group-focus-within:text-[#0F172A] transition-colors" />
                                             <input
                                                 type="date"
-                                                className="w-full pl-11 pr-4 py-4 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] focus:border-[#4F46E5]/40 focus:bg-white outline-none text-[#0F172A] font-medium transition-all"
+                                                className="w-full pl-11 pr-4 py-4 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] focus:border-[#0F172A]/40 focus:bg-white outline-none text-[#0F172A] font-medium transition-all"
                                                 value={scheduleDate}
                                                 onChange={(e) => setScheduleDate(e.target.value)}
                                             />
@@ -279,10 +278,10 @@ const Examiner_ManageExams = () => {
                                     <div className="space-y-2">
                                         <label className="text-[11px] font-bold text-[#64748B] uppercase tracking-widest ml-1">Start Time</label>
                                         <div className="relative group">
-                                            <Clock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#94A3B8] group-focus-within:text-[#4F46E5] transition-colors" />
+                                            <Clock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#94A3B8] group-focus-within:text-[#0F172A] transition-colors" />
                                             <input
                                                 type="time"
-                                                className="w-full pl-11 pr-4 py-4 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] focus:border-[#4F46E5]/40 focus:bg-white outline-none text-[#0F172A] font-medium transition-all"
+                                                className="w-full pl-11 pr-4 py-4 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] focus:border-[#0F172A]/40 focus:bg-white outline-none text-[#0F172A] font-medium transition-all"
                                                 value={scheduleTime}
                                                 onChange={(e) => setScheduleTime(e.target.value)}
                                             />
@@ -299,7 +298,7 @@ const Examiner_ManageExams = () => {
                                     </button>
                                     <button
                                         onClick={handleConfirmSchedule}
-                                        className="flex-1 px-6 py-4 bg-[#4F46E5] text-white font-bold text-sm rounded-2xl hover:bg-[#4338CA] transition-all shadow-lg shadow-indigo-100 cursor-pointer"
+                                        className="flex-1 px-6 py-4 bg-[#0F172A] text-white font-bold text-sm rounded-2xl hover:bg-[#1E293B] transition-all shadow-lg shadow-slate-100 cursor-pointer"
                                     >
                                         SCHEDULE
                                     </button>

@@ -62,8 +62,8 @@ const Examiner_StudentViolations = () => {
         return (
             <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center">
                 <div className="animate-pulse flex flex-col items-center gap-4">
-                    <div className="w-12 h-12 bg-indigo-100 rounded-2xl flex items-center justify-center">
-                        <Monitor className="w-6 h-6 text-[#4F46E5] animate-spin" />
+                    <div className="w-12 h-12 bg-slate-100 rounded-2xl flex items-center justify-center">
+                        <Monitor className="w-6 h-6 text-[#0F172A] animate-spin" />
                     </div>
                     <span className="text-[#64748B] font-medium tracking-wide">Loading Student Record...</span>
                 </div>
@@ -79,7 +79,7 @@ const Examiner_StudentViolations = () => {
                     <div className="flex items-center gap-6">
                         <button
                             onClick={() => navigate('/violation-reports')}
-                            className="w-11 h-11 flex items-center justify-center bg-white border border-[#E2E8F0] rounded-xl shadow-sm hover:shadow-md hover:-translate-x-0.5 transition-all text-[#64748B] hover:text-[#4F46E5] group"
+                            className="w-11 h-11 flex items-center justify-center bg-white border border-[#E2E8F0] rounded-xl shadow-sm hover:shadow-md hover:-translate-x-0.5 transition-all text-[#64748B] hover:text-[#0F172A] group"
                         >
                             <ArrowLeft className="w-5 h-5" />
                         </button>
@@ -92,7 +92,7 @@ const Examiner_StudentViolations = () => {
 
                 {/* Metrics Grid */}
                 <div className="flex flex-wrap gap-4 sm:gap-6 mb-10">
-                    <MetricCard label="Total Flags" value={studentData.violations.length} colorClass="text-[#4F46E5]" icon={AlertCircle} />
+                    <MetricCard label="Total Flags" value={studentData.violations.length} colorClass="text-[#0F172A]" icon={AlertCircle} />
                     <MetricCard label="High Severity" value={studentData.violations.filter(v => v.severity === 'High').length} colorClass="text-[#EF4444]" icon={Shield} />
                     <MetricCard label="Recent Violation" value={studentData.violations.length > 0 ? "Today" : "None"} colorClass="text-[#D97706]" icon={Clock} />
                 </div>
@@ -114,13 +114,6 @@ const Examiner_StudentViolations = () => {
                                             </span>
                                             <span className="text-[11px] font-bold text-[#94A3B8] uppercase tracking-[0.1em]">{v.time}</span>
                                         </div>
-                                        <div>
-                                            <h3 className="text-lg font-bold text-[#0F172A] group-hover:text-[#4F46E5] transition-colors">"{v.type}"</h3>
-                                            <p className="text-[#64748B] text-[14px] font-medium flex items-center gap-2 mt-1">
-                                                <Monitor className="w-4 h-4" />
-                                                Exam: <span className="text-[#0F172A] font-semibold">{v.exam}</span>
-                                            </p>
-                                        </div>
                                         <div className="p-4 bg-[#F8FAFC] rounded-xl border border-[#E2E8F0] text-sm text-[#475569] leading-relaxed">
                                             <div className="flex gap-2">
                                                 <Info className="w-4 h-4 text-[#64748B] shrink-0 mt-0.5" />
@@ -129,7 +122,7 @@ const Examiner_StudentViolations = () => {
                                         </div>
                                     </div>
                                     <div className="flex items-center lg:flex-col gap-3 justify-end lg:border-l border-[#E2E8F0] lg:pl-8 min-w-[120px]">
-                                        <button className="flex-1 lg:w-full px-4 py-2.5 bg-white border border-[#E2E8F0] rounded-xl text-xs font-bold text-[#64748B] hover:text-[#4F46E5] hover:border-[#4F46E5]/30 transition-all flex items-center justify-center gap-2">
+                                        <button className="flex-1 lg:w-full px-4 py-2.5 bg-white border border-[#E2E8F0] rounded-xl text-xs font-bold text-[#64748B] hover:text-[#1E293B] hover:border-[#1E293B]/30 transition-all flex items-center justify-center gap-2">
                                             <Eye className="w-4 h-4" />
                                             View Clip
                                         </button>

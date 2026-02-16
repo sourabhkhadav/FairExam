@@ -77,7 +77,7 @@ const Examiner_ExamResultDetails = () => {
                 <div className="space-y-2">
                     <button
                         onClick={() => navigate(-1)}
-                        className="flex items-center gap-2 text-slate-500 hover:text-indigo-600 transition-colors text-sm font-medium group mb-2"
+                        className="flex items-center gap-2 text-slate-500 hover:text-[#0F172A] transition-colors text-sm font-medium group mb-2"
                     >
                         <ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
                         Back to Results
@@ -101,7 +101,7 @@ const Examiner_ExamResultDetails = () => {
                             type="number"
                             value={cutoff}
                             onChange={(e) => setCutoff(Number(e.target.value))}
-                            className="w-12 text-center font-bold text-slate-900 outline-none border-b border-slate-200 focus:border-indigo-500 transition-colors"
+                            className="w-12 text-center font-bold text-slate-900 outline-none border-b border-slate-200 focus:border-[#0F172A] transition-colors"
                         />
                         <span className="text-sm font-medium text-slate-400">%</span>
                     </div>
@@ -112,7 +112,7 @@ const Examiner_ExamResultDetails = () => {
                     </button>
                     <button
                         onClick={handlePublishResults}
-                        className="px-5 py-2.5 bg-indigo-600 text-white font-medium text-sm rounded-xl hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-100 flex items-center gap-2"
+                        className="px-5 py-2.5 bg-[#0F172A] text-white font-medium text-sm rounded-xl hover:bg-[#1E293B] transition-colors shadow-lg shadow-slate-100 flex items-center gap-2"
                     >
                         <Send className="w-4 h-4" />
                         Send Results
@@ -147,7 +147,7 @@ const Examiner_ExamResultDetails = () => {
                     label="Average Score"
                     value={`${examDetails.avgScore}/100`}
                     subtext={`Highest: ${examDetails.highestScore}`}
-                    color="bg-violet-500 text-violet-600"
+                    color="bg-slate-500 text-slate-600"
                 />
             </div>
 
@@ -163,10 +163,10 @@ const Examiner_ExamResultDetails = () => {
                                 placeholder="Search by name or roll number..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all placeholder:text-slate-400"
+                                className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-[#0F172A] focus:ring-1 focus:ring-[#0F172A] transition-all placeholder:text-slate-400"
                             />
                         </div>
-                        <button className="p-2.5 bg-white border border-slate-200 rounded-xl text-slate-500 hover:text-indigo-600 hover:bg-slate-50 transition-colors">
+                        <button className="p-2.5 bg-white border border-slate-200 rounded-xl text-slate-500 hover:text-[#0F172A] hover:bg-slate-50 transition-colors">
                             <Filter className="w-4 h-4" />
                         </button>
                     </div>
@@ -189,7 +189,7 @@ const Examiner_ExamResultDetails = () => {
                                 <tr key={student.id} className="group hover:bg-slate-50/50 transition-colors">
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-9 h-9 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-sm">
+                                            <div className="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center text-[#0F172A] font-bold text-sm">
                                                 {student.name.charAt(0)}
                                             </div>
                                             <div>

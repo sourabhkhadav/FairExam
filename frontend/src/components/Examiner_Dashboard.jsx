@@ -45,8 +45,8 @@ const Examiner_Dashboard = () => {
         <div className="max-w-7xl mx-auto">
             {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
-                <StatCard icon={FileText} label="Total Exams Created" value="24" iconColor="bg-[#6366F1]" />
-                <StatCard icon={Clock} label="Active Exams" value="3" iconColor="bg-[#3B82F6]" />
+                <StatCard icon={FileText} label="Total Exams Created" value="24" iconColor="bg-[#0F172A]" />
+                <StatCard icon={Clock} label="Active Exams" value="3" iconColor="bg-[#334155]" />
             </div>
 
             {/* Quick Actions */}
@@ -58,14 +58,14 @@ const Examiner_Dashboard = () => {
                             localStorage.removeItem('examDraft');
                             navigate('/create-exam');
                         }}
-                        className="px-8 py-3.5 bg-[#4F46E5] text-white font-medium text-[15px] rounded-xl hover:bg-[#4338CA] transition-all shadow-sm cursor-pointer"
+                        className="px-8 py-3.5 bg-[#0F172A] text-white font-medium text-[15px] rounded-xl hover:bg-[#1E293B] transition-all shadow-sm cursor-pointer"
                     >
                         Create New Exam
                     </button>
-                    <button className="px-8 py-3.5 bg-white border border-[#E2E8F0] text-[#4F46E5] font-semibold text-[15px] rounded-xl hover:bg-[#F8FAFC] transition-colors cursor-pointer">
+                    <button className="px-8 py-3.5 bg-white border border-[#E2E8F0] text-[#0F172A] font-semibold text-[15px] rounded-xl hover:bg-[#F8FAFC] transition-colors cursor-pointer">
                         View Violation Reports
                     </button>
-                    <button className="px-8 py-3.5 bg-white border border-[#E2E8F0] text-[#4F46E5] font-semibold text-[15px] rounded-xl hover:bg-[#F8FAFC] transition-colors cursor-pointer">
+                    <button className="px-8 py-3.5 bg-white border border-[#E2E8F0] text-[#0F172A] font-semibold text-[15px] rounded-xl hover:bg-[#F8FAFC] transition-colors cursor-pointer">
                         Publish Results
                     </button>
                 </div>
@@ -94,7 +94,7 @@ const Examiner_Dashboard = () => {
                                         <td className="py-5 text-[#64748B] text-center whitespace-nowrap">{exam.students}</td>
                                         <td className="py-5 text-center whitespace-nowrap">
                                             <span className={`px-4 py-1.5 rounded-full text-[12px] font-semibold ${exam.status === 'Scheduled'
-                                                ? 'bg-[#EFF6FF] text-[#3B82F6]'
+                                                ? 'bg-[#F1F5F9] text-[#334155]'
                                                 : exam.status === 'Completed'
                                                     ? 'bg-[#F0FDF4] text-[#22C55E]'
                                                     : 'bg-[#F8FAFC] text-[#64748B]'
@@ -103,7 +103,7 @@ const Examiner_Dashboard = () => {
                                             </span>
                                         </td>
                                         <td className="py-5 text-right whitespace-nowrap">
-                                            <button className="text-[#4F46E5] font-semibold text-[14px] hover:underline cursor-pointer">
+                                            <button className="text-[#0F172A] font-semibold text-[14px] hover:underline cursor-pointer">
                                                 View Details
                                             </button>
                                         </td>

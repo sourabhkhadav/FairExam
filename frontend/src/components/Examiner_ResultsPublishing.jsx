@@ -98,7 +98,7 @@ const Examiner_ResultsPublishing = () => {
                                             <div className="flex items-center gap-2">
                                                 <button
                                                     onClick={() => navigate(`/exam-results/${exam.id}`)}
-                                                    className="font-medium text-[#0F172A] hover:text-[#4F46E5] hover:underline transition-colors text-left"
+                                                    className="font-medium text-[#0F172A] hover:text-[#0F172A] hover:underline transition-colors text-left"
                                                 >
                                                     {exam.name}
                                                 </button>
@@ -110,7 +110,7 @@ const Examiner_ResultsPublishing = () => {
 
 
                                         <td className="py-6 text-center whitespace-nowrap">
-                                            <span className={`px-4 py-1.5 rounded-full text-[11px] sm:text-[12px] font-bold flex items-center gap-1.5 justify-center w-fit mx-auto ${exam.isCalculated ? 'bg-blue-50 text-blue-600 border border-blue-200' : 'bg-slate-100 text-slate-500 border border-slate-200'}`}>
+                                            <span className={`px-4 py-1.5 rounded-full text-[11px] sm:text-[12px] font-bold flex items-center gap-1.5 justify-center w-fit mx-auto ${exam.isCalculated ? 'bg-slate-50 text-slate-800 border border-slate-200' : 'bg-slate-100 text-slate-500 border border-slate-200'}`}>
                                                 {exam.isCalculated ? <CheckCircle2 className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
                                                 {exam.isCalculated ? 'Calculated' : 'Pending'}
                                             </span>
@@ -121,7 +121,7 @@ const Examiner_ResultsPublishing = () => {
                                                     onClick={() => handlePublish(exam.id)}
                                                     disabled={!exam.isCalculated}
                                                     className={`px-6 py-2 font-medium text-[11px] rounded-lg transition-all shadow-sm flex items-center gap-2 ml-auto cursor-pointer ${exam.isCalculated
-                                                        ? 'bg-[#4F46E5] text-white hover:bg-[#4338CA]'
+                                                        ? 'bg-[#0F172A] text-white hover:bg-[#1E293B]'
                                                         : 'bg-slate-100 text-slate-400 cursor-not-allowed'
                                                         }`}
                                                 >

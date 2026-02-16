@@ -85,9 +85,9 @@ const AuthForm = ({ initialMode = 'login' }) => {
             {/* Back Button */}
             <button
                 onClick={() => navigate(-1)}
-                className="fixed top-8 left-8 p-4 rounded-2xl bg-white border border-black/5 shadow-xl shadow-indigo-100/50 flex items-center justify-center group cursor-pointer z-50 transition-all hover:bg-slate-50 active:scale-95"
+                className="fixed top-8 left-8 p-4 rounded-2xl bg-white border border-black/5 shadow-xl shadow-slate-100/50 flex items-center justify-center group cursor-pointer z-50 transition-all hover:bg-slate-50 active:scale-95"
             >
-                <ArrowLeft className="w-6 h-6 text-slate-400 group-hover:text-brand-purple transition-colors" />
+                <ArrowLeft className="w-6 h-6 text-slate-400 group-hover:text-charcoal transition-colors" />
             </button>
 
             {/* Cinematic Background (Consistent with Landing Page) */}
@@ -99,8 +99,8 @@ const AuthForm = ({ initialMode = 'login' }) => {
             <div className="w-full max-w-[480px] z-10">
                 {/* Logo & Header */}
                 <div className="flex flex-col items-center mb-10 space-y-4">
-                    <div className="w-14 h-14 rounded-2xl bg-white border border-black/5 shadow-xl shadow-indigo-100/50 flex items-center justify-center">
-                        <Shield className="w-8 h-8 text-brand-purple" />
+                    <div className="w-14 h-14 rounded-2xl bg-white border border-black/5 shadow-xl shadow-slate-100/50 flex items-center justify-center">
+                        <Shield className="w-8 h-8 text-charcoal" />
                     </div>
                     <div className="text-center">
                         <h1 className="text-4xl font-bold text-charcoal">
@@ -128,7 +128,7 @@ const AuthForm = ({ initialMode = 'login' }) => {
                             <div className="space-y-2">
                                 <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 ml-1">Full Name</label>
                                 <div className="relative group overflow-hidden">
-                                    <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-brand-purple transition-colors duration-300">
+                                    <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-charcoal transition-colors duration-300">
                                         <User className="w-5 h-5" />
                                     </div>
                                     <input
@@ -138,7 +138,7 @@ const AuthForm = ({ initialMode = 'login' }) => {
                                         value={formData.name}
                                         onChange={handleChange}
                                         placeholder="John Doe"
-                                        className="w-full pl-14 pr-6 py-4 rounded-2xl bg-slate-50 border border-transparent hover:bg-slate-100 focus:bg-white focus:border-brand-purple/20 transition-all duration-300 outline-none font-bold text-charcoal placeholder:text-slate-400"
+                                        className="w-full pl-14 pr-6 py-4 rounded-2xl bg-slate-50 border border-transparent hover:bg-slate-100 focus:bg-white focus:border-charcoal/20 transition-all duration-300 outline-none font-bold text-charcoal placeholder:text-slate-400"
                                     />
                                 </div>
                             </div>
@@ -147,7 +147,7 @@ const AuthForm = ({ initialMode = 'login' }) => {
                         <div className="space-y-2">
                             <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Work Email</label>
                             <div className="relative group overflow-hidden">
-                                <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-brand-purple transition-colors duration-300">
+                                <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-charcoal transition-colors duration-300">
                                     <Mail className="w-5 h-5" />
                                 </div>
                                 <input
@@ -157,7 +157,7 @@ const AuthForm = ({ initialMode = 'login' }) => {
                                     value={formData.email}
                                     onChange={handleChange}
                                     placeholder="name@institution.edu"
-                                    className="w-full pl-14 pr-6 py-4 rounded-2xl bg-slate-50 border border-transparent hover:bg-slate-100 focus:bg-white focus:border-brand-purple/20 transition-all duration-300 outline-none font-bold text-charcoal placeholder:text-slate-300"
+                                    className="w-full pl-14 pr-6 py-4 rounded-2xl bg-slate-50 border border-transparent hover:bg-slate-100 focus:bg-white focus:border-charcoal/20 transition-all duration-300 outline-none font-bold text-charcoal placeholder:text-slate-300"
                                 />
                             </div>
                         </div>
@@ -165,10 +165,10 @@ const AuthForm = ({ initialMode = 'login' }) => {
                         <div className="space-y-2">
                             <div className="flex justify-between items-center ml-1">
                                 <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Password</label>
-                                {isLogin && <button type="button" className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-purple">Forgot?</button>}
+                                {isLogin && <button type="button" className="text-[10px] font-black uppercase tracking-[0.2em] text-charcoal">Forgot?</button>}
                             </div>
                             <div className="relative group overflow-hidden">
-                                <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-brand-purple transition-colors duration-300">
+                                <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-charcoal transition-colors duration-300">
                                     <Lock className="w-5 h-5" />
                                 </div>
                                 <input
@@ -178,12 +178,12 @@ const AuthForm = ({ initialMode = 'login' }) => {
                                     value={formData.password}
                                     onChange={handleChange}
                                     placeholder="••••••••"
-                                    className="w-full pl-14 pr-14 py-4 rounded-2xl bg-slate-50 border border-transparent hover:bg-slate-100 focus:bg-white focus:border-brand-purple/20 transition-all duration-300 outline-none font-bold text-charcoal placeholder:text-slate-300"
+                                    className="w-full pl-14 pr-14 py-4 rounded-2xl bg-slate-50 border border-transparent hover:bg-slate-100 focus:bg-white focus:border-charcoal/20 transition-all duration-300 outline-none font-bold text-charcoal placeholder:text-slate-300"
                                 />
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute inset-y-0 right-5 flex items-center text-slate-300 hover:text-brand-purple transition-colors duration-300"
+                                    className="absolute inset-y-0 right-5 flex items-center text-slate-300 hover:text-charcoal transition-colors duration-300"
                                 >
                                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                                 </button>
@@ -221,7 +221,7 @@ const AuthForm = ({ initialMode = 'login' }) => {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full py-4 rounded-2xl bg-charcoal text-white font-bold text-sm uppercase tracking-widest flex items-center justify-center gap-3 shadow-xl shadow-indigo-100 cursor-pointer disabled:opacity-70 disabled:cursor-wait transition-all hover:bg-brand-purple"
+                            className="w-full py-4 rounded-2xl bg-charcoal text-white font-bold text-sm uppercase tracking-widest flex items-center justify-center gap-3 shadow-xl shadow-slate-100 cursor-pointer disabled:opacity-70 disabled:cursor-wait transition-all hover:bg-slate-800"
                         >
                             {loading ? 'Processing...' : (isLogin ? 'Sign In' : 'Create Account')}
                             {!loading && <ArrowRight className="w-4 h-4" />}
@@ -234,7 +234,7 @@ const AuthForm = ({ initialMode = 'login' }) => {
                     {isLogin ? "Don't have an account?" : "Already have an account?"}{' '}
                     <button
                         onClick={toggleMode}
-                        className="text-brand-purple uppercase tracking-wider text-sm font-bold ml-2"
+                        className="text-charcoal uppercase tracking-wider text-sm font-bold ml-2 hover:underline"
                     >
                         {isLogin ? 'Get Started' : 'Sign In'}
                     </button>

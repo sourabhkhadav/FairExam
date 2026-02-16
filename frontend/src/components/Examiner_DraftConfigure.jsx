@@ -8,8 +8,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 const FormSection = ({ title, icon: Icon, children }) => (
     <div className="bg-white p-5 sm:p-8 rounded-2xl sm:rounded-[32px] border border-[#E2E8F0] shadow-sm">
         <div className="flex items-center gap-3 mb-6 sm:mb-8">
-            <div className="w-10 h-10 rounded-xl bg-[#F5F3FF] flex items-center justify-center">
-                <Icon className="w-5 h-5 text-[#4F46E5]" />
+            <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center">
+                <Icon className="w-5 h-5 text-[#0F172A]" />
             </div>
             <h2 className="text-lg sm:text-xl font-medium text-[#0F172A]">{title}</h2>
         </div>
@@ -22,7 +22,7 @@ const Toggle = ({ label, enabled, setEnabled }) => (
         <span className="text-[14px] font-medium text-[#0F172A] transition-colors">{label}</span>
         <button
             onClick={() => setEnabled(!enabled)}
-            className={`w-12 h-6 rounded-full transition-all relative ${enabled ? 'bg-[#4F46E5]' : 'bg-[#E2E8F0]'}`}
+            className={`w-12 h-6 rounded-full transition-all relative ${enabled ? 'bg-[#0F172A]' : 'bg-[#E2E8F0]'}`}
         >
             <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${enabled ? 'left-7' : 'left-1'}`} />
         </button>
@@ -75,11 +75,11 @@ const Examiner_DraftConfigure = () => {
                     onClick={() => navigate('/manage-exams')}
                     className="p-2.5 bg-white border border-[#E2E8F0] rounded-xl shadow-sm cursor-pointer hover:bg-[#F8FAFC] transition-colors group"
                 >
-                    <ArrowLeft className="w-5 h-5 text-[#64748B] group-hover:text-[#4F46E5]" />
+                    <ArrowLeft className="w-5 h-5 text-[#64748B] group-hover:text-[#0F172A]" />
                 </button>
                 <div className="min-w-0">
                     <h1 className="text-2xl sm:text-3xl font-medium text-[#0F172A] tracking-tight truncate">Finalize Configuration</h1>
-                    <p className="text-[#0F172A]/70 text-sm sm:text-[15px] font-medium mt-1">Configure scheduling, candidates, and security for: <span className="text-[#4F46E5]">{examData.title}</span></p>
+                    <p className="text-[#0F172A]/70 text-sm sm:text-[15px] font-medium mt-1">Configure scheduling, candidates, and security for: <span className="text-[#0F172A] uppercase font-bold">{examData.title}</span></p>
                 </div>
             </div>
 
@@ -88,9 +88,9 @@ const Examiner_DraftConfigure = () => {
                 <FormSection title="Exam Schedule" icon={Calendar}>
                     <div className="flex flex-col lg:flex-row gap-8">
                         <div className="flex-1 bg-[#F8FAFC]/50 p-6 rounded-2xl border border-[#E2E8F0] space-y-6">
-                            <div className="flex items-center gap-2 px-3 py-1.5 bg-indigo-50 rounded-lg w-fit">
-                                <Play className="w-3.5 h-3.5 text-[#4F46E5]" />
-                                <span className="text-[11px] font-bold text-[#4F46E5] uppercase tracking-wider">Start Configuration</span>
+                            <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-lg w-fit">
+                                <Play className="w-3.5 h-3.5 text-[#0F172A]" />
+                                <span className="text-[11px] font-bold text-[#0F172A] uppercase tracking-wider">Start Configuration</span>
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-1.5">
@@ -148,11 +148,11 @@ const Examiner_DraftConfigure = () => {
                                 <button
                                     key={status}
                                     onClick={() => updateField('visibility', status)}
-                                    className={`w-full px-4 py-3 rounded-xl border-2 transition-all flex items-center justify-between ${examData.visibility === status ? 'border-[#4F46E5] bg-[#F5F3FF]/50 text-[#4F46E5]' : 'border-[#E2E8F0] text-[#0F172A]'
+                                    className={`w-full px-4 py-3 rounded-xl border-2 transition-all flex items-center justify-between ${examData.visibility === status ? 'border-[#0F172A] bg-slate-50 text-[#0F172A]' : 'border-[#E2E8F0] text-[#0F172A]'
                                         }`}
                                 >
                                     <span className="text-[13px] font-medium">{status}</span>
-                                    {examData.visibility === status && <div className="w-2 h-2 rounded-full bg-[#4D44E5]" />}
+                                    {examData.visibility === status && <div className="w-2 h-2 rounded-full bg-[#0F172A]" />}
                                 </button>
                             ))}
                         </div>
@@ -175,14 +175,14 @@ const Examiner_DraftConfigure = () => {
                                     }}
                                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                                 />
-                                <button className={`w-full px-4 py-3 bg-[#F8FAFC] border-2 border-dashed rounded-xl flex items-center justify-between group-hover:bg-white transition-all ${examData.candidateFile?.endsWith('.csv') || examData.candidateFile?.endsWith('.xlsx') ? 'border-[#4F46E5] bg-[#F5F3FF]/30' : 'border-[#E2E8F0]'}`}>
+                                <button className={`w-full px-4 py-3 bg-[#F8FAFC] border-2 border-dashed rounded-xl flex items-center justify-between group-hover:bg-white transition-all ${examData.candidateFile?.endsWith('.csv') || examData.candidateFile?.endsWith('.xlsx') ? 'border-[#0F172A] bg-slate-50' : 'border-[#E2E8F0]'}`}>
                                     <div className="flex items-center gap-3">
-                                        <Database className={`w-4 h-4 ${examData.candidateFile?.endsWith('.csv') || examData.candidateFile?.endsWith('.xlsx') ? 'text-[#4F46E5]' : 'text-[#64748B]'}`} />
+                                        <Database className={`w-4 h-4 ${examData.candidateFile?.endsWith('.csv') || examData.candidateFile?.endsWith('.xlsx') ? 'text-[#0F172A]' : 'text-[#64748B]'}`} />
                                         <span className="text-[13px] font-medium text-[#0F172A]">
                                             {examData.candidateFile?.endsWith('.csv') || examData.candidateFile?.endsWith('.xlsx') ? examData.candidateFile : 'Excel / CSV'}
                                         </span>
                                     </div>
-                                    {examData.candidateFile && (examData.candidateFile.endsWith('.csv') || examData.candidateFile.endsWith('.xlsx')) && <div className="w-2 h-2 rounded-full bg-[#4F46E5]" />}
+                                    {examData.candidateFile && (examData.candidateFile.endsWith('.csv') || examData.candidateFile.endsWith('.xlsx')) && <div className="w-2 h-2 rounded-full bg-[#0F172A]" />}
                                 </button>
                             </div>
 
@@ -200,14 +200,14 @@ const Examiner_DraftConfigure = () => {
                                     }}
                                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                                 />
-                                <button className={`w-full px-4 py-3 bg-[#F8FAFC] border-2 border-dashed rounded-xl flex items-center justify-between group-hover:bg-white transition-all ${examData.candidateFile?.endsWith('.pdf') ? 'border-[#4F46E5] bg-[#F5F3FF]/30' : 'border-[#E2E8F0]'}`}>
+                                <button className={`w-full px-4 py-3 bg-[#F8FAFC] border-2 border-dashed rounded-xl flex items-center justify-between group-hover:bg-white transition-all ${examData.candidateFile?.endsWith('.pdf') ? 'border-[#0F172A] bg-slate-50' : 'border-[#E2E8F0]'}`}>
                                     <div className="flex items-center gap-3">
-                                        <FileCheck className={`w-4 h-4 ${examData.candidateFile?.endsWith('.pdf') ? 'text-[#4F46E5]' : 'text-[#64748B]'}`} />
+                                        <FileCheck className={`w-4 h-4 ${examData.candidateFile?.endsWith('.pdf') ? 'text-[#0F172A]' : 'text-[#64748B]'}`} />
                                         <span className="text-[13px] font-medium text-[#0F172A]">
                                             {examData.candidateFile?.endsWith('.pdf') ? examData.candidateFile : 'PDF List'}
                                         </span>
                                     </div>
-                                    {examData.candidateFile?.endsWith('.pdf') && <div className="w-2 h-2 rounded-full bg-[#4F46E5]" />}
+                                    {examData.candidateFile?.endsWith('.pdf') && <div className="w-2 h-2 rounded-full bg-[#0F172A]" />}
                                 </button>
                             </div>
                         </div>
@@ -225,7 +225,7 @@ const Examiner_DraftConfigure = () => {
                                                 {q.text || "No content..."}
                                             </p>
                                         </div>
-                                        <span className="text-[9px] font-bold px-1.5 py-0.5 bg-indigo-50 text-[#4F46E5] rounded">
+                                        <span className="text-[9px] font-bold px-1.5 py-0.5 bg-slate-50 text-[#0F172A] rounded">
                                             {q.difficulty}
                                         </span>
                                     </div>
@@ -235,7 +235,7 @@ const Examiner_DraftConfigure = () => {
                                     <p className="text-[13px] font-medium text-[#94A3B8]">No questions added yet</p>
                                     <button
                                         onClick={() => navigate('/add-questions')}
-                                        className="mt-2 text-[11px] font-bold text-[#4F46E5] uppercase tracking-wider hover:underline"
+                                        className="mt-2 text-[11px] font-bold text-[#0F172A] uppercase tracking-wider hover:underline"
                                     >
                                         Add Now
                                     </button>
@@ -248,7 +248,7 @@ const Examiner_DraftConfigure = () => {
                 <div className="flex justify-end pt-10 border-t border-[#E2E8F0]">
                     <button
                         onClick={handleSave}
-                        className="px-10 py-3 bg-[#4D44E5] text-white font-medium rounded-xl hover:bg-[#4338CA] transition-all shadow-sm"
+                        className="px-10 py-3 bg-[#0F172A] text-white font-medium rounded-xl hover:bg-[#1E293B] transition-all shadow-sm"
                     >
                         Publish / Schedule Exam
                     </button>

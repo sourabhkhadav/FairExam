@@ -43,12 +43,12 @@ const Examiner_ViolationReports = () => {
                 <div className="bg-white p-5 sm:p-6 rounded-2xl border border-[#E2E8F0] shadow-sm mb-8 sm:mb-10 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
                     <div className="flex flex-col sm:flex-row flex-1 gap-4">
                         <div className="flex-1 relative">
-                            <select className="w-full appearance-none px-5 py-3.5 rounded-xl border border-[#4F46E5] text-[#0F172A] font-medium bg-white outline-none cursor-pointer text-sm">
+                            <select className="w-full appearance-none px-5 py-3.5 rounded-xl border border-[#0F172A] text-[#0F172A] font-medium bg-white outline-none cursor-pointer text-sm">
                                 <option>All Exams</option>
                                 <option>Database Management Final</option>
                                 <option>Computer Networks Test</option>
                             </select>
-                            <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#4F46E5]" />
+                            <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#0F172A]" />
                         </div>
                         <div className="flex-1 relative">
                             <select className="w-full appearance-none px-5 py-3.5 rounded-xl border border-[#E2E8F0] text-[#0F172A] font-medium bg-white outline-none cursor-pointer text-sm">
@@ -60,7 +60,7 @@ const Examiner_ViolationReports = () => {
                             <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#94A3B8]" />
                         </div>
                     </div>
-                    <button className="px-8 py-3.5 bg-[#4338CA] text-white font-medium rounded-xl flex items-center justify-center gap-2.5 hover:bg-[#3730A3] transition-all shadow-lg shadow-indigo-100/50 active:scale-95 cursor-pointer text-sm">
+                    <button className="px-8 py-3.5 bg-[#0F172A] text-white font-medium rounded-xl flex items-center justify-center gap-2.5 hover:bg-[#1E293B] transition-all shadow-lg shadow-slate-100/50 active:scale-95 cursor-pointer text-sm">
                         <Search className="w-4 h-4" />
                         Search
                     </button>
@@ -86,7 +86,7 @@ const Examiner_ViolationReports = () => {
                                         <td className="py-5 font-medium whitespace-nowrap">
                                             <Link
                                                 to={`/student-violations/${v.name}`}
-                                                className="text-[#4F46E5] hover:text-[#4338CA] hover:underline transition-colors"
+                                                className="text-[#0F172A] hover:text-[#1E293B] hover:underline transition-colors"
                                             >
                                                 {v.name}
                                             </Link>

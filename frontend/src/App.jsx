@@ -50,9 +50,9 @@ function App() {
         {/* 404 Route */}
         <Route path="*" element={
           <div className="flex flex-col items-center justify-center min-h-screen bg-[#F8FAFC]">
-            <h1 className="text-6xl font-bold text-[#4F46E5]">404</h1>
+            <h1 className="text-6xl font-bold text-[#0F172A]">404</h1>
             <p className="text-xl text-[#0F172A]/70 mt-4">Page Not Found</p>
-            <Link to="/" className="mt-8 px-6 py-3 bg-[#4F46E5] text-white rounded-xl hover:bg-[#4338CA] transition-all">
+            <Link to="/" className="mt-8 px-6 py-3 bg-[#0F172A] text-white rounded-xl hover:bg-[#1E293B] transition-all">
               Go Home
             </Link>
           </div>

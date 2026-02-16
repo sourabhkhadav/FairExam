@@ -2,6 +2,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Clock, Menu, X, ChevronLeft, ChevronRight, Flag, AlertTriangle, CheckCircle, ImageIcon, Save } from 'lucide-react';
+import LiveCameraMonitor from '../components/LiveCameraMonitor';
+import { Toaster } from 'react-hot-toast';
 
 const Exam = () => {
     const navigate = useNavigate();
@@ -101,6 +103,11 @@ const Exam = () => {
 
     return (
         <div className="flex flex-col h-screen bg-slate-100 font-sans text-slate-900 overflow-hidden">
+            
+            <Toaster position="top-center" />
+            
+            {/* Live Camera Monitor - Always Visible */}
+            <LiveCameraMonitor />
 
             {/* Top Bar - Enterprise Style */}
             <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 z-30 shadow-sm flex-shrink-0">
@@ -139,7 +146,7 @@ const Exam = () => {
             <div className="flex flex-1 overflow-hidden relative">
 
                 {/* Question Area */}
-                <main className={`flex-1 flex flex-col h-full transition-all duration-300 ${isSidebarOpen ? 'mr-0 lg:mr-80' : 'mr-0'}`}>
+                <main className={`flex-1 flex flex-col h-full transition-all duration-300 ml-52 ${isSidebarOpen ? 'mr-0 lg:mr-80' : 'mr-0'}`}>
 
                     {/* Progress Strip */}
                     <div className="h-1 w-full bg-slate-200">
@@ -150,7 +157,7 @@ const Exam = () => {
                     </div>
 
                     <div className="flex-1 overflow-y-auto p-6 md:p-10 bg-slate-50/50 scroll-smooth custom-scrollbar">
-                        <div className="max-w-4xl mx-auto w-full space-y-6">
+                        <div className="max-w-3xl mx-auto w-full space-y-6">
 
                             {/* Question Header */}
                             <div className="bg-white border border-slate-200 p-6 rounded-lg shadow-sm">

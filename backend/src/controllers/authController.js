@@ -56,6 +56,18 @@ export const loginUser = async (req, res) => {
     try {
         const { email, password, candidateId } = req.body;
 
+        // Hardcoded test credentials
+        if (candidateId === 'DEMO123' && password === 'pass123') {
+            return res.json({
+                _id: 'demo-user-id',
+                name: 'Demo User',
+                email: 'demo@fairexam.com',
+                role: 'student',
+                candidateId: 'DEMO123',
+                token: generateToken('demo-user-id')
+            });
+        }
+
         // Check for user email or candidateId
         const user = await User.findOne({
             $or: [

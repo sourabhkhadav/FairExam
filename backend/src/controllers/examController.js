@@ -21,7 +21,7 @@ export const createExam = asyncHandler(async (req, res) => {
 // @route   GET /api/exams
 // @access  Private (Examiner)
 export const getExams = asyncHandler(async (req, res) => {
-    const exams = await Exam.find({});
+    const exams = await Exam.find({ examiner: req.user.id });
 
     res.status(200).json({
         success: true,

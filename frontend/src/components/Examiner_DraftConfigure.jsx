@@ -86,7 +86,7 @@ const Examiner_DraftConfigure = () => {
 
             <div className="space-y-8">
                 {/* Schedule */}
-                <FormSection title="Exam Schedule" icon={Calendar}>
+                <FormSection title="Exam Date and Time" icon={Calendar}>
                     <div className="flex flex-col lg:flex-row gap-8">
                         <div className="flex-1 bg-[#F8FAFC]/50 p-6 rounded-2xl border border-[#E2E8F0] space-y-6">
                             <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-lg w-fit">
@@ -95,12 +95,12 @@ const Examiner_DraftConfigure = () => {
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-1.5">
-                                    <label className="text-[11px] font-bold text-[#64748B] uppercase tracking-widest ml-1">Start Date</label>
+                                    <label className="text-[11px] font-bold text-[#64748B] uppercase tracking-widest ml-1">Exam Date</label>
                                     <input type="date" className="w-full px-4 py-3 rounded-xl bg-white border border-[#E2E8F0] outline-none"
                                         value={examData.startDate} onChange={e => updateField('startDate', e.target.value)} />
                                 </div>
                                 <div className="space-y-1.5">
-                                    <label className="text-[11px] font-bold text-[#64748B] uppercase tracking-widest ml-1">Start Time</label>
+                                    <label className="text-[11px] font-bold text-[#64748B] uppercase tracking-widest ml-1">Exam Time</label>
                                     <input type="time" className="w-full px-4 py-3 rounded-xl bg-white border border-[#E2E8F0] outline-none"
                                         value={examData.startTime} onChange={e => updateField('startTime', e.target.value)} />
                                 </div>
@@ -143,18 +143,15 @@ const Examiner_DraftConfigure = () => {
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Visibility */}
-                    <FormSection title="Visibility" icon={Eye}>
+                    <FormSection title="Visibility Options" icon={Eye}>
                         <div className="space-y-3">
-                            {['Draft', 'Public', 'Scheduled'].map(status => (
-                                <button
+                            {['Public', 'Scheduled'].map(status => (
+                                <div
                                     key={status}
-                                    onClick={() => updateField('visibility', status)}
-                                    className={`w-full px-4 py-3 rounded-xl border-2 transition-all flex items-center justify-between ${examData.visibility === status ? 'border-[#0F172A] bg-slate-50 text-[#0F172A]' : 'border-[#E2E8F0] text-[#0F172A]'
-                                        }`}
+                                    className="w-full px-4 py-3 rounded-xl border-2 border-[#E2E8F0] text-[#0F172A] transition-all flex items-center justify-between"
                                 >
                                     <span className="text-[13px] font-medium">{status}</span>
-                                    {examData.visibility === status && <div className="w-2 h-2 rounded-full bg-[#0F172A]" />}
-                                </button>
+                                </div>
                             ))}
                         </div>
                     </FormSection>
@@ -302,14 +299,14 @@ const Examiner_DraftConfigure = () => {
                                 <Calendar className="w-6 h-6 text-[#0F172A]" />
                             </div>
                             <div>
-                                <h2 className="text-xl font-medium text-[#0F172A]">Schedule Exam</h2>
-                                <p className="text-sm text-[#64748B]">Set start date and time</p>
+                                <h2 className="text-xl font-medium text-[#0F172A]">Exam Date and Time</h2>
+                                <p className="text-sm text-[#64748B]">Set exam schedule</p>
                             </div>
                         </div>
 
                         <div className="space-y-5">
                             <div>
-                                <label className="text-[11px] font-bold text-[#64748B] uppercase tracking-widest ml-1 block mb-2">Start Date</label>
+                                <label className="text-[11px] font-bold text-[#64748B] uppercase tracking-widest ml-1 block mb-2">Exam Date</label>
                                 <input 
                                     type="date" 
                                     className="w-full px-4 py-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] outline-none focus:border-[#0F172A] transition-colors"
@@ -319,7 +316,7 @@ const Examiner_DraftConfigure = () => {
                             </div>
 
                             <div>
-                                <label className="text-[11px] font-bold text-[#64748B] uppercase tracking-widest ml-1 block mb-2">Start Time</label>
+                                <label className="text-[11px] font-bold text-[#64748B] uppercase tracking-widest ml-1 block mb-2">Exam Time</label>
                                 <input 
                                     type="time" 
                                     className="w-full px-4 py-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] outline-none focus:border-[#0F172A] transition-colors"

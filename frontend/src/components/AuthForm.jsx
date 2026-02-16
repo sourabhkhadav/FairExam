@@ -1,17 +1,83 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Shield, Mail, Lock, User, Eye, EyeOff, ArrowRight, ArrowLeft } from 'lucide-react';
+import { Shield, Mail, Lock, User, Eye, EyeOff, ArrowRight, ArrowLeft, AlertTriangle, Key } from 'lucide-react';
 
 const AuthForm = ({ initialMode = 'login' }) => {
     const navigate = useNavigate();
     const [isLogin, setIsLogin] = useState(initialMode === 'login');
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
+
+    const [formData, setFormData] = useState({
+        name: '',
+        email: '',
+        password: '',
+        confirmPassword: ''
+    });
+
+    const handleChange = (e) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
 
     const toggleMode = () => {
         setIsLogin(!isLogin);
         setShowPassword(false);
         setShowConfirmPassword(false);
+        setError('');
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setError('');
+
+        if (!isLogin && formData.password !== formData.confirmPassword) {
+            setError('Passwords do not match');
+            setLoading(false);
+            return;
+        }
+
+        const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
+        const url = `http://localhost:5000${endpoint}`;
+
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(isLogin ?
+                    { email: formData.email, password: formData.password } :
+                    {
+                        name: formData.name,
+                        email: formData.email,
+                        password: formData.password
+                    }
+                )
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || 'Something went wrong');
+            }
+
+            // Success
+            localStorage.setItem('token', data.token);
+            localStorage.setItem('user', JSON.stringify({
+                _id: data._id,
+                name: data.name,
+                email: data.email
+            }));
+
+            navigate('/dashboard');
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -50,7 +116,14 @@ const AuthForm = ({ initialMode = 'login' }) => {
 
                 {/* Auth Card */}
                 <div className="rounded-[40px] p-10 bg-white border border-black/5 shadow-2xl shadow-slate-200/50 relative overflow-hidden">
-                    <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
+                    <form className="space-y-6" onSubmit={handleSubmit}>
+                        {error && (
+                            <div className="p-4 rounded-xl bg-red-50 border border-red-100 text-red-600 text-sm font-bold flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
+                                <AlertTriangle className="w-4 h-4" />
+                                {error}
+                            </div>
+                        )}
+
                         {!isLogin && (
                             <div className="space-y-2">
                                 <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 ml-1">Full Name</label>
@@ -60,6 +133,10 @@ const AuthForm = ({ initialMode = 'login' }) => {
                                     </div>
                                     <input
                                         type="text"
+                                        name="name"
+                                        required
+                                        value={formData.name}
+                                        onChange={handleChange}
                                         placeholder="John Doe"
                                         className="w-full pl-14 pr-6 py-4 rounded-2xl bg-slate-50 border border-transparent hover:bg-slate-100 focus:bg-white focus:border-brand-purple/20 transition-all duration-300 outline-none font-bold text-charcoal placeholder:text-slate-400"
                                     />
@@ -75,6 +152,10 @@ const AuthForm = ({ initialMode = 'login' }) => {
                                 </div>
                                 <input
                                     type="email"
+                                    name="email"
+                                    required
+                                    value={formData.email}
+                                    onChange={handleChange}
                                     placeholder="name@institution.edu"
                                     className="w-full pl-14 pr-6 py-4 rounded-2xl bg-slate-50 border border-transparent hover:bg-slate-100 focus:bg-white focus:border-brand-purple/20 transition-all duration-300 outline-none font-bold text-charcoal placeholder:text-slate-300"
                                 />
@@ -84,7 +165,7 @@ const AuthForm = ({ initialMode = 'login' }) => {
                         <div className="space-y-2">
                             <div className="flex justify-between items-center ml-1">
                                 <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Password</label>
-                                {isLogin && <button className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-purple">Forgot?</button>}
+                                {isLogin && <button type="button" className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-purple">Forgot?</button>}
                             </div>
                             <div className="relative group overflow-hidden">
                                 <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-brand-purple transition-colors duration-300">
@@ -92,6 +173,10 @@ const AuthForm = ({ initialMode = 'login' }) => {
                                 </div>
                                 <input
                                     type={showPassword ? "text" : "password"}
+                                    name="password"
+                                    required
+                                    value={formData.password}
+                                    onChange={handleChange}
                                     placeholder="••••••••"
                                     className="w-full pl-14 pr-14 py-4 rounded-2xl bg-slate-50 border border-transparent hover:bg-slate-100 focus:bg-white focus:border-brand-purple/20 transition-all duration-300 outline-none font-bold text-charcoal placeholder:text-slate-300"
                                 />
@@ -105,6 +190,7 @@ const AuthForm = ({ initialMode = 'login' }) => {
                             </div>
                         </div>
 
+
                         {!isLogin && (
                             <div className="space-y-2">
                                 <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Confirm Password</label>
@@ -114,6 +200,10 @@ const AuthForm = ({ initialMode = 'login' }) => {
                                     </div>
                                     <input
                                         type={showConfirmPassword ? "text" : "password"}
+                                        name="confirmPassword"
+                                        required
+                                        value={formData.confirmPassword}
+                                        onChange={handleChange}
                                         placeholder="••••••••"
                                         className="w-full pl-14 pr-14 py-4 rounded-2xl bg-slate-50 border border-transparent hover:bg-slate-100 focus:bg-white focus:border-brand-purple/20 transition-all duration-300 outline-none font-bold text-charcoal placeholder:text-slate-300"
                                     />
@@ -128,9 +218,13 @@ const AuthForm = ({ initialMode = 'login' }) => {
                             </div>
                         )}
 
-                        <button className="w-full py-4 rounded-2xl bg-charcoal text-white font-bold text-sm uppercase tracking-widest flex items-center justify-center gap-3 shadow-xl shadow-indigo-100 cursor-pointer">
-                            {isLogin ? 'Sign In' : 'Create Account'}
-                            <ArrowRight className="w-4 h-4" />
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="w-full py-4 rounded-2xl bg-charcoal text-white font-bold text-sm uppercase tracking-widest flex items-center justify-center gap-3 shadow-xl shadow-indigo-100 cursor-pointer disabled:opacity-70 disabled:cursor-wait transition-all hover:bg-brand-purple"
+                        >
+                            {loading ? 'Processing...' : (isLogin ? 'Sign In' : 'Create Account')}
+                            {!loading && <ArrowRight className="w-4 h-4" />}
                         </button>
                     </form>
                 </div>

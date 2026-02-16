@@ -8,6 +8,12 @@
   --color-light-slate: #F8FAFC;
   --color-charcoal: #0F172A;
 
+  /* Migrated from tailwind.config.js */
+  --color-dark: #050510;
+  --color-primary: #0EA5E9;
+  --color-secondary: #8B5CF6;
+  --background-image-gradient-radial: radial-gradient(var(--tw-gradient-stops));
+
   --animate-float: float 6s ease-in-out infinite;
   --animate-pulse-slow: pulse-slow 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }

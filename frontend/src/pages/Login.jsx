@@ -57,22 +57,45 @@ const Login = () => {
         performChecks();
     }, []);
 
-    const handleLogin = (e) => {
+    const handleLogin = async (e) => {
         e.preventDefault();
         setError('');
         setIsLoading(true);
 
-        // Simulated network delay
-        setTimeout(() => {
-            if ((formData.candidateId === 'SWE2026001' && formData.password === 'exam@123') ||
-                (formData.candidateId === 'bhavishya' && formData.password === 'bhavishya123')) {
-                const name = formData.candidateId === 'bhavishya' ? 'Bhavishya' : 'Alex Kumar';
-                navigate('/instructions', { state: { name } });
-            } else {
-                setError('Authentication failed. Please check your credentials.');
-                setIsLoading(false);
+        try {
+            const response = await fetch('http://localhost:5000/api/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    candidateId: formData.candidateId,
+                    password: formData.password
+                })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || 'Authentication failed');
             }
-        }, 1000);
+
+            // Success
+            localStorage.setItem('token', data.token);
+            localStorage.setItem('user', JSON.stringify({
+                _id: data._id,
+                name: data.name,
+                email: data.email,
+                role: data.role,
+                candidateId: data.candidateId
+            }));
+
+            navigate('/instructions', { state: { name: data.name } });
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const allChecksPassed = Object.values(systemStatus).every(s => s === 'success');

@@ -117,9 +117,9 @@ function Landing_Home() {
                                     Secure Login
                                     <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform" />
                                 </Link>
-                                <button className="w-full sm:w-auto px-10 py-6 rounded-3xl border border-black/10 bg-white font-black text-xl hover:bg-slate-50 transition-all text-charcoal flex items-center justify-center gap-3 cursor-pointer">
+                                <Link to="/candidate-login" className="w-full sm:w-auto px-10 py-6 rounded-3xl border border-black/10 bg-white font-black text-xl hover:bg-slate-50 transition-all text-charcoal flex items-center justify-center gap-3 cursor-pointer">
                                     View Assigned Exams
-                                </button>
+                                </Link>
                             </div>
                         </div>
 

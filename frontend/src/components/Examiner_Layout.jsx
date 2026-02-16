@@ -6,20 +6,38 @@ import {
 } from 'lucide-react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 
-const SidebarItem = ({ icon: Icon, label, active = false, to = "#", collapsed = false, onClick }) => (
-    <Link to={to} onClick={onClick} className={`flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-all duration-200 group ${active
+const SidebarItem = ({ icon: Icon, label, active = false, to, collapsed = false, onClick }) => {
+    const content = (
+        <>
+            <Icon className={`w-5 h-5 ${active ? 'text-[#4F46E5]' : 'text-[#64748B]'}`} />
+            <span className={`font-medium text-[15px] whitespace-nowrap ${collapsed ? 'hidden' : 'block'}`}>{label}</span>
+            {collapsed && (
+                <div className="absolute left-full ml-2 px-2 py-1 bg-[#1E293B] text-white text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 whitespace-nowrap">
+                    {label}
+                </div>
+            )}
+        </>
+    );
+
+    const classes = `flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-all duration-200 group w-full text-left ${active
         ? 'bg-[#F1F5F9] text-[#4F46E5]'
         : 'text-[#475569] hover:bg-[#F8FAFC] hover:text-[#0F172A]'
-        }`}>
-        <Icon className={`w-5 h-5 ${active ? 'text-[#4F46E5]' : 'text-[#64748B]'}`} />
-        <span className={`font-medium text-[15px] whitespace-nowrap ${collapsed ? 'hidden' : 'block'}`}>{label}</span>
-        {collapsed && (
-            <div className="absolute left-full ml-2 px-2 py-1 bg-[#1E293B] text-white text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 whitespace-nowrap">
-                {label}
-            </div>
-        )}
-    </Link>
-);
+        }`;
+
+    if (to) {
+        return (
+            <Link to={to} onClick={onClick} className={classes}>
+                {content}
+            </Link>
+        );
+    }
+
+    return (
+        <button onClick={onClick} className={classes}>
+            {content}
+        </button>
+    );
+};
 
 const Examiner_Layout = () => {
     const [isCollapsed, setIsCollapsed] = useState(false);
@@ -36,6 +54,13 @@ const Examiner_Layout = () => {
     ];
 
     const closeMobileMenu = () => setIsMobileMenuOpen(false);
+
+    const handleLogout = () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        localStorage.removeItem('examDraft');
+        navigate('/login');
+    };
 
     return (
         <div className="flex min-h-screen bg-[#F8FAFC] font-sans">
@@ -104,6 +129,12 @@ const Examiner_Layout = () => {
                         active={location.pathname === '/profile'}
                         collapsed={isCollapsed}
                         onClick={closeMobileMenu}
+                    />
+                    <SidebarItem
+                        icon={LogOut}
+                        label="Logout"
+                        collapsed={isCollapsed}
+                        onClick={handleLogout}
                     />
                 </div>
 

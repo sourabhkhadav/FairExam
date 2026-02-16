@@ -21,7 +21,7 @@ export const createExam = asyncHandler(async (req, res) => {
 // @route   GET /api/exams
 // @access  Private (Examiner)
 export const getExams = asyncHandler(async (req, res) => {
-    const exams = await Exam.find({ examiner: req.user.id });
+    const exams = await Exam.find({});
 
     res.status(200).json({
         success: true,
@@ -98,7 +98,7 @@ export const deleteExam = asyncHandler(async (req, res) => {
         throw new Error('Not authorized to delete this exam');
     }
 
-    await exam.remove();
+    await Exam.deleteOne({ _id: req.params.id });
 
     res.status(200).json({
         success: true,

@@ -223,12 +223,11 @@ const Examiner_AddQuestions = () => {
             if (status === 'published') {
                 alert('Exam published successfully!');
                 localStorage.removeItem('examDraft');
-                navigate('/manage-exams');
+                window.location.href = '/manage-exams';
             } else {
                 alert('Draft saved successfully!');
-                const newMetaData = { ...metaData, _id: data.data._id };
-                setMetaData(newMetaData);
-                localStorage.setItem('examDraft', JSON.stringify({ ...newMetaData, sections, questions }));
+                localStorage.removeItem('examDraft'); // Clear draft after saving to DB to avoid stale data
+                window.location.href = '/manage-exams';
             }
 
         } catch (error) {

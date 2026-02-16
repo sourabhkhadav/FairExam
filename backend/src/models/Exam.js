@@ -58,6 +58,12 @@ const examSchema = new mongoose.Schema({
     },
     description: String,
     category: String,
+    startDate: String,
+    startTime: String,
+    duration: {
+        type: Number,
+        default: 0
+    },
     examiner: {
         type: mongoose.Schema.ObjectId,
         ref: 'User',

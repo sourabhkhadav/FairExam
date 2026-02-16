@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
-    PlusCircle, ArrowLeft, Shield, Eye, Lock, Monitor, Scissors, ChevronRight
+    PlusCircle, ArrowLeft, Shield, Eye, Lock, Monitor, Scissors, ChevronRight, Trash2
 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 
@@ -29,42 +29,78 @@ const Examiner_EditExam = () => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        try {
-            const published = JSON.parse(localStorage.getItem('publishedExams') || '[]');
-            const existingExam = published.find(e => e.id.toString() === id.toString());
-
-            if (existingExam) {
-                setExamData(existingExam);
-            } else {
-                // Also check drafts if not in published
-                const draft = localStorage.getItem('examDraft');
-                if (draft) {
-                    const parsedDraft = JSON.parse(draft);
-                    if (parsedDraft.id?.toString() === id.toString()) {
-                        setExamData(parsedDraft);
-                    }
+        const fetchExam = async () => {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    navigate('/login');
+                    return;
                 }
+
+                const response = await fetch(`http://localhost:5000/api/exams/${id}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed to fetch exam');
+
+                const data = await response.json();
+                if (data.success) {
+                    setExamData(data.data);
+                }
+            } catch (e) {
+                console.error("Failed to load exam data", e);
+                alert("Could not load exam details.");
+                navigate('/manage-exams');
+            } finally {
+                setLoading(false);
             }
-        } catch (e) {
-            console.error("Failed to load exam data", e);
-        } finally {
-            setLoading(false);
+        };
+
+        if (id) {
+            fetchExam();
         }
-    }, [id]);
+    }, [id, navigate]);
 
     const updateField = (field, value) => {
         setExamData(prev => ({ ...prev, [field]: value }));
     };
 
-    const handleContinue = () => {
+    const handleContinue = async () => {
         if (!examData.title) {
             alert("Please enter an exam title");
             return;
         }
 
-        // Save to draft for the next step (AddQuestions)
-        localStorage.setItem('examDraft', JSON.stringify(examData));
-        navigate('/add-questions');
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`http://localhost:5000/api/exams/${id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    title: examData.title,
+                    category: examData.category
+                    // We typically only update metadata here. Questions are handled in the next step.
+                    // However, we should pass the full current state to the draft so questions aren't lost if the user navigates forthwith.
+                })
+            });
+
+            if (response.ok) {
+                // Save to draft for the next step (AddQuestions)
+                // We must ensure the draft has the ID so AddQuestions knows it's an update.
+                localStorage.setItem('examDraft', JSON.stringify(examData));
+                navigate('/add-questions');
+            } else {
+                throw new Error("Failed to update exam");
+            }
+        } catch (error) {
+            console.error("Update error:", error);
+            alert("Failed to save changes.");
+        }
     };
 
     if (loading) {

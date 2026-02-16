@@ -13,6 +13,7 @@ const Examiner_AddQuestions = () => {
     const [metaData, setMetaData] = useState(null);
     const [focusedIndex, setFocusedIndex] = useState(0);
     const [isNavOpen, setIsNavOpen] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
     const [sections, setSections] = useState([
         { id: 0, name: 'Section 1' }
     ]);
@@ -101,10 +102,55 @@ const Examiner_AddQuestions = () => {
         setFocusedIndex(insertIdx);
     };
 
-    const handleImport = (e) => {
+    const handleImport = async (e) => {
         const file = e.target.files[0];
-        if (file) {
-            alert(`File "${file.name}" selected for import.`);
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        setIsLoading(true);
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch('http://localhost:5000/api/exams/import-questions', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || 'Import failed');
+            }
+
+            if (data.data && Array.isArray(data.data)) {
+                // Append imported questions to existing ones (or replace? Let's append)
+                // Or better, ask user? For now, let's just append or if empty replace.
+                // Actually, let's replace/append logic:
+                // If there's only 1 default question and it's empty, replace it.
+                // Otherwise append.
+
+                let newQuestions = [...data.data];
+
+                // If current questions are just the default one and empty, replace
+                if (questions.length === 1 && questions[0].text === '' && questions[0].options[0] === '') {
+                    setQuestions(newQuestions);
+                } else {
+                    setQuestions([...questions, ...newQuestions]);
+                }
+
+                alert(`Successfully imported ${data.count} questions.`);
+            }
+        } catch (error) {
+            console.error('Import error:', error);
+            alert(`Error importing file: ${error.message}`);
+        } finally {
+            setIsLoading(false);
+            // Reset file input
+            e.target.value = null;
         }
     };
 
@@ -133,36 +179,69 @@ const Examiner_AddQuestions = () => {
         setFocusedIndex(Math.max(0, focusedIndex - 1));
     };
 
-    const handleSaveDraft = () => {
-        const draft = {
-            ...metaData,
-            sections,
-            questions
-        };
-        localStorage.setItem('examDraft', JSON.stringify(draft));
-        alert('Draft saved successfully!');
-    };
-
-    const handlePublish = () => {
-        const newExam = {
-            ...metaData,
-            questions,
-            sections,
-            id: metaData.id || Date.now()
-        };
-        const existingExams = JSON.parse(localStorage.getItem('publishedExams') || '[]');
-        const existingIdx = existingExams.findIndex(e => e.id === newExam.id);
-
-        if (existingIdx > -1) {
-            existingExams[existingIdx] = newExam;
-        } else {
-            existingExams.push(newExam);
+    const saveExamToBackend = async (status) => {
+        if (!metaData?.title) {
+            alert("Title is missing");
+            return;
         }
 
-        localStorage.setItem('publishedExams', JSON.stringify(existingExams));
-        localStorage.removeItem('examDraft');
-        navigate('/manage-exams');
+        setIsLoading(true);
+        try {
+            const token = localStorage.getItem('token');
+            const examPayload = {
+                title: metaData.title,
+                category: metaData.category,
+                description: metaData.description || metaData.category,
+                status: status,
+                sections: sections,
+                questions: questions
+            };
+
+            let url = 'http://localhost:5000/api/exams';
+            let method = 'POST';
+
+            if (metaData._id) {
+                url = `http://localhost:5000/api/exams/${metaData._id}`;
+                method = 'PUT';
+            }
+
+            const response = await fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(examPayload)
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || 'Save failed');
+            }
+
+            if (status === 'published') {
+                alert('Exam published successfully!');
+                localStorage.removeItem('examDraft');
+                navigate('/manage-exams');
+            } else {
+                alert('Draft saved successfully!');
+                const newMetaData = { ...metaData, _id: data.data._id };
+                setMetaData(newMetaData);
+                localStorage.setItem('examDraft', JSON.stringify({ ...newMetaData, sections, questions }));
+            }
+
+        } catch (error) {
+            console.error('Save error:', error);
+            alert(`Error saving exam: ${error.message}`);
+        } finally {
+            setIsLoading(false);
+        }
     };
+
+    const handleSaveDraft = () => saveExamToBackend('draft');
+
+    const handlePublish = () => saveExamToBackend('published');
 
     const currentQuestion = questions[focusedIndex];
 
@@ -346,9 +425,11 @@ const Examiner_AddQuestions = () => {
                                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                             />
                             <button
-                                className="w-full py-3.5 bg-white border border-[#E2E8F0] rounded-2xl text-[#6366F1] font-semibold text-[13px] hover:bg-[#6366F1] hover:text-white transition-all flex items-center justify-center gap-2.5 shadow-sm"
+                                disabled={isLoading}
+                                className="w-full py-3.5 bg-white border border-[#E2E8F0] rounded-2xl text-[#6366F1] font-semibold text-[13px] hover:bg-[#6366F1] hover:text-white transition-all flex items-center justify-center gap-2.5 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                <Sparkles className="w-4 h-4" /> Bulk Import
+                                <Sparkles className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+                                {isLoading ? 'Importing...' : 'Bulk Import'}
                             </button>
                         </div>
                     </div>

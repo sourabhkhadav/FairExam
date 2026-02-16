@@ -409,15 +409,7 @@ const Examiner_AddQuestions = () => {
                                         <label className="text-[11px] font-medium text-[#0F172A] uppercase tracking-[0.1em]">Question Context</label>
                                     </div>
                                     <div className="flex items-center gap-3">
-                                        <select
-                                            className="bg-[#F8FAFC] border border-[#E2E8F0] text-[12px] font-medium text-[#6366F1] outline-none cursor-pointer px-3 py-1.5 rounded-xl hover:bg-white transition-colors"
-                                            value={currentQuestion.difficulty}
-                                            onChange={(e) => updateQuestion(focusedIndex, 'difficulty', e.target.value)}
-                                        >
-                                            <option>Easy</option>
-                                            <option>Medium</option>
-                                            <option>Hard</option>
-                                        </select>
+
                                         <div className="flex items-center gap-2.5 bg-[#F8FAFC] border border-[#E2E8F0] px-3.5 py-1.5 rounded-xl">
                                             <span className="text-[12px] font-normal text-[#475569]">Marks:</span>
                                             <input

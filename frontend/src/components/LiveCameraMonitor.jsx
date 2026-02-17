@@ -85,6 +85,19 @@ const LiveCameraMonitor = () => {
         }, 8000);
     };
 
+    const stopDetection = () => {
+        if (detectionIntervalRef.current) {
+            clearInterval(detectionIntervalRef.current);
+            detectionIntervalRef.current = null;
+        }
+    };
+
+    const startDetection = () => {
+        if (!detectionIntervalRef.current) {
+            startFaceDetection();
+        }
+    };
+
     const detectFaces = async () => {
         if (!webcamRef.current?.video || !modelsLoaded) return;
 

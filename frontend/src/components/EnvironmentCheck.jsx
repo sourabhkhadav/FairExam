@@ -22,11 +22,14 @@ const EnvironmentCheck = ({ onCheckComplete }) => {
     const loadModels = async () => {
         try {
             const MODEL_URL = '/models';
+            console.log('EnvironmentCheck: Loading TinyFaceDetector...');
             await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+            console.log('EnvironmentCheck: Loading Face Landmarks...');
             await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
             setModelsLoaded(true);
+            console.log('✅ EnvironmentCheck: Models loaded');
         } catch (error) {
-            console.error('Model loading failed:', error);
+            console.error('EnvironmentCheck: Model loading failed:', error);
         }
     };
 
@@ -75,10 +78,11 @@ const EnvironmentCheck = ({ onCheckComplete }) => {
         try {
             const detections = await faceapi.detectAllFaces(
                 video,
-                new faceapi.TinyFaceDetectorOptions({ inputSize: 128, scoreThreshold: 0.5 })
+                new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.5 })
             );
 
             const faceCount = detections.length;
+            console.log('EnvironmentCheck: Detected', faceCount, 'faces');
 
             // Check 2: Face Visible
             if (faceCount > 0) {

@@ -46,29 +46,42 @@ const Exam = () => {
 
     // Voice/Sound Detection
     useEffect(() => {
-        let animationId;
+        let intervalId;
         
         const startAudioDetection = async () => {
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    audio: {
+                        echoCancellation: false,
+                        noiseSuppression: false,
+                        autoGainControl: false
+                    }
+                });
                 micStreamRef.current = stream;
                 
                 audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
                 analyserRef.current = audioContextRef.current.createAnalyser();
                 const microphone = audioContextRef.current.createMediaStreamSource(stream);
                 
-                analyserRef.current.fftSize = 2048;
-                analyserRef.current.smoothingTimeConstant = 0.8;
+                analyserRef.current.fftSize = 512;
+                analyserRef.current.smoothingTimeConstant = 0.3;
                 microphone.connect(analyserRef.current);
                 
                 const bufferLength = analyserRef.current.frequencyBinCount;
                 const dataArray = new Uint8Array(bufferLength);
                 
                 const detectSound = () => {
-                    analyserRef.current.getByteFrequencyData(dataArray);
-                    const average = dataArray.reduce((a, b) => a + b) / bufferLength;
+                    analyserRef.current.getByteTimeDomainData(dataArray);
                     
-                    if (average > 50 && !soundLockRef.current) {
+                    let sum = 0;
+                    for (let i = 0; i < bufferLength; i++) {
+                        const normalized = (dataArray[i] - 128) / 128;
+                        sum += normalized * normalized;
+                    }
+                    const rms = Math.sqrt(sum / bufferLength);
+                    const db = 20 * Math.log10(rms);
+                    
+                    if (db > -40 && !soundLockRef.current) {
                         soundLockRef.current = true;
                         
                         setSoundViolations(prev => {
@@ -80,22 +93,21 @@ const Exam = () => {
                         
                         setTimeout(() => {
                             soundLockRef.current = false;
-                        }, 500);
+                        }, 1000);
                     }
-                    
-                    animationId = requestAnimationFrame(detectSound);
                 };
                 
-                detectSound();
+                intervalId = setInterval(detectSound, 100);
             } catch (err) {
                 console.error('Microphone error:', err);
+                toast.error('Microphone access required!');
             }
         };
         
         startAudioDetection();
         
         return () => {
-            if (animationId) cancelAnimationFrame(animationId);
+            if (intervalId) clearInterval(intervalId);
             if (micStreamRef.current) {
                 micStreamRef.current.getTracks().forEach(track => track.stop());
             }

@@ -84,16 +84,21 @@ const EnvironmentCheck = ({ onCheckComplete }) => {
             const faceCount = detections.length;
             console.log('EnvironmentCheck: Detected', faceCount, 'faces');
 
-            // Check 2: Face Visible
-            if (faceCount > 0) {
+            // Check 2: Face Visible - STRICT CHECK
+            if (faceCount === 1) {
                 setChecks(prev => ({
                     ...prev,
                     faceVisible: { status: 'passed', message: 'Face detected successfully' }
                 }));
-            } else {
+            } else if (faceCount === 0) {
                 setChecks(prev => ({
                     ...prev,
                     faceVisible: { status: 'failed', message: 'No face detected. Position yourself properly.' }
+                }));
+            } else {
+                setChecks(prev => ({
+                    ...prev,
+                    faceVisible: { status: 'failed', message: 'Multiple faces detected. Ensure you are alone.' }
                 }));
             }
 
@@ -149,8 +154,8 @@ const EnvironmentCheck = ({ onCheckComplete }) => {
                 }));
             }
 
-            // Check if all critical checks passed
-            const allPassed = faceCount === 1 && brightness >= 60 && brightness <= 200;
+            // STRICT: All critical checks must pass - Face is MANDATORY
+            const allPassed = faceCount === 1;
             setAllChecksPassed(allPassed);
 
         } catch (error) {
@@ -288,7 +293,13 @@ const EnvironmentCheck = ({ onCheckComplete }) => {
                             Recheck
                         </button>
                         <button
-                            onClick={() => onCheckComplete(allChecksPassed)}
+                            onClick={() => {
+                                if (checks.faceVisible.status !== 'passed') {
+                                    alert('❌ Face must be visible to start exam!');
+                                    return;
+                                }
+                                onCheckComplete(allChecksPassed);
+                            }}
                             disabled={!allChecksPassed}
                             className={`px-6 py-2 text-sm font-bold rounded-lg ${
                                 allChecksPassed

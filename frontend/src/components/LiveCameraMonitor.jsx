@@ -3,6 +3,7 @@ import Webcam from 'react-webcam';
 import * as faceapi from 'face-api.js';
 import { Camera, CameraOff, AlertTriangle, Users, EyeOff, Activity } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { detectMultiplePeople } from '../utils/advancedPersonDetection';
 
 const LiveCameraMonitor = () => {
     const webcamRef = useRef(null);
@@ -14,6 +15,8 @@ const LiveCameraMonitor = () => {
     const [currentWarning, setCurrentWarning] = useState(null);
     const [detectionStats, setDetectionStats] = useState({
         faceCount: 0,
+        bodyVisible: false,
+        poseDetected: false,
         lastDetectionTime: null
     });
 
@@ -26,14 +29,16 @@ const LiveCameraMonitor = () => {
         lookingAway: null,
         lookingAwayStartTime: null,
         eyeGazeAway: null,
-        eyeGazeAwayStartTime: null
+        eyeGazeAwayStartTime: null,
+        noBody: null,
+        noBodyStartTime: null,
+        multiplePersonToastId: null
     });
 
     // Load face-api.js models
     useEffect(() => {
         loadModels();
         requestCameraPermission();
-        startFaceDetection();
         
         return () => {
             if (detectionIntervalRef.current) {
@@ -79,22 +84,17 @@ const LiveCameraMonitor = () => {
         }
     };
 
-    const startFaceDetection = () => {
-        detectionIntervalRef.current = setInterval(() => {
-            detectFaces();
-        }, 8000);
+    const startDetection = () => {
+        detectionIntervalRef.current = setInterval(async () => {
+            await detectFaces();
+            await detectAdvancedPerson();
+        }, 18);
     };
 
     const stopDetection = () => {
         if (detectionIntervalRef.current) {
             clearInterval(detectionIntervalRef.current);
             detectionIntervalRef.current = null;
-        }
-    };
-
-    const startDetection = () => {
-        if (!detectionIntervalRef.current) {
-            startFaceDetection();
         }
     };
 
@@ -107,17 +107,31 @@ const LiveCameraMonitor = () => {
         try {
             const detections = await faceapi.detectAllFaces(
                 video,
-                new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.5 })
+                new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.2 })
             );
 
             const faceCount = detections.length;
             const currentTime = Date.now();
+
+            // Body detection: Check if face is too large (too close) or too small (too far)
+            let bodyVisible = false;
+            if (faceCount === 1) {
+                const faceBox = detections[0].box;
+                const videoHeight = video.videoHeight;
+                const faceHeight = faceBox.height;
+                const faceRatio = faceHeight / videoHeight;
+                
+                // Face should be 15-50% of video height for proper body visibility
+                bodyVisible = faceRatio >= 0.15 && faceRatio <= 0.5;
+                console.log('📏 Face ratio:', faceRatio.toFixed(2), 'Body visible:', bodyVisible);
+            }
 
             console.log('🔍 Detected faces:', faceCount);
 
             setDetectionStats(prev => ({
                 ...prev,
                 faceCount,
+                bodyVisible,
                 lastDetectionTime: currentTime
             }));
 
@@ -135,11 +149,18 @@ const LiveCameraMonitor = () => {
                 resetNoFaceTimer();
             }
 
+            // Body visibility check
+            if (faceCount === 1 && !bodyVisible) {
+                handleNoBody(currentTime);
+            } else {
+                resetNoBodyTimer();
+            }
+
             // Only do advanced detection if exactly 1 face
             if (faceCount === 1) {
                 const detectionWithLandmarks = await faceapi.detectSingleFace(
                     video,
-                    new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.5 })
+                    new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.2 })
                 ).withFaceLandmarks();
                 
                 if (detectionWithLandmarks) {
@@ -164,11 +185,6 @@ const LiveCameraMonitor = () => {
                 style: { background: '#DC2626', color: '#fff', fontWeight: 'bold', fontSize: '16px' }
             });
             violationTimersRef.current.multipleFaceToastId = toastId;
-        }
-
-        const duration = currentTime - violationTimersRef.current.multipleFaceStartTime;
-
-        if (duration > 0) {
             console.log('🚨 MULTIPLE FACES DETECTED!');
             logViolation('MULTIPLE_PERSON_DETECTED', 'Multiple people detected');
         }
@@ -308,6 +324,65 @@ const LiveCameraMonitor = () => {
         violationTimersRef.current.eyeGazeAway = false;
     };
 
+    const handleNoBody = (currentTime) => {
+        if (!violationTimersRef.current.noBodyStartTime) {
+            violationTimersRef.current.noBodyStartTime = currentTime;
+        }
+
+        const duration = currentTime - violationTimersRef.current.noBodyStartTime;
+
+        if (duration > 3000 && !violationTimersRef.current.noBody) {
+            violationTimersRef.current.noBody = true;
+            logViolation('BODY_NOT_VISIBLE', 'Upper body not properly visible - adjust camera position');
+            toast.error('⚠️ Position yourself properly! Show upper body.', {
+                duration: 5000,
+                style: { background: '#DC2626', color: '#fff', fontWeight: 'bold' }
+            });
+        }
+    };
+
+    const resetNoBodyTimer = () => {
+        violationTimersRef.current.noBodyStartTime = null;
+        violationTimersRef.current.noBody = false;
+    };
+
+    const detectAdvancedPerson = async () => {
+        if (!webcamRef.current?.video) return;
+
+        const video = webcamRef.current.video;
+        if (video.readyState !== 4) return;
+
+        try {
+            const poseAnalysis = await detectMultiplePeople(video);
+
+            const isViolation = poseAnalysis?.suspiciousActivity;
+            const warning = poseAnalysis?.warning;
+
+            if (isViolation) {
+                if (!violationTimersRef.current.multiplePersonToastId) {
+                    const toastId = toast.error(`🚨 ${warning}`, {
+                        duration: Infinity,
+                        style: { background: '#DC2626', color: '#fff', fontWeight: 'bold', fontSize: '16px' }
+                    });
+                    violationTimersRef.current.multiplePersonToastId = toastId;
+                    logViolation('SIDE_PERSON_DETECTED', warning);
+                }
+            } else {
+                if (violationTimersRef.current.multiplePersonToastId) {
+                    toast.dismiss(violationTimersRef.current.multiplePersonToastId);
+                    violationTimersRef.current.multiplePersonToastId = null;
+                }
+            }
+
+            setDetectionStats(prev => ({
+                ...prev,
+                poseDetected: !!poseAnalysis
+            }));
+        } catch (error) {
+            console.error('Advanced detection error:', error);
+        }
+    };
+
     const logViolation = (type, description) => {
         const violation = {
             time: new Date().toLocaleTimeString(),
@@ -406,7 +481,7 @@ const LiveCameraMonitor = () => {
                     {cameraStatus === 'active' && isCameraEnabled && (
                         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2">
                             <p className="text-white text-xs font-medium text-center">
-                                {modelsLoaded ? `🔒 Faces: ${detectionStats.faceCount}` : '⏳ Loading AI...'}
+                                {modelsLoaded ? `🔒 F:${detectionStats.faceCount} | B:${detectionStats.bodyVisible ? '✓' : '✗'} | P:${detectionStats.poseDetected ? '✓' : '✗'}` : '⏳ Loading...'}
                             </p>
                         </div>
                     )}

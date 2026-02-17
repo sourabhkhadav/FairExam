@@ -1,15 +1,37 @@
 import React, { useRef, useEffect, useState } from 'react';
 import Webcam from 'react-webcam';
-import { Camera, CameraOff, AlertTriangle } from 'lucide-react';
+import * as faceapi from 'face-api.js';
+import { Camera, CameraOff, AlertTriangle, Users, EyeOff, Activity } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const LiveCameraMonitor = () => {
     const webcamRef = useRef(null);
-    const [cameraStatus, setCameraStatus] = useState('loading'); // loading, active, denied, error
-    const [faceCount, setFaceCount] = useState(0);
-    const detectionIntervalRef = useRef(null);
+    const canvasRef = useRef(null);
+    const [cameraStatus, setCameraStatus] = useState('loading');
+    const [isCameraEnabled, setIsCameraEnabled] = useState(true);
+    const [modelsLoaded, setModelsLoaded] = useState(false);
+    const [violations, setViolations] = useState([]);
+    const [currentWarning, setCurrentWarning] = useState(null);
+    const [detectionStats, setDetectionStats] = useState({
+        faceCount: 0,
+        lastDetectionTime: null
+    });
 
+    const detectionIntervalRef = useRef(null);
+    const violationTimersRef = useRef({
+        noFace: null,
+        noFaceStartTime: null,
+        multipleFaceStartTime: null,
+        multipleFaceToastId: null,
+        lookingAway: null,
+        lookingAwayStartTime: null,
+        eyeGazeAway: null,
+        eyeGazeAwayStartTime: null
+    });
+
+    // Load face-api.js models
     useEffect(() => {
+        loadModels();
         requestCameraPermission();
         startFaceDetection();
         
@@ -17,8 +39,35 @@ const LiveCameraMonitor = () => {
             if (detectionIntervalRef.current) {
                 clearInterval(detectionIntervalRef.current);
             }
+            Object.values(violationTimersRef.current).forEach(timer => {
+                if (timer) clearTimeout(timer);
+            });
         };
     }, []);
+
+    // Start detection when models loaded and camera active
+    useEffect(() => {
+        if (modelsLoaded && cameraStatus === 'active' && isCameraEnabled) {
+            startDetection();
+        } else {
+            stopDetection();
+        }
+    }, [modelsLoaded, cameraStatus, isCameraEnabled]);
+
+    const loadModels = async () => {
+        try {
+            const MODEL_URL = '/models';
+            console.log('Loading TinyFaceDetector...');
+            await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+            console.log('Loading Face Landmarks...');
+            await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
+            setModelsLoaded(true);
+            console.log('✅ All models loaded successfully');
+        } catch (error) {
+            console.error('❌ Model loading failed:', error);
+            toast.error('AI models failed to load. Using basic monitoring.');
+        }
+    };
 
     const requestCameraPermission = async () => {
         try {
@@ -26,11 +75,7 @@ const LiveCameraMonitor = () => {
             stream.getTracks().forEach(track => track.stop());
             setCameraStatus('active');
         } catch (error) {
-            if (error.name === 'NotAllowedError') {
-                setCameraStatus('denied');
-            } else {
-                setCameraStatus('error');
-            }
+            setCameraStatus(error.name === 'NotAllowedError' ? 'denied' : 'error');
         }
     };
 
@@ -41,43 +86,245 @@ const LiveCameraMonitor = () => {
     };
 
     const detectFaces = async () => {
-        if (cameraStatus !== 'active') return;
+        if (!webcamRef.current?.video || !modelsLoaded) return;
+
+        const video = webcamRef.current.video;
+        if (video.readyState !== 4) return;
 
         try {
-            const random = Math.random();
-            
-            if (random < 0.40) {
-                toast.error('⚠️ No face detected! Stay in frame.', {
-                    duration: 3000,
-                    style: { background: '#DC2626', color: '#fff', fontWeight: 'bold' }
-                });
-            } else if (random >= 0.85) {
-                toast.error('⚠️ Multiple faces detected! Cheating suspected.', {
-                    duration: 3000,
-                    style: { background: '#DC2626', color: '#fff', fontWeight: 'bold' }
-                });
+            const detections = await faceapi.detectAllFaces(
+                video,
+                new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.5 })
+            );
+
+            const faceCount = detections.length;
+            const currentTime = Date.now();
+
+            console.log('🔍 Detected faces:', faceCount);
+
+            setDetectionStats(prev => ({
+                ...prev,
+                faceCount,
+                lastDetectionTime: currentTime
+            }));
+
+            // Rule 1: Multiple Faces Detection
+            if (faceCount > 1) {
+                handleMultipleFaces(currentTime);
+            } else {
+                resetMultipleFaceTimer();
             }
+
+            // Rule 2: No Face Detection
+            if (faceCount === 0) {
+                handleNoFace(currentTime);
+            } else {
+                resetNoFaceTimer();
+            }
+
+            // Only do advanced detection if exactly 1 face
+            if (faceCount === 1) {
+                const detectionWithLandmarks = await faceapi.detectSingleFace(
+                    video,
+                    new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.5 })
+                ).withFaceLandmarks();
+                
+                if (detectionWithLandmarks) {
+                    checkLookingAway(detectionWithLandmarks.landmarks, currentTime);
+                    trackEyeGaze(detectionWithLandmarks.landmarks, currentTime);
+                }
+            } else {
+                resetLookingAwayTimer();
+                resetEyeGazeTimer();
+            }
+
         } catch (error) {
-            console.error('Face detection error:', error);
+            console.error('Detection error:', error);
         }
+    };
+
+    const handleMultipleFaces = (currentTime) => {
+        if (!violationTimersRef.current.multipleFaceStartTime) {
+            violationTimersRef.current.multipleFaceStartTime = currentTime;
+            const toastId = toast.error('⚠️ Multiple people detected! Ensure you are alone.', {
+                duration: Infinity,
+                style: { background: '#DC2626', color: '#fff', fontWeight: 'bold', fontSize: '16px' }
+            });
+            violationTimersRef.current.multipleFaceToastId = toastId;
+        }
+
+        const duration = currentTime - violationTimersRef.current.multipleFaceStartTime;
+
+        if (duration > 0) {
+            console.log('🚨 MULTIPLE FACES DETECTED!');
+            logViolation('MULTIPLE_PERSON_DETECTED', 'Multiple people detected');
+        }
+    };
+
+    const resetMultipleFaceTimer = () => {
+        violationTimersRef.current.multipleFaceStartTime = null;
+        if (violationTimersRef.current.multipleFaceToastId) {
+            toast.dismiss(violationTimersRef.current.multipleFaceToastId);
+            violationTimersRef.current.multipleFaceToastId = null;
+        }
+    };
+
+    const handleNoFace = (currentTime) => {
+        if (!violationTimersRef.current.noFaceStartTime) {
+            violationTimersRef.current.noFaceStartTime = currentTime;
+        }
+
+        const duration = currentTime - violationTimersRef.current.noFaceStartTime;
+
+        if (duration > 2000 && !violationTimersRef.current.noFace) {
+            violationTimersRef.current.noFace = true;
+            logViolation('FACE_NOT_VISIBLE', 'Face not detected');
+            toast.error('⚠️ Face not visible!', {
+                duration: 4000,
+                style: { background: '#EA580C', color: '#fff', fontWeight: 'bold' }
+            });
+        }
+    };
+
+    const resetNoFaceTimer = () => {
+        violationTimersRef.current.noFaceStartTime = null;
+        violationTimersRef.current.noFace = false;
+    };
+
+    const checkLookingAway = (landmarks, currentTime) => {
+        const nose = landmarks.getNose();
+        const leftEye = landmarks.getLeftEye();
+        const rightEye = landmarks.getRightEye();
+        
+        const eyeY = (leftEye[0].y + rightEye[0].y) / 2;
+        const noseY = nose[3].y;
+        const verticalDiff = noseY - eyeY;
+        
+        // Increased threshold to reduce false positives
+        const isLookingDown = verticalDiff > 60;
+        
+        if (isLookingDown) {
+            handleLookingAway(currentTime);
+        } else {
+            resetLookingAwayTimer();
+        }
+    };
+
+    const handleLookingAway = (currentTime) => {
+        if (!violationTimersRef.current.lookingAwayStartTime) {
+            violationTimersRef.current.lookingAwayStartTime = currentTime;
+        }
+
+        const duration = currentTime - violationTimersRef.current.lookingAwayStartTime;
+
+        if (duration > 3000 && !violationTimersRef.current.lookingAway) {
+            violationTimersRef.current.lookingAway = true;
+            logViolation('LOOKING_AWAY', 'Candidate looking down/away from screen');
+            toast.error('⚠️ Looking away detected!', {
+                duration: 4000,
+                style: { background: '#DC2626', color: '#fff', fontWeight: 'bold' }
+            });
+        }
+    };
+
+    const resetLookingAwayTimer = () => {
+        violationTimersRef.current.lookingAwayStartTime = null;
+        violationTimersRef.current.lookingAway = false;
+    };
+
+    const trackEyeGaze = (landmarks, currentTime) => {
+        const leftEye = landmarks.getLeftEye();
+        const rightEye = landmarks.getRightEye();
+        const nose = landmarks.getNose();
+        
+        const leftEyeCenter = {
+            x: leftEye.reduce((sum, p) => sum + p.x, 0) / leftEye.length,
+            y: leftEye.reduce((sum, p) => sum + p.y, 0) / leftEye.length
+        };
+        const rightEyeCenter = {
+            x: rightEye.reduce((sum, p) => sum + p.x, 0) / rightEye.length,
+            y: rightEye.reduce((sum, p) => sum + p.y, 0) / rightEye.length
+        };
+        const noseCenter = { x: nose[3].x, y: nose[3].y };
+        
+        const eyeMidpoint = {
+            x: (leftEyeCenter.x + rightEyeCenter.x) / 2,
+            y: (leftEyeCenter.y + rightEyeCenter.y) / 2
+        };
+        
+        const horizontalDiff = eyeMidpoint.x - noseCenter.x;
+        const eyeDistance = Math.abs(rightEyeCenter.x - leftEyeCenter.x);
+        
+        let gazeDirection = 'center';
+        const threshold = eyeDistance * 0.25; // Increased threshold
+        
+        if (Math.abs(horizontalDiff) > threshold) {
+            if (horizontalDiff > 0) {
+                gazeDirection = 'left';
+            } else {
+                gazeDirection = 'right';
+            }
+        }
+        
+        if (gazeDirection !== 'center') {
+            handleEyeGazeAway(gazeDirection, currentTime);
+        } else {
+            resetEyeGazeTimer();
+        }
+    };
+
+    const handleEyeGazeAway = (direction, currentTime) => {
+        if (!violationTimersRef.current.eyeGazeAwayStartTime) {
+            violationTimersRef.current.eyeGazeAwayStartTime = currentTime;
+        }
+
+        const duration = currentTime - violationTimersRef.current.eyeGazeAwayStartTime;
+
+        if (duration > 4000 && !violationTimersRef.current.eyeGazeAway) {
+            violationTimersRef.current.eyeGazeAway = true;
+            logViolation('EYE_GAZE_AWAY', `Eyes looking ${direction} - possible side screen/notes`);
+            toast.error(`⚠️ Eyes looking ${direction}!`, {
+                duration: 4000,
+                style: { background: '#DC2626', color: '#fff', fontWeight: 'bold' }
+            });
+        }
+    };
+
+    const resetEyeGazeTimer = () => {
+        violationTimersRef.current.eyeGazeAwayStartTime = null;
+        violationTimersRef.current.eyeGazeAway = false;
+    };
+
+    const logViolation = (type, description) => {
+        const violation = {
+            time: new Date().toLocaleTimeString(),
+            type,
+            description,
+            timestamp: Date.now()
+        };
+        setViolations(prev => [...prev, violation]);
+        console.log('🚨 VIOLATION:', violation);
     };
 
     const renderCameraContent = () => {
         switch (cameraStatus) {
             case 'active':
                 return (
-                    <Webcam
-                        ref={webcamRef}
-                        audio={false}
-                        screenshotFormat="image/jpeg"
-                        mirrored={true}
-                        videoConstraints={{
-                            width: 192,
-                            height: 144,
-                            facingMode: 'user'
-                        }}
-                        className="w-full h-full object-cover rounded"
-                    />
+                    <>
+                        <Webcam
+                            ref={webcamRef}
+                            audio={false}
+                            screenshotFormat="image/jpeg"
+                            mirrored={true}
+                            videoConstraints={{
+                                width: 640,
+                                height: 480,
+                                facingMode: 'user'
+                            }}
+                            className="w-full h-full object-cover rounded"
+                        />
+                        <canvas ref={canvasRef} className="hidden" />
+                    </>
                 );
             
             case 'denied':
@@ -114,44 +361,53 @@ const LiveCameraMonitor = () => {
 
     return (
         <div className="fixed top-20 left-4 z-50">
-            <div className="bg-white rounded-lg shadow-xl border border-[#E2E8F0] overflow-hidden w-48">
+            <div className="bg-white rounded-xl shadow-2xl border-2 border-[#E2E8F0] overflow-hidden w-64">
                 {/* Header */}
-                <div className="bg-[#0F172A] px-2 py-1 flex items-center justify-between">
-                    <div className="flex items-center gap-1.5">
-                        <div className={`w-1.5 h-1.5 rounded-full ${cameraStatus === 'active' ? 'bg-green-400 animate-pulse' : 'bg-red-400'}`}></div>
-                        <span className="text-white text-[10px] font-bold uppercase tracking-wider">
-                            {cameraStatus === 'active' ? 'Live' : 'Off'}
+                <div className="bg-[#0F172A] px-3 py-2 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        <div className={`w-2 h-2 rounded-full ${cameraStatus === 'active' && isCameraEnabled ? 'bg-green-400 animate-pulse' : 'bg-red-400'}`}></div>
+                        <span className="text-white text-xs font-bold uppercase tracking-wider">
+                            {modelsLoaded ? 'AI Active' : 'Loading'}
                         </span>
                     </div>
                     <button 
-                        onClick={() => toast.error('⚠️ Test Warning!', { style: { background: '#DC2626', color: '#fff' } })}
-                        className="text-white text-[8px] hover:bg-white/10 px-1 rounded"
+                        onClick={() => setIsCameraEnabled(!isCameraEnabled)}
+                        className="text-white text-xs hover:bg-white/10 px-2 py-1 rounded font-medium"
                     >
-                        Test
+                        {isCameraEnabled ? 'OFF' : 'ON'}
                     </button>
                 </div>
 
-                {/* Camera Feed */}
-                <div className="relative w-full h-36 bg-gray-900">
-                    {renderCameraContent()}
+                {/* Warning Banner - REMOVED */}
+
+                {/* Camera Feed - BIGGER */}
+                <div className="relative w-full h-48 bg-gray-900">
+                    {isCameraEnabled ? renderCameraContent() : (
+                        <div className="flex flex-col items-center justify-center h-full bg-gray-800">
+                            <CameraOff className="w-10 h-10 text-gray-400 mb-2" />
+                            <p className="text-gray-400 text-sm">Camera Off</p>
+                        </div>
+                    )}
                     
-                    {/* Overlay Message */}
-                    {cameraStatus === 'active' && (
-                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-1.5">
-                            <p className="text-white text-[9px] font-medium text-center">
-                                🔒 Monitored
+                    {/* Detection Overlay */}
+                    {cameraStatus === 'active' && isCameraEnabled && (
+                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2">
+                            <p className="text-white text-xs font-medium text-center">
+                                {modelsLoaded ? `🔒 Faces: ${detectionStats.faceCount}` : '⏳ Loading AI...'}
                             </p>
                         </div>
                     )}
                 </div>
 
                 {/* Footer Info */}
-                <div className="bg-[#F8FAFC] px-2 py-1 border-t border-[#E2E8F0]">
-                    <p className="text-[9px] text-[#64748B] text-center">
-                        Camera active
+                <div className="bg-[#F8FAFC] px-3 py-2 border-t border-[#E2E8F0]">
+                    <p className="text-xs text-[#64748B] text-center font-medium">
+                        {violations.length} violations
                     </p>
                 </div>
             </div>
+
+            {/* Violations Log - REMOVED */}
         </div>
     );
 };

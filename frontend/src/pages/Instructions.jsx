@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Shield, Clock, FileText, CheckSquare, ArrowRight, AlertTriangle, Monitor, MousePointer } from 'lucide-react';
+import EnvironmentCheck from '../components/EnvironmentCheck';
 
 const InstructionCard = ({ icon: Icon, title, desc, delay }) => (
     <div className={`flex gap-4 p-4 rounded-lg border border-slate-100 bg-slate-50/50`}>
@@ -21,10 +22,19 @@ const Instructions = () => {
     const location = useLocation();
     const userName = location.state?.name || 'Candidate';
     const [agreed, setAgreed] = useState(false);
+    const [showEnvironmentCheck, setShowEnvironmentCheck] = useState(false);
 
     const handleStart = () => {
         if (agreed) {
+            setShowEnvironmentCheck(true);
+        }
+    };
+
+    const handleEnvironmentCheckComplete = (passed) => {
+        if (passed) {
             navigate('/exam', { state: { name: userName } });
+        } else {
+            setShowEnvironmentCheck(false);
         }
     };
 
@@ -124,6 +134,11 @@ const Instructions = () => {
                     Session ID: {Math.random().toString(36).substr(2, 9).toUpperCase()} • Server Time: {new Date().toUTCString()}
                 </div>
             </div>
+
+            {/* Environment Check Modal */}
+            {showEnvironmentCheck && (
+                <EnvironmentCheck onCheckComplete={handleEnvironmentCheckComplete} />
+            )}
         </div>
     );
 };

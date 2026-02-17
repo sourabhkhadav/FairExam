@@ -1,9 +1,9 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Clock, Menu, X, ChevronLeft, ChevronRight, Flag, AlertTriangle, CheckCircle, ImageIcon, Save } from 'lucide-react';
+import { Clock, Menu, X, ChevronLeft, ChevronRight, Flag, AlertTriangle, CheckCircle, ImageIcon, Save, Maximize } from 'lucide-react';
 import LiveCameraMonitor from '../components/LiveCameraMonitor';
-import { Toaster } from 'react-hot-toast';
+import { Toaster, toast } from 'react-hot-toast';
 
 const Exam = () => {
     const navigate = useNavigate();
@@ -18,6 +18,17 @@ const Exam = () => {
     const [questionStatus, setQuestionStatus] = useState({});
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
+    const [violations, setViolations] = useState(0);
+    const [soundViolations, setSoundViolations] = useState(0);
+    const [isFullscreen, setIsFullscreen] = useState(false);
+    const audioContextRef = useRef(null);
+    const analyserRef = useRef(null);
+    const micStreamRef = useRef(null);
+    const [showFullscreenWarning, setShowFullscreenWarning] = useState(false);
+    const warningAudioRef = useRef(null);
+    const violationLockRef = useRef(false);
+    const [forceFullscreenModal, setForceFullscreenModal] = useState(false);
+    const soundLockRef = useRef(false);
 
     // Mock Data
     const allQuestions = [
@@ -32,6 +43,145 @@ const Exam = () => {
         { id: 9, section: 1, type: 'mcq', question: "What is the default port number for HTTP?", options: ["80", "443", "21", "22"] },
         { id: 10, section: 1, type: 'mcq', question: "Which of the following is a version control system?", options: ["Node.js", "Git", "NPM", "React"] },
     ];
+
+    // Voice/Sound Detection
+    useEffect(() => {
+        let animationId;
+        
+        const startAudioDetection = async () => {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                micStreamRef.current = stream;
+                
+                audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
+                analyserRef.current = audioContextRef.current.createAnalyser();
+                const microphone = audioContextRef.current.createMediaStreamSource(stream);
+                
+                analyserRef.current.fftSize = 2048;
+                analyserRef.current.smoothingTimeConstant = 0.8;
+                microphone.connect(analyserRef.current);
+                
+                const bufferLength = analyserRef.current.frequencyBinCount;
+                const dataArray = new Uint8Array(bufferLength);
+                
+                const detectSound = () => {
+                    analyserRef.current.getByteFrequencyData(dataArray);
+                    const average = dataArray.reduce((a, b) => a + b) / bufferLength;
+                    
+                    if (average > 50 && !soundLockRef.current) {
+                        soundLockRef.current = true;
+                        
+                        setSoundViolations(prev => {
+                            const newCount = prev + 1;
+                            toast.dismiss();
+                            toast.error(`Sound detected! Violation #${newCount}`, { duration: 500, id: 'sound-warning' });
+                            return newCount;
+                        });
+                        
+                        setTimeout(() => {
+                            soundLockRef.current = false;
+                        }, 500);
+                    }
+                    
+                    animationId = requestAnimationFrame(detectSound);
+                };
+                
+                detectSound();
+            } catch (err) {
+                console.error('Microphone error:', err);
+            }
+        };
+        
+        startAudioDetection();
+        
+        return () => {
+            if (animationId) cancelAnimationFrame(animationId);
+            if (micStreamRef.current) {
+                micStreamRef.current.getTracks().forEach(track => track.stop());
+            }
+            if (audioContextRef.current) {
+                audioContextRef.current.close();
+            }
+        };
+    }, []);
+
+    // Fullscreen & Tab Switch Prevention
+    useEffect(() => {
+        let violationTimeout = null;
+        
+        const playWarningSound = () => {
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                oscillator.frequency.value = 800;
+                oscillator.type = 'sine';
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                oscillator.start();
+                oscillator.stop(audioContext.currentTime + 0.3);
+            } catch (err) {
+                console.error('Audio error:', err);
+            }
+        };
+        
+        const addViolation = (message) => {
+            if (violationTimeout) return;
+            
+            setViolations(prev => {
+                const newCount = prev + 1;
+                playWarningSound();
+                toast.dismiss();
+                toast.error(`${message} Violation #${newCount}`, { duration: 500, id: 'violation' });
+                return newCount;
+            });
+            
+            violationTimeout = setTimeout(() => {
+                violationTimeout = null;
+            }, 2000);
+        };
+        
+        const enterFullscreen = async () => {
+            try {
+                await document.documentElement.requestFullscreen();
+                setIsFullscreen(true);
+                setForceFullscreenModal(false);
+            } catch (err) {
+                console.error('Fullscreen error:', err);
+            }
+        };
+        
+        // Auto enter fullscreen on mount
+        setTimeout(enterFullscreen, 500);
+
+        const handleFullscreenChange = () => {
+            if (!document.fullscreenElement) {
+                addViolation('Fullscreen Exit!');
+                setForceFullscreenModal(true);
+            }
+        };
+
+        const preventEscape = (e) => {
+            if (e.key === 'Escape' && document.fullscreenElement) {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+        };
+
+        document.addEventListener('fullscreenchange', handleFullscreenChange);
+        document.addEventListener('keydown', preventEscape, true);
+
+        return () => {
+            document.removeEventListener('fullscreenchange', handleFullscreenChange);
+            document.removeEventListener('keydown', preventEscape, true);
+            if (violationTimeout) clearTimeout(violationTimeout);
+            if (document.fullscreenElement) {
+                document.exitFullscreen().catch(() => {});
+            }
+        };
+    }, []);
 
     // Timer Logic
     useEffect(() => {
@@ -104,7 +254,7 @@ const Exam = () => {
     return (
         <div className="flex flex-col h-screen bg-slate-100 font-sans text-slate-900 overflow-hidden">
             
-            <Toaster position="top-center" />
+            <Toaster position="top-center" toastOptions={{ duration: 500 }} containerStyle={{ top: 80 }} limit={1} />
             
             {/* Live Camera Monitor - Always Visible */}
             <LiveCameraMonitor />
@@ -129,6 +279,16 @@ const Exam = () => {
                 </div>
 
                 <div className="flex items-center gap-4">
+                    {violations > 0 && (
+                        <div className="px-3 py-1 rounded bg-red-100 border border-red-300">
+                            <span className="text-xs font-bold text-red-700">Fullscreen: {violations}</span>
+                        </div>
+                    )}
+                    {soundViolations > 0 && (
+                        <div className="px-3 py-1 rounded bg-orange-100 border border-orange-300">
+                            <span className="text-xs font-bold text-orange-700">Sound: {soundViolations}</span>
+                        </div>
+                    )}
                     <div className="hidden sm:block text-right">
                         <div className="text-xs text-slate-500 uppercase">Assessment ID</div>
                         <div className="text-sm font-bold text-slate-900">#SWE-2026-X1</div>
@@ -307,6 +467,70 @@ const Exam = () => {
                     </div>
                 </aside>
             </div>
+
+            {/* Force Fullscreen Modal - Blocks Everything */}
+            {forceFullscreenModal && (
+                <div className="fixed inset-0 bg-red-900/95 backdrop-blur-md z-[9999] flex items-center justify-center p-4">
+                    <div className="bg-white rounded-xl shadow-2xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                        <div className="bg-red-600 p-4 text-center">
+                            <AlertTriangle className="h-12 w-12 text-white mx-auto mb-2 animate-pulse" />
+                            <h3 className="text-2xl font-bold text-white">EXAM PAUSED</h3>
+                        </div>
+                        <div className="p-6 text-center">
+                            <p className="text-lg font-semibold text-slate-900 mb-2">
+                                Fullscreen Mode Required
+                            </p>
+                            <p className="text-sm text-slate-600 mb-4">
+                                You must return to fullscreen to continue the exam.
+                            </p>
+                            <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+                                <p className="text-xs text-red-700 font-medium">
+                                    Violation #{violations} recorded
+                                </p>
+                            </div>
+                            <button
+                                onClick={async () => {
+                                    try {
+                                        await document.documentElement.requestFullscreen();
+                                        setForceFullscreenModal(false);
+                                    } catch (err) {
+                                        console.error('Fullscreen error:', err);
+                                    }
+                                }}
+                                className="w-full px-6 py-3 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 transition-colors shadow-lg text-lg"
+                            >
+                                Return to Fullscreen
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Fullscreen Warning Modal */}
+            {showFullscreenWarning && (
+                <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 animate-in fade-in slide-in-from-top duration-300">
+                    <div className={`rounded-lg shadow-2xl px-6 py-4 border-2 ${
+                        violations >= 3 
+                            ? 'bg-red-600 border-red-800 text-white' 
+                            : 'bg-amber-500 border-amber-700 text-white'
+                    }`}>
+                        <div className="flex items-center gap-3">
+                            <AlertTriangle className="h-6 w-6 animate-pulse" />
+                            <div>
+                                <p className="font-bold text-lg">
+                                    {violations >= 3 ? 'SERIOUS WARNING!' : 'WARNING!'}
+                                </p>
+                                <p className="text-sm">
+                                    Fullscreen Exit - Violation {violations}
+                                </p>
+                                <p className="text-xs mt-1">
+                                    Returning to fullscreen...
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Submit Modal */}
             {isSubmitModalOpen && (

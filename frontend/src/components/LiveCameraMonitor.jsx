@@ -11,15 +11,6 @@ const LiveCameraMonitor = () => {
 
     useEffect(() => {
         requestCameraPermission();
-        
-        // Test toast immediately
-        setTimeout(() => {
-            toast.error('⚠️ Detection System Active!', {
-                duration: 2000,
-                style: { background: '#DC2626', color: '#fff', fontWeight: 'bold' }
-            });
-        }, 1000);
-        
         startFaceDetection();
         
         return () => {
@@ -44,14 +35,9 @@ const LiveCameraMonitor = () => {
     };
 
     const startFaceDetection = () => {
-        // Start immediately
-        setTimeout(() => {
-            detectFaces();
-        }, 2000);
-        
         detectionIntervalRef.current = setInterval(() => {
             detectFaces();
-        }, 5000);
+        }, 8000);
     };
 
     const detectFaces = async () => {

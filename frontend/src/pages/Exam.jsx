@@ -46,18 +46,14 @@ const Exam = () => {
         { id: 10, section: 1, type: 'mcq', question: "Which of the following is a version control system?", options: ["Node.js", "Git", "NPM", "React"] },
     ];
 
-    // Voice/Sound Detection
+    // Voice/Sound Detection - Simple & Reliable
     useEffect(() => {
         let animationId;
         
         const startAudioDetection = async () => {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ 
-                    audio: {
-                        echoCancellation: false,
-                        noiseSuppression: false,
-                        autoGainControl: false
-                    }
+                    audio: true
                 });
                 micStreamRef.current = stream;
                 
@@ -65,78 +61,56 @@ const Exam = () => {
                 analyserRef.current = audioContextRef.current.createAnalyser();
                 const microphone = audioContextRef.current.createMediaStreamSource(stream);
                 
-                analyserRef.current.fftSize = 1024;
-                analyserRef.current.smoothingTimeConstant = 0.5;
+                analyserRef.current.fftSize = 2048;
+                analyserRef.current.smoothingTimeConstant = 0.3;
                 microphone.connect(analyserRef.current);
                 
-                const bufferLength = analyserRef.current.frequencyBinCount;
-                const dataArray = new Uint8Array(bufferLength);
-                
-                let calibrationSamples = [];
-                let spikeCount = 0;
-                let baselineMax = 0;
+                const dataArray = new Uint8Array(analyserRef.current.frequencyBinCount);
+                let baseline = 0;
+                let calibrationCount = 0;
                 
                 const detectSound = () => {
                     analyserRef.current.getByteFrequencyData(dataArray);
                     
-                    // Voice frequencies (85Hz - 3000Hz)
-                    const voiceStart = Math.floor(85 * bufferLength / (audioContextRef.current.sampleRate / 2));
-                    const voiceEnd = Math.floor(3000 * bufferLength / (audioContextRef.current.sampleRate / 2));
-                    
+                    // Calculate average volume
                     let sum = 0;
-                    let max = 0;
-                    let count = 0;
-                    
-                    for (let i = voiceStart; i < voiceEnd && i < bufferLength; i++) {
+                    for (let i = 0; i < dataArray.length; i++) {
                         sum += dataArray[i];
-                        if (dataArray[i] > max) max = dataArray[i];
-                        count++;
                     }
-                    const average = sum / count;
+                    const average = sum / dataArray.length;
                     
-                    // Calibration phase
-                    if (calibrationSamples.length < 80) {
-                        calibrationSamples.push(average);
-                        if (max > baselineMax) baselineMax = max;
-                        
-                        if (calibrationSamples.length === 80) {
-                            const sorted = [...calibrationSamples].sort((a, b) => a - b);
-                            baselineRef.current = sorted[Math.floor(sorted.length * 0.7)];
+                    // Calibration
+                    if (calibrationCount < 30) {
+                        baseline = Math.max(baseline, average);
+                        calibrationCount++;
+                        if (calibrationCount === 30) {
                             calibrationDoneRef.current = true;
-                            console.log('Calibrated - Baseline:', baselineRef.current, 'Max:', baselineMax);
+                            console.log('Baseline:', baseline);
                         }
                     } else {
-                        // Dynamic threshold based on baseline
-                        const dynamicThreshold = baselineRef.current < 5 
-                            ? baselineRef.current + 8
-                            : baselineRef.current < 15
-                            ? baselineRef.current + 12
-                            : baselineRef.current + 18;
+                        // Simple threshold
+                        const threshold = baseline + 5;
                         
-                        const maxThreshold = baselineMax < 30 ? 40 : 60;
+                        console.log('Avg:', average.toFixed(1), 'Threshold:', threshold.toFixed(1));
                         
-                        if (average > dynamicThreshold && max > maxThreshold) {
-                            spikeCount++;
-                            if (spikeCount >= 2 && !soundLockRef.current) {
-                                soundLockRef.current = true;
-                                spikeCount = 0;
-                                console.log('Voice! Avg:', average.toFixed(1), 'Max:', max, 'Threshold:', dynamicThreshold.toFixed(1));
+                        if (average > threshold && !soundLockRef.current) {
+                            soundLockRef.current = true;
+                            
+                            setSoundViolations(prev => {
+                                const newCount = prev + 1;
                                 
-                                setSoundViolations(prev => {
-                                    const newCount = prev + 1;
-                                    toast.error(`🔊 Sound detected! Violation #${newCount}`, { 
-                                        id: 'sound-warning',
-                                        duration: 500,
-                                    });
-                                    return newCount;
+                                toast.error(`🔊 Sound detected! Violation #${newCount}`, { 
+                                    id: 'sound-warning',
+                                    duration: 500,
                                 });
                                 
-                                setTimeout(() => {
-                                    soundLockRef.current = false;
-                                }, 2000);
-                            }
-                        } else {
-                            spikeCount = Math.max(0, spikeCount - 1);
+                                console.log('SOUND VIOLATION #' + newCount);
+                                return newCount;
+                            });
+                            
+                            setTimeout(() => {
+                                soundLockRef.current = false;
+                            }, 2000);
                         }
                     }
                     

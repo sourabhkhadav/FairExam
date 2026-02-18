@@ -16,6 +16,7 @@
     "@tensorflow/tfjs": "^4.22.0",
     "face-api.js": "^0.22.2",
     "hark": "^1.2.3",
+    "meyda": "^5.6.3",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-hot-toast": "^2.6.0",

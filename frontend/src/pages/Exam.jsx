@@ -81,7 +81,7 @@ const Exam = () => {
                     const rms = Math.sqrt(sum / bufferLength);
                     const db = 20 * Math.log10(rms);
                     
-                    if (db > -35 && !soundLockRef.current) {
+                    if (db > -30 && !soundLockRef.current) {
                         soundLockRef.current = true;
                         
                         setSoundViolations(prev => {
@@ -93,7 +93,7 @@ const Exam = () => {
                         
                         setTimeout(() => {
                             soundLockRef.current = false;
-                        }, 3000);
+                        }, 1000);
                     }
                 };
                 

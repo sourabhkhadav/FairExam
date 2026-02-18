@@ -29,6 +29,8 @@ const Exam = () => {
     const violationLockRef = useRef(false);
     const [forceFullscreenModal, setForceFullscreenModal] = useState(false);
     const soundLockRef = useRef(false);
+    const baselineRef = useRef(0);
+    const calibrationDoneRef = useRef(false);
 
     // Mock Data
     const allQuestions = [
@@ -46,7 +48,7 @@ const Exam = () => {
 
     // Voice/Sound Detection
     useEffect(() => {
-        let intervalId;
+        let animationId;
         
         const startAudioDetection = async () => {
             try {
@@ -63,43 +65,76 @@ const Exam = () => {
                 analyserRef.current = audioContextRef.current.createAnalyser();
                 const microphone = audioContextRef.current.createMediaStreamSource(stream);
                 
-                analyserRef.current.fftSize = 512;
-                analyserRef.current.smoothingTimeConstant = 0.3;
+                analyserRef.current.fftSize = 1024;
+                analyserRef.current.smoothingTimeConstant = 0.6;
                 microphone.connect(analyserRef.current);
                 
                 const bufferLength = analyserRef.current.frequencyBinCount;
                 const dataArray = new Uint8Array(bufferLength);
                 
+                let calibrationCount = 0;
+                let baselineSum = 0;
+                let spikeCount = 0;
+                
                 const detectSound = () => {
-                    analyserRef.current.getByteTimeDomainData(dataArray);
+                    analyserRef.current.getByteFrequencyData(dataArray);
+                    
+                    // Focus on voice frequencies (85Hz - 3000Hz)
+                    const voiceStart = Math.floor(85 * bufferLength / (audioContextRef.current.sampleRate / 2));
+                    const voiceEnd = Math.floor(3000 * bufferLength / (audioContextRef.current.sampleRate / 2));
                     
                     let sum = 0;
-                    for (let i = 0; i < bufferLength; i++) {
-                        const normalized = (dataArray[i] - 128) / 128;
-                        sum += normalized * normalized;
-                    }
-                    const rms = Math.sqrt(sum / bufferLength);
-                    const db = 20 * Math.log10(rms);
+                    let max = 0;
+                    let count = 0;
                     
-                    if (db > -30 && !soundLockRef.current) {
-                        soundLockRef.current = true;
-                        
-                        setSoundViolations(prev => {
-                            const newCount = prev + 1;
-                            toast.error(`🔊 Sound detected! Violation #${newCount}`, { 
-                                id: 'sound-warning',
-                                duration: 500,
-                            });
-                            return newCount;
-                        });
-                        
-                        setTimeout(() => {
-                            soundLockRef.current = false;
-                        }, 1000);
+                    for (let i = voiceStart; i < voiceEnd && i < bufferLength; i++) {
+                        sum += dataArray[i];
+                        if (dataArray[i] > max) max = dataArray[i];
+                        count++;
                     }
+                    const average = sum / count;
+                    
+                    // Calibration
+                    if (calibrationCount < 60) {
+                        baselineSum += average;
+                        calibrationCount++;
+                        if (calibrationCount === 60) {
+                            baselineRef.current = baselineSum / 60;
+                            calibrationDoneRef.current = true;
+                            console.log('Baseline:', baselineRef.current);
+                        }
+                    } else {
+                        const threshold = baselineRef.current + 18;
+                        
+                        if (average > threshold && max > 60) {
+                            spikeCount++;
+                            if (spikeCount >= 3 && !soundLockRef.current) {
+                                soundLockRef.current = true;
+                                spikeCount = 0;
+                                console.log('Voice detected! Avg:', average, 'Max:', max, 'Threshold:', threshold);
+                                
+                                setSoundViolations(prev => {
+                                    const newCount = prev + 1;
+                                    toast.error(`🔊 Sound detected! Violation #${newCount}`, { 
+                                        id: 'sound-warning',
+                                        duration: 500,
+                                    });
+                                    return newCount;
+                                });
+                                
+                                setTimeout(() => {
+                                    soundLockRef.current = false;
+                                }, 2000);
+                            }
+                        } else {
+                            spikeCount = Math.max(0, spikeCount - 1);
+                        }
+                    }
+                    
+                    animationId = requestAnimationFrame(detectSound);
                 };
                 
-                intervalId = setInterval(detectSound, 80);
+                detectSound();
             } catch (err) {
                 console.error('Microphone error:', err);
                 toast.error('Microphone access required!');
@@ -109,7 +144,7 @@ const Exam = () => {
         startAudioDetection();
         
         return () => {
-            if (intervalId) clearInterval(intervalId);
+            if (animationId) cancelAnimationFrame(animationId);
             if (micStreamRef.current) {
                 micStreamRef.current.getTracks().forEach(track => track.stop());
             }

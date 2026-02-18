@@ -81,7 +81,7 @@ const Exam = () => {
                     const rms = Math.sqrt(sum / bufferLength);
                     const db = 20 * Math.log10(rms);
                     
-                    if (db > -40 && !soundLockRef.current) {
+                    if (db > -30 && !soundLockRef.current) {
                         soundLockRef.current = true;
                         
                         setSoundViolations(prev => {
@@ -99,7 +99,7 @@ const Exam = () => {
                     }
                 };
                 
-                intervalId = setInterval(detectSound, 100);
+                intervalId = setInterval(detectSound, 80);
             } catch (err) {
                 console.error('Microphone error:', err);
                 toast.error('Microphone access required!');

@@ -5,7 +5,7 @@ import { Camera, CameraOff, AlertTriangle, Users, EyeOff, Activity } from 'lucid
 import toast from 'react-hot-toast';
 import { detectMultiplePeople } from '../utils/advancedPersonDetection';
 
-const LiveCameraMonitor = () => {
+const LiveCameraMonitor = ({ onViolationUpdate }) => {
     const webcamRef = useRef(null);
     const canvasRef = useRef(null);
     const [cameraStatus, setCameraStatus] = useState('loading');
@@ -390,7 +390,13 @@ const LiveCameraMonitor = () => {
             description,
             timestamp: Date.now()
         };
-        setViolations(prev => [...prev, violation]);
+        setViolations(prev => {
+            const updated = [...prev, violation];
+            if (onViolationUpdate) {
+                onViolationUpdate(updated);
+            }
+            return updated;
+        });
         console.log('🚨 VIOLATION:', violation);
     };
 

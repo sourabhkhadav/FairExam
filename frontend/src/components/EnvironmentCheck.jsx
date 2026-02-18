@@ -7,6 +7,7 @@ const EnvironmentCheck = ({ onCheckComplete }) => {
     const webcamRef = useRef(null);
     const [checks, setChecks] = useState({
         cameraAccess: { status: 'checking', message: 'Checking camera...' },
+        microphoneAccess: { status: 'checking', message: 'Checking microphone...' },
         faceVisible: { status: 'checking', message: 'Detecting face...' },
         singlePerson: { status: 'checking', message: 'Checking for single person...' },
         lighting: { status: 'checking', message: 'Analyzing lighting...' }
@@ -42,7 +43,21 @@ const EnvironmentCheck = ({ onCheckComplete }) => {
                 cameraAccess: { status: 'passed', message: 'Camera access granted' }
             }));
             
-            // Wait for models and video - MINIMAL TIME
+            // Check 2: Microphone Access
+            try {
+                const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                setChecks(prev => ({
+                    ...prev,
+                    microphoneAccess: { status: 'passed', message: 'Microphone access granted' }
+                }));
+                audioStream.getTracks().forEach(track => track.stop());
+            } catch (error) {
+                setChecks(prev => ({
+                    ...prev,
+                    microphoneAccess: { status: 'failed', message: 'Microphone access denied' }
+                }));
+            }
+            
             await new Promise(resolve => setTimeout(resolve, 300));
             
             if (webcamRef.current?.video) {
@@ -231,6 +246,20 @@ const EnvironmentCheck = ({ onCheckComplete }) => {
                                             <p className="font-medium text-sm">Camera Access</p>
                                         </div>
                                         <p className="text-xs text-gray-600 mt-1">{checks.cameraAccess.message}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Microphone Access */}
+                            <div className={`p-4 rounded-lg border ${getStatusColor(checks.microphoneAccess.status)}`}>
+                                <div className="flex items-center gap-3">
+                                    {getStatusIcon(checks.microphoneAccess.status)}
+                                    <div className="flex-1">
+                                        <div className="flex items-center gap-2">
+                                            <Camera className="w-4 h-4" />
+                                            <p className="font-medium text-sm">Microphone Access</p>
+                                        </div>
+                                        <p className="text-xs text-gray-600 mt-1">{checks.microphoneAccess.message}</p>
                                     </div>
                                 </div>
                             </div>

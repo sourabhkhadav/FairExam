@@ -21,7 +21,13 @@ const Exam = () => {
     const [isSubmitModalOpen, setIsSubmitModalOpen] = useState(false);
     const [violations, setViolations] = useState(0);
     const [soundViolations, setSoundViolations] = useState(0);
+    const [faceViolations, setFaceViolations] = useState(0);
     const [isFullscreen, setIsFullscreen] = useState(false);
+
+    // Handle face violations from LiveCameraMonitor
+    const handleViolationUpdate = (violationsList) => {
+        setFaceViolations(violationsList.length);
+    };
     const audioContextRef = useRef(null);
     const analyserRef = useRef(null);
     const micStreamRef = useRef(null);
@@ -293,7 +299,7 @@ const Exam = () => {
     };
 
     return (
-        <div className="flex flex-col h-screen bg-slate-100 font-sans text-slate-900 overflow-hidden">
+        <div className="flex flex-col h-screen bg-white font-sans text-slate-900 overflow-hidden">
             
             <Toaster 
                 position="top-center" 
@@ -320,16 +326,21 @@ const Exam = () => {
             />
             
             {/* Live Camera Monitor - Always Visible */}
-            <LiveCameraMonitor />
+            <LiveCameraMonitor onViolationUpdate={handleViolationUpdate} />
 
             {/* Top Bar - Enterprise Style */}
             <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 z-30 shadow-sm flex-shrink-0">
-                <div className="flex items-center gap-6">
-                    <div className="flex items-center gap-2">
-                        <div className="bg-slate-900 text-white font-bold p-1 px-2 rounded text-lg">FE</div>
-                        <h1 className="text-lg font-bold text-slate-800 tracking-tight">FairExam <span className="text-xs font-normal text-slate-500 ml-1">v2.4.0</span></h1>
+                <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2.5">
+                        <div className="bg-gradient-to-br from-blue-600 to-blue-700 text-white font-black p-1.5 px-2.5 rounded-lg text-base shadow-md border border-blue-500">FE</div>
+                        <div>
+                            <h1 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-slate-900 via-blue-700 to-blue-600 leading-none" style={{ fontFamily: "'Righteous', cursive", letterSpacing: '0.05em' }}>
+                                FairExam
+                            </h1>
+                            <span className="text-[9px] font-semibold text-slate-400 tracking-widest">EXAMINATION SYSTEM</span>
+                        </div>
                     </div>
-                    <div className="h-6 w-px bg-slate-200"></div>
+                    <div className="h-8 w-px bg-slate-200"></div>
                     <div>
                         <span className="text-xs text-slate-500 font-semibold uppercase tracking-wider block">Candidate Name</span>
                         <span className="text-sm font-medium text-slate-900">{userName}</span>
@@ -341,17 +352,28 @@ const Exam = () => {
                     <span className={`font-mono text-xl font-bold ${timeLeft < 300 ? 'text-red-700' : 'text-slate-700'}`}>{formatTime(timeLeft)}</span>
                 </div>
 
-                <div className="flex items-center gap-4">
-                    {violations > 0 && (
-                        <div className="px-3 py-1 rounded bg-red-100 border border-red-300">
-                            <span className="text-xs font-bold text-red-700">Fullscreen: {violations}</span>
+                <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gradient-to-r from-red-50 to-red-100 border border-red-200 shadow-sm">
+                        <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
+                        <div className="text-xs">
+                            <span className="font-semibold text-red-700">Fullscreen:</span>
+                            <span className="ml-1 font-bold text-red-800">{violations}</span>
                         </div>
-                    )}
-                    {soundViolations > 0 && (
-                        <div className="px-3 py-1 rounded bg-orange-100 border border-orange-300">
-                            <span className="text-xs font-bold text-orange-700">Sound: {soundViolations}</span>
+                    </div>
+                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gradient-to-r from-orange-50 to-orange-100 border border-orange-200 shadow-sm">
+                        <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></div>
+                        <div className="text-xs">
+                            <span className="font-semibold text-orange-700">Sound:</span>
+                            <span className="ml-1 font-bold text-orange-800">{soundViolations}</span>
                         </div>
-                    )}
+                    </div>
+                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gradient-to-r from-purple-50 to-purple-100 border border-purple-200 shadow-sm">
+                        <div className="w-2 h-2 rounded-full bg-purple-500 animate-pulse"></div>
+                        <div className="text-xs">
+                            <span className="font-semibold text-purple-700">Face:</span>
+                            <span className="ml-1 font-bold text-purple-800">{faceViolations}</span>
+                        </div>
+                    </div>
                     <div className="hidden sm:block text-right">
                         <div className="text-xs text-slate-500 uppercase">Assessment ID</div>
                         <div className="text-sm font-bold text-slate-900">#SWE-2026-X1</div>
@@ -379,14 +401,14 @@ const Exam = () => {
                         />
                     </div>
 
-                    <div className="flex-1 overflow-y-auto p-6 md:p-10 bg-slate-50/50 scroll-smooth custom-scrollbar">
+                    <div className="flex-1 overflow-y-auto p-6 md:p-10 bg-white scroll-smooth custom-scrollbar">
                         <div className="max-w-3xl mx-auto w-full space-y-6">
 
                             {/* Question Header */}
-                            <div className="bg-white border border-slate-200 p-6 rounded-lg shadow-sm">
+                            <div className="bg-slate-50 border border-slate-200 p-6 rounded-xl shadow-sm">
                                 <div className="flex justify-between items-start mb-4">
                                     <div className="flex items-center gap-3">
-                                        <span className="px-2.5 py-0.5 rounded text-xs font-bold bg-slate-100 text-slate-600 border border-slate-200 uppercase tracking-wide">
+                                        <span className="px-2.5 py-0.5 rounded text-xs font-bold bg-white text-slate-600 border border-slate-200 uppercase tracking-wide shadow-sm">
                                             Q.{currentQuestion.id}
                                         </span>
                                         <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">
@@ -395,7 +417,7 @@ const Exam = () => {
                                     </div>
                                     <div className="flex items-center gap-2">
                                         {questionStatus[currentQuestion.id] === 'marked' && (
-                                            <span className="flex items-center gap-1 text-xs font-bold text-amber-600 bg-amber-50 px-2 py-1 rounded border border-amber-100">
+                                            <span className="flex items-center gap-1 text-xs font-bold text-amber-600 bg-amber-50 px-2 py-1 rounded border border-amber-200">
                                                 <Flag className="w-3 h-3" /> REVIEW
                                             </span>
                                         )}
@@ -411,15 +433,15 @@ const Exam = () => {
                             </div>
 
                             {/* Answer Area */}
-                            <div className="bg-white border border-slate-200 p-6 rounded-lg shadow-sm">
+                            <div className="bg-slate-50 border border-slate-200 p-6 rounded-xl shadow-sm">
                                 {currentQuestion.type === 'mcq' && (
                                     <div className="space-y-3">
                                         {currentQuestion.options.map((option, idx) => (
                                             <label key={idx}
-                                                className={`flex items-center p-4 rounded border cursor-pointer transition-all duration-150 group
+                                                className={`flex items-center p-4 rounded-lg border cursor-pointer transition-all duration-150 group
                                                 ${answers[currentQuestion.id] === option
-                                                        ? 'bg-blue-50 border-blue-500 ring-1 ring-blue-500 z-10'
-                                                        : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50'}`}
+                                                        ? 'bg-blue-50 border-blue-500 ring-2 ring-blue-500 shadow-md'
+                                                        : 'bg-white border-slate-200 hover:border-slate-300 hover:bg-slate-50 hover:shadow-sm'}`}
                                             >
                                                 <input
                                                     type="radio"

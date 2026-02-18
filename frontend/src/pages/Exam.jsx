@@ -66,20 +66,20 @@ const Exam = () => {
                 const microphone = audioContextRef.current.createMediaStreamSource(stream);
                 
                 analyserRef.current.fftSize = 1024;
-                analyserRef.current.smoothingTimeConstant = 0.6;
+                analyserRef.current.smoothingTimeConstant = 0.5;
                 microphone.connect(analyserRef.current);
                 
                 const bufferLength = analyserRef.current.frequencyBinCount;
                 const dataArray = new Uint8Array(bufferLength);
                 
-                let calibrationCount = 0;
-                let baselineSum = 0;
+                let calibrationSamples = [];
                 let spikeCount = 0;
+                let baselineMax = 0;
                 
                 const detectSound = () => {
                     analyserRef.current.getByteFrequencyData(dataArray);
                     
-                    // Focus on voice frequencies (85Hz - 3000Hz)
+                    // Voice frequencies (85Hz - 3000Hz)
                     const voiceStart = Math.floor(85 * bufferLength / (audioContextRef.current.sampleRate / 2));
                     const voiceEnd = Math.floor(3000 * bufferLength / (audioContextRef.current.sampleRate / 2));
                     
@@ -94,24 +94,33 @@ const Exam = () => {
                     }
                     const average = sum / count;
                     
-                    // Calibration
-                    if (calibrationCount < 60) {
-                        baselineSum += average;
-                        calibrationCount++;
-                        if (calibrationCount === 60) {
-                            baselineRef.current = baselineSum / 60;
+                    // Calibration phase
+                    if (calibrationSamples.length < 80) {
+                        calibrationSamples.push(average);
+                        if (max > baselineMax) baselineMax = max;
+                        
+                        if (calibrationSamples.length === 80) {
+                            const sorted = [...calibrationSamples].sort((a, b) => a - b);
+                            baselineRef.current = sorted[Math.floor(sorted.length * 0.7)];
                             calibrationDoneRef.current = true;
-                            console.log('Baseline:', baselineRef.current);
+                            console.log('Calibrated - Baseline:', baselineRef.current, 'Max:', baselineMax);
                         }
                     } else {
-                        const threshold = baselineRef.current + 18;
+                        // Dynamic threshold based on baseline
+                        const dynamicThreshold = baselineRef.current < 5 
+                            ? baselineRef.current + 8
+                            : baselineRef.current < 15
+                            ? baselineRef.current + 12
+                            : baselineRef.current + 18;
                         
-                        if (average > threshold && max > 60) {
+                        const maxThreshold = baselineMax < 30 ? 40 : 60;
+                        
+                        if (average > dynamicThreshold && max > maxThreshold) {
                             spikeCount++;
-                            if (spikeCount >= 3 && !soundLockRef.current) {
+                            if (spikeCount >= 2 && !soundLockRef.current) {
                                 soundLockRef.current = true;
                                 spikeCount = 0;
-                                console.log('Voice detected! Avg:', average, 'Max:', max, 'Threshold:', threshold);
+                                console.log('Voice! Avg:', average.toFixed(1), 'Max:', max, 'Threshold:', dynamicThreshold.toFixed(1));
                                 
                                 setSoundViolations(prev => {
                                     const newCount = prev + 1;

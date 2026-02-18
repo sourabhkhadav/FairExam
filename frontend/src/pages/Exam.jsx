@@ -97,7 +97,7 @@ const Exam = () => {
                     }
                 };
                 
-                intervalId = setInterval(detectSound, 100);
+                intervalId = setInterval(detectSound, 80);
             } catch (err) {
                 console.error('Microphone error:', err);
                 toast.error('Microphone access required!');

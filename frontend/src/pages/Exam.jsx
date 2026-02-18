@@ -86,8 +86,10 @@ const Exam = () => {
                         
                         setSoundViolations(prev => {
                             const newCount = prev + 1;
-                            toast.dismiss();
-                            toast.error(`Sound detected! Violation #${newCount}`, { duration: 500, id: 'sound-warning' });
+                            toast.error(`🔊 Sound detected! Violation #${newCount}`, { 
+                                id: 'sound-warning',
+                                duration: 500,
+                            });
                             return newCount;
                         });
                         
@@ -144,8 +146,10 @@ const Exam = () => {
             setViolations(prev => {
                 const newCount = prev + 1;
                 playWarningSound();
-                toast.dismiss();
-                toast.error(`${message} Violation #${newCount}`, { duration: 500, id: 'violation' });
+                toast.error(`⚠️ ${message} Violation #${newCount}`, { 
+                    id: 'violation',
+                    duration: 500,
+                });
                 return newCount;
             });
             
@@ -266,7 +270,29 @@ const Exam = () => {
     return (
         <div className="flex flex-col h-screen bg-slate-100 font-sans text-slate-900 overflow-hidden">
             
-            <Toaster position="top-center" toastOptions={{ duration: 500 }} containerStyle={{ top: 80 }} limit={1} />
+            <Toaster 
+                position="top-center" 
+                toastOptions={{ 
+                    duration: 500,
+                    style: {
+                        background: '#fee2e2',
+                        color: '#991b1b',
+                        padding: '16px 20px',
+                        borderRadius: '12px',
+                        border: '2px solid #ef4444',
+                        boxShadow: '0 10px 40px rgba(239, 68, 68, 0.3)',
+                        fontWeight: '600',
+                        fontSize: '15px',
+                    },
+                    error: {
+                        iconTheme: {
+                            primary: '#ef4444',
+                            secondary: '#fff',
+                        },
+                    },
+                }} 
+                containerStyle={{ top: 80 }} 
+            />
             
             {/* Live Camera Monitor - Always Visible */}
             <LiveCameraMonitor />

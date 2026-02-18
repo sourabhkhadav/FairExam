@@ -1,4 +1,4 @@
-// Detect any intrusion - hands, body parts from any direction
+// Detect intrusion from left and right sides only
 export const detectMultiplePeople = async (video) => {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
@@ -12,39 +12,23 @@ export const detectMultiplePeople = async (video) => {
     const w = canvas.width;
     const h = canvas.height;
     
-    // Check all edges and regions
+    // Only check left and right edges
     const leftEdge = analyzeRegion(data, 0, w * 0.15, 0, h, w, h);
     const rightEdge = analyzeRegion(data, w * 0.85, w, 0, h, w, h);
-    const topRegion = analyzeRegion(data, w * 0.2, w * 0.8, 0, h * 0.2, w, h);
-    const bottomLeft = analyzeRegion(data, 0, w * 0.2, h * 0.5, h, w, h);
-    const bottomRight = analyzeRegion(data, w * 0.8, w, h * 0.5, h, w, h);
 
     const analysis = {
         suspiciousActivity: false,
         warning: null
     };
 
-    console.log('🔍 Detection:', { 
-        left: leftEdge.toFixed(1), 
-        right: rightEdge.toFixed(1), 
-        top: topRegion.toFixed(1),
-        bottomL: bottomLeft.toFixed(1),
-        bottomR: bottomRight.toFixed(1)
-    });
+    console.log('🔍 Detection:', { left: leftEdge.toFixed(1), right: rightEdge.toFixed(1) });
 
-    // Detect from any direction
     if (leftEdge > 30) {
         analysis.suspiciousActivity = true;
         analysis.warning = 'Intrusion from Left Side';
     } else if (rightEdge > 30) {
         analysis.suspiciousActivity = true;
         analysis.warning = 'Intrusion from Right Side';
-    } else if (topRegion > 35) {
-        analysis.suspiciousActivity = true;
-        analysis.warning = 'Hand/Object from Above';
-    } else if (bottomLeft > 32 || bottomRight > 32) {
-        analysis.suspiciousActivity = true;
-        analysis.warning = 'Intrusion from Below';
     }
 
     return analysis;

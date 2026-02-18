@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Clock, Menu, X, ChevronLeft, ChevronRight, Flag, AlertTriangle, CheckCircle, ImageIcon, Save, Maximize } from 'lucide-react';
 import LiveCameraMonitor from '../components/LiveCameraMonitor';
 import { Toaster, toast } from 'react-hot-toast';
+import Meyda from 'meyda';
 
 const Exam = () => {
     const navigate = useNavigate();
@@ -46,9 +47,9 @@ const Exam = () => {
         { id: 10, section: 1, type: 'mcq', question: "Which of the following is a version control system?", options: ["Node.js", "Git", "NPM", "React"] },
     ];
 
-    // Voice/Sound Detection - Simple & Reliable
+    // Voice Detection with Meyda - Works on ALL Laptops
     useEffect(() => {
-        let animationId;
+        let meydaAnalyzer = null;
         
         const startAudioDetection = async () => {
             try {
@@ -58,42 +59,47 @@ const Exam = () => {
                 micStreamRef.current = stream;
                 
                 audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
-                analyserRef.current = audioContextRef.current.createAnalyser();
                 const microphone = audioContextRef.current.createMediaStreamSource(stream);
                 
-                analyserRef.current.fftSize = 2048;
-                analyserRef.current.smoothingTimeConstant = 0.3;
-                microphone.connect(analyserRef.current);
+                let calibrationSamples = [];
+                let baselineRMS = 0;
                 
-                const dataArray = new Uint8Array(analyserRef.current.frequencyBinCount);
-                let baseline = 0;
-                let calibrationCount = 0;
-                
-                const detectSound = () => {
-                    analyserRef.current.getByteFrequencyData(dataArray);
-                    
-                    // Calculate average volume
-                    let sum = 0;
-                    for (let i = 0; i < dataArray.length; i++) {
-                        sum += dataArray[i];
-                    }
-                    const average = sum / dataArray.length;
-                    
-                    // Calibration
-                    if (calibrationCount < 30) {
-                        baseline = Math.max(baseline, average);
-                        calibrationCount++;
-                        if (calibrationCount === 30) {
-                            calibrationDoneRef.current = true;
-                            console.log('Baseline:', baseline);
+                meydaAnalyzer = Meyda.createMeydaAnalyzer({
+                    audioContext: audioContextRef.current,
+                    source: microphone,
+                    bufferSize: 512,
+                    featureExtractors: ['rms', 'energy'],
+                    callback: (features) => {
+                        if (!features || !features.rms) return;
+                        
+                        const { rms, energy } = features;
+                        
+                        // Calibration - 40 samples
+                        if (calibrationSamples.length < 40) {
+                            calibrationSamples.push(rms);
+                            if (calibrationSamples.length === 40) {
+                                const sorted = [...calibrationSamples].sort((a, b) => a - b);
+                                baselineRMS = sorted[Math.floor(sorted.length * 0.6)];
+                                calibrationDoneRef.current = true;
+                                console.log('Calibrated - Baseline RMS:', baselineRMS.toFixed(4));
+                            }
+                            return;
                         }
-                    } else {
-                        // Simple threshold
-                        const threshold = baseline + 5;
                         
-                        console.log('Avg:', average.toFixed(1), 'Threshold:', threshold.toFixed(1));
+                        // Dynamic threshold based on baseline
+                        let threshold;
+                        if (baselineRMS < 0.01) {
+                            threshold = baselineRMS + 0.008;
+                        } else if (baselineRMS < 0.03) {
+                            threshold = baselineRMS + 0.015;
+                        } else if (baselineRMS < 0.05) {
+                            threshold = baselineRMS + 0.025;
+                        } else {
+                            threshold = baselineRMS * 1.5;
+                        }
                         
-                        if (average > threshold && !soundLockRef.current) {
+                        // Detect voice
+                        if (rms > threshold && energy > 0.0001 && !soundLockRef.current) {
                             soundLockRef.current = true;
                             
                             setSoundViolations(prev => {
@@ -104,7 +110,7 @@ const Exam = () => {
                                     duration: 500,
                                 });
                                 
-                                console.log('SOUND VIOLATION #' + newCount);
+                                console.log('VOICE! RMS:', rms.toFixed(4), 'Threshold:', threshold.toFixed(4), 'Energy:', energy.toFixed(6));
                                 return newCount;
                             });
                             
@@ -113,11 +119,10 @@ const Exam = () => {
                             }, 2000);
                         }
                     }
-                    
-                    animationId = requestAnimationFrame(detectSound);
-                };
+                });
                 
-                detectSound();
+                meydaAnalyzer.start();
+                
             } catch (err) {
                 console.error('Microphone error:', err);
                 toast.error('Microphone access required!');
@@ -127,7 +132,9 @@ const Exam = () => {
         startAudioDetection();
         
         return () => {
-            if (animationId) cancelAnimationFrame(animationId);
+            if (meydaAnalyzer) {
+                meydaAnalyzer.stop();
+            }
             if (micStreamRef.current) {
                 micStreamRef.current.getTracks().forEach(track => track.stop());
             }

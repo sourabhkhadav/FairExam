@@ -267,13 +267,35 @@ const Examiner_DraftConfigure = () => {
 
                 <div className="flex justify-end gap-4 pt-10 border-t border-[#E2E8F0]">
                     <button
-                        onClick={() => {
-                            const updatedData = { ...examData, visibility: 'Public' };
-                            const published = JSON.parse(localStorage.getItem('publishedExams') || '[]');
-                            const updatedExams = [...published, { ...updatedData, id: id || Date.now() }];
-                            localStorage.setItem('publishedExams', JSON.stringify(updatedExams));
-                            alert('✅ Exam Published Successfully!');
-                            navigate('/manage-exams');
+                        onClick={async () => {
+                            try {
+                                const token = localStorage.getItem('token');
+                                const updatedData = { 
+                                    ...examData, 
+                                    status: 'published',
+                                    violationLimits: examData.violationLimits
+                                };
+                                
+                                const response = await fetch(`http://localhost:5000/api/exams/${id}`, {
+                                    method: 'PUT',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'Authorization': `Bearer ${token}`
+                                    },
+                                    body: JSON.stringify(updatedData)
+                                });
+                                
+                                if (response.ok) {
+                                    alert('✅ Exam Published Successfully! Email invitations sent to candidates.');
+                                    navigate('/manage-exams');
+                                } else {
+                                    const error = await response.json();
+                                    alert(`Failed to publish exam: ${error.message || 'Unknown error'}`);
+                                }
+                            } catch (error) {
+                                console.error('Publish error:', error);
+                                alert('Failed to publish exam');
+                            }
                         }}
                         className="px-10 py-3 bg-[#0F172A] text-white font-medium rounded-xl hover:bg-[#1E293B] transition-all shadow-sm"
                     >
@@ -332,18 +354,40 @@ const Examiner_DraftConfigure = () => {
                                 Cancel
                             </button>
                             <button
-                                onClick={() => {
+                                onClick={async () => {
                                     if (!examData.startDate || !examData.startTime) {
                                         alert('❌ Please set start date and time for scheduling');
                                         return;
                                     }
-                                    const updatedData = { ...examData, visibility: 'Scheduled' };
-                                    const published = JSON.parse(localStorage.getItem('publishedExams') || '[]');
-                                    const updatedExams = [...published, { ...updatedData, id: id || Date.now() }];
-                                    localStorage.setItem('publishedExams', JSON.stringify(updatedExams));
-                                    setShowScheduleModal(false);
-                                    alert('✅ Exam Scheduled Successfully!');
-                                    navigate('/manage-exams');
+                                    try {
+                                        const token = localStorage.getItem('token');
+                                        const updatedData = { 
+                                            ...examData, 
+                                            status: 'published',
+                                            violationLimits: examData.violationLimits
+                                        };
+                                        
+                                        const response = await fetch(`http://localhost:5000/api/exams/${id}`, {
+                                            method: 'PUT',
+                                            headers: {
+                                                'Content-Type': 'application/json',
+                                                'Authorization': `Bearer ${token}`
+                                            },
+                                            body: JSON.stringify(updatedData)
+                                        });
+                                        
+                                        if (response.ok) {
+                                            setShowScheduleModal(false);
+                                            alert('✅ Exam Scheduled Successfully! Email invitations sent to candidates.');
+                                            navigate('/manage-exams');
+                                        } else {
+                                            const error = await response.json();
+                                            alert(`Failed to schedule exam: ${error.message || 'Unknown error'}`);
+                                        }
+                                    } catch (error) {
+                                        console.error('Schedule error:', error);
+                                        alert('Failed to schedule exam');
+                                    }
                                 }}
                                 className="flex-1 px-6 py-3 bg-[#0F172A] text-white font-medium rounded-xl hover:bg-[#1E293B] transition-all"
                             >

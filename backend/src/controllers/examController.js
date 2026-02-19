@@ -1,7 +1,9 @@
 import asyncHandler from '../middleware/asyncHandler.js';
 import Exam from '../models/Exam.js';
+import Candidate from '../models/Candidate.js';
 import xlsx from 'xlsx';
 import fs from 'fs';
+import { sendExamInvitation } from '../utils/emailService.js';
 
 // @desc    Create new exam
 // @route   POST /api/exams
@@ -92,10 +94,47 @@ export const updateExam = asyncHandler(async (req, res) => {
         throw new Error('Not authorized to update this exam');
     }
 
+    // Check if exam is being published
+    const isPublishing = req.body.status === 'published' && exam.status !== 'published';
+
     exam = await Exam.findByIdAndUpdate(req.params.id, req.body, {
         new: true,
         runValidators: true
     });
+
+    // Send email notifications to candidates when publishing
+    if (isPublishing) {
+        try {
+            console.log(`📧 Publishing exam ${req.params.id}, checking for candidates...`);
+            const candidates = await Candidate.find({ examId: req.params.id });
+            console.log(`Found ${candidates.length} candidates`);
+            
+            if (candidates.length > 0) {
+                const examDetails = {
+                    title: exam.title,
+                    startDate: exam.startDate || 'TBD',
+                    startTime: exam.startTime || 'TBD',
+                    duration: exam.duration || 0
+                };
+
+                const candidatesWithEmail = candidates.filter(candidate => candidate.email);
+                console.log(`Sending emails to ${candidatesWithEmail.length} candidates`);
+                
+                for (const candidate of candidatesWithEmail) {
+                    try {
+                        await sendExamInvitation(candidate.email, examDetails);
+                        console.log(`✅ Sent to ${candidate.email}`);
+                    } catch (err) {
+                        console.error(`❌ Failed to send to ${candidate.email}:`, err.message);
+                    }
+                }
+            } else {
+                console.log('⚠️ No candidates found for this exam');
+            }
+        } catch (emailError) {
+            console.error('❌ Error sending exam invitations:', emailError);
+        }
+    }
 
     res.status(200).json({
         success: true,

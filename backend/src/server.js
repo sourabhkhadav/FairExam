@@ -5,7 +5,10 @@ import connectDB from './config/db.js';
 import authRoutes from './routes/authRoutes.js';
 import examRoutes from './routes/examRoutes.js';
 import violationRoutes from './routes/violationRoutes.js';
+import candidateRoutes from './routes/candidateRoutes.js';
+import emailRoutes from './routes/emailRoutes.js';
 import { errorHandler } from './middleware/errorMiddleware.js';
+import './config/email.js';
 
 dotenv.config();
 
@@ -19,6 +22,8 @@ connectDB();
 app.use('/api/auth', authRoutes);
 app.use('/api/exams', examRoutes);
 app.use('/api/violations', violationRoutes);
+app.use('/api/candidates', candidateRoutes);
+app.use('/api/email', emailRoutes);
 
 app.use(errorHandler);
 

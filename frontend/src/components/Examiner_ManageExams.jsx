@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
     LayoutDashboard, PlusCircle, BookOpen, Monitor,
     AlertCircle, FileCheck, BarChart3, UserCircle, Shield,
-    Search, Calendar, Clock, Users, Edit3, Trash2, ChevronDown, Settings
+    Search, Calendar, Clock, Users, Edit3, Trash2, ChevronDown, Settings, Mail
 } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 
@@ -163,6 +163,30 @@ const Examiner_ManageExams = () => {
         }
     };
 
+    const handleSendInvitations = async (examId) => {
+        if (!window.confirm("Send exam invitations to all candidates?")) return;
+
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`http://localhost:5000/api/email/bulk-invitation/${examId}`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                alert(`✅ ${data.message}`);
+            } else {
+                alert("Failed to send invitations");
+            }
+        } catch (error) {
+            console.error("Send invitations error:", error);
+            alert("Failed to send invitations");
+        }
+    };
+
     const filteredExams = exams.filter(exam => {
         const matchesSearch = exam.title.toLowerCase().includes(searchQuery.toLowerCase());
         const matchesStatus = selectedStatus === 'All' || exam.status === selectedStatus;
@@ -271,6 +295,14 @@ const Examiner_ManageExams = () => {
                                             </button>
                                         </div>
                                     )}
+                                    <button
+                                        onClick={() => handleSendInvitations(exam.id)}
+                                        className="flex-1 sm:flex-none p-3 text-[#3B82F6] hover:bg-[#EFF6FF] rounded-xl transition-colors cursor-pointer flex justify-center items-center gap-2"
+                                        title="Send Invitations"
+                                    >
+                                        <Mail className="w-5 h-5" />
+                                        <span className="text-xs font-bold uppercase sm:hidden">Invite</span>
+                                    </button>
                                     <button
                                         onClick={() => handleEdit(exam)}
                                         className="flex-1 sm:flex-none p-3 text-slate-600 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer flex justify-center"

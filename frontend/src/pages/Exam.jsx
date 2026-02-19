@@ -4,7 +4,6 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Clock, Menu, X, ChevronLeft, ChevronRight, Flag, AlertTriangle, CheckCircle, ImageIcon, Save, Maximize } from 'lucide-react';
 import LiveCameraMonitor from '../components/LiveCameraMonitor';
 import { Toaster, toast } from 'react-hot-toast';
-import Meyda from 'meyda';
 
 const Exam = () => {
     const navigate = useNavigate();
@@ -55,93 +54,95 @@ const Exam = () => {
         { id: 10, section: 1, type: 'mcq', question: "Which of the following is a version control system?", options: ["Node.js", "Git", "NPM", "React"] },
     ];
 
-    // Voice Detection with Meyda - Works on ALL Laptops
+    // Simple Audio Detection - No Meyda Required
     useEffect(() => {
-        let meydaAnalyzer = null;
+        let animationFrameId = null;
         
         const startAudioDetection = async () => {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ 
-                    audio: true
+                    audio: {
+                        echoCancellation: true,
+                        noiseSuppression: true,
+                        autoGainControl: false
+                    }
                 });
                 micStreamRef.current = stream;
                 
                 audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
                 const microphone = audioContextRef.current.createMediaStreamSource(stream);
+                analyserRef.current = audioContextRef.current.createAnalyser();
+                analyserRef.current.fftSize = 512;
+                microphone.connect(analyserRef.current);
                 
+                const dataArray = new Uint8Array(analyserRef.current.frequencyBinCount);
                 let calibrationSamples = [];
-                let baselineRMS = 0;
+                let baselineVolume = 0;
                 
-                meydaAnalyzer = Meyda.createMeydaAnalyzer({
-                    audioContext: audioContextRef.current,
-                    source: microphone,
-                    bufferSize: 512,
-                    featureExtractors: ['rms', 'energy'],
-                    callback: (features) => {
-                        if (!features || !features.rms) return;
-                        
-                        const { rms, energy } = features;
-                        
-                        // Calibration - 40 samples
-                        if (calibrationSamples.length < 40) {
-                            calibrationSamples.push(rms);
-                            if (calibrationSamples.length === 40) {
-                                const sorted = [...calibrationSamples].sort((a, b) => a - b);
-                                baselineRMS = sorted[Math.floor(sorted.length * 0.6)];
-                                calibrationDoneRef.current = true;
-                                console.log('Calibrated - Baseline RMS:', baselineRMS.toFixed(4));
-                            }
-                            return;
+                const detectSound = () => {
+                    analyserRef.current.getByteFrequencyData(dataArray);
+                    const average = dataArray.reduce((a, b) => a + b) / dataArray.length;
+                    
+                    // Calibration - first 60 frames
+                    if (calibrationSamples.length < 60) {
+                        calibrationSamples.push(average);
+                        if (calibrationSamples.length === 60) {
+                            const sorted = [...calibrationSamples].sort((a, b) => a - b);
+                            baselineVolume = sorted[Math.floor(sorted.length * 0.7)];
+                            calibrationDoneRef.current = true;
+                            console.log('✅ Audio calibrated - Baseline:', baselineVolume.toFixed(2));
                         }
-                        
-                        // Dynamic threshold based on baseline
-                        let threshold;
-                        if (baselineRMS < 0.01) {
-                            threshold = baselineRMS + 0.008;
-                        } else if (baselineRMS < 0.03) {
-                            threshold = baselineRMS + 0.015;
-                        } else if (baselineRMS < 0.05) {
-                            threshold = baselineRMS + 0.025;
-                        } else {
-                            threshold = baselineRMS * 1.5;
-                        }
-                        
-                        // Detect voice
-                        if (rms > threshold && energy > 0.0001 && !soundLockRef.current) {
-                            soundLockRef.current = true;
-                            
-                            setSoundViolations(prev => {
-                                const newCount = prev + 1;
-                                
-                                toast.error(`🔊 Sound detected! Violation #${newCount}`, { 
-                                    id: 'sound-warning',
-                                    duration: 500,
-                                });
-                                
-                                console.log('VOICE! RMS:', rms.toFixed(4), 'Threshold:', threshold.toFixed(4), 'Energy:', energy.toFixed(6));
-                                return newCount;
-                            });
-                            
-                            setTimeout(() => {
-                                soundLockRef.current = false;
-                            }, 2000);
-                        }
+                        animationFrameId = requestAnimationFrame(detectSound);
+                        return;
                     }
-                });
+                    
+                    const threshold = baselineVolume + 15;
+                    
+                    if (average > threshold && !soundLockRef.current) {
+                        soundLockRef.current = true;
+                        
+                        setSoundViolations(prev => {
+                            const newCount = prev + 1;
+                            toast.error(`🔊 Sound detected! Violation #${newCount}`, { 
+                                id: 'sound-warning',
+                                duration: 500,
+                            });
+                            console.log('🔊 SOUND! Level:', average.toFixed(2), 'Threshold:', threshold.toFixed(2));
+                            return newCount;
+                        });
+                        
+                        setTimeout(() => {
+                            soundLockRef.current = false;
+                        }, 2000);
+                    }
+                    
+                    animationFrameId = requestAnimationFrame(detectSound);
+                };
                 
-                meydaAnalyzer.start();
+                detectSound();
+                console.log('✅ Microphone access granted');
                 
             } catch (err) {
-                console.error('Microphone error:', err);
-                toast.error('Microphone access required!');
+                console.error('❌ Microphone error:', err);
+                if (err.name === 'NotAllowedError') {
+                    toast.error('⚠️ Microphone access required!', {
+                        duration: Infinity,
+                        style: { background: '#DC2626', color: '#fff', fontWeight: 'bold', fontSize: '16px' }
+                    });
+                } else {
+                    toast.error('Microphone error: ' + err.message, {
+                        duration: 5000,
+                        style: { background: '#DC2626', color: '#fff', fontWeight: 'bold' }
+                    });
+                }
             }
         };
         
         startAudioDetection();
         
         return () => {
-            if (meydaAnalyzer) {
-                meydaAnalyzer.stop();
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
             }
             if (micStreamRef.current) {
                 micStreamRef.current.getTracks().forEach(track => track.stop());
@@ -306,16 +307,32 @@ const Exam = () => {
             <Toaster 
                 position="top-center" 
                 toastOptions={{ 
-                    duration: 500,
+                    duration: 1500,
                     style: {
                         background: '#fee2e2',
                         color: '#991b1b',
-                        padding: '16px 20px',
-                        borderRadius: '12px',
-                        border: '2px solid #ef4444',
-                        boxShadow: '0 10px 40px rgba(239, 68, 68, 0.3)',
+                        padding: '6px 14px',
+                        borderRadius: '6px',
+                        border: '1.5px solid #ef4444',
+                        boxShadow: '0 2px 8px rgba(239, 68, 68, 0.2)',
                         fontWeight: '600',
-                        fontSize: '15px',
+                        fontSize: '11px',
+                        maxWidth: '400px',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                    },
+                    success: {
+                        style: {
+                            background: '#d1fae5',
+                            color: '#065f46',
+                            border: '1.5px solid #10b981',
+                            whiteSpace: 'nowrap',
+                        },
+                        iconTheme: {
+                            primary: '#10b981',
+                            secondary: '#fff',
+                        },
                     },
                     error: {
                         iconTheme: {
@@ -324,7 +341,7 @@ const Exam = () => {
                         },
                     },
                 }} 
-                containerStyle={{ top: 80 }} 
+                containerStyle={{ top: 70 }} 
             />
             
             {/* Live Camera Monitor - Always Visible */}
@@ -360,27 +377,18 @@ const Exam = () => {
                     <span className={`font-mono text-xl font-bold ${timeLeft < 300 ? 'text-red-700' : 'text-slate-700'}`}>{formatTime(timeLeft)}</span>
                 </div>
 
-                <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gradient-to-r from-red-50 to-red-100 border border-red-200 shadow-sm">
-                        <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
-                        <div className="text-xs">
-                            <span className="font-semibold text-red-700">Fullscreen:</span>
-                            <span className="ml-1 font-bold text-red-800">{violations}</span>
-                        </div>
+                <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-gradient-to-r from-red-50 to-red-100 border border-red-200">
+                        <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></div>
+                        <span className="text-[10px] font-semibold text-red-700">FS: {violations}</span>
                     </div>
-                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gradient-to-r from-orange-50 to-orange-100 border border-orange-200 shadow-sm">
-                        <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></div>
-                        <div className="text-xs">
-                            <span className="font-semibold text-orange-700">Sound:</span>
-                            <span className="ml-1 font-bold text-orange-800">{soundViolations}</span>
-                        </div>
+                    <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-gradient-to-r from-orange-50 to-orange-100 border border-orange-200">
+                        <div className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></div>
+                        <span className="text-[10px] font-semibold text-orange-700">S: {soundViolations}</span>
                     </div>
-                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gradient-to-r from-purple-50 to-purple-100 border border-purple-200 shadow-sm">
-                        <div className="w-2 h-2 rounded-full bg-purple-500 animate-pulse"></div>
-                        <div className="text-xs">
-                            <span className="font-semibold text-purple-700">Face:</span>
-                            <span className="ml-1 font-bold text-purple-800">{faceViolations}</span>
-                        </div>
+                    <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-gradient-to-r from-purple-50 to-purple-100 border border-purple-200">
+                        <div className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse"></div>
+                        <span className="text-[10px] font-semibold text-purple-700">F: {faceViolations}</span>
                     </div>
                     <div className="hidden sm:block text-right">
                         <div className="text-xs text-slate-500 uppercase">Assessment ID</div>
@@ -409,7 +417,7 @@ const Exam = () => {
                         />
                     </div>
 
-                    <div className="flex-1 overflow-y-auto p-6 md:p-10 bg-white scroll-smooth custom-scrollbar">
+                    <div className="flex-1 overflow-y-auto p-6 md:p-10 pt-20 bg-white scroll-smooth custom-scrollbar">
                         <div className="max-w-3xl mx-auto w-full space-y-6">
 
                             {/* Question Header */}

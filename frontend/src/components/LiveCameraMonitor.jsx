@@ -4,10 +4,8 @@ import * as faceapi from 'face-api.js';
 import { Camera, CameraOff, AlertTriangle, Users, EyeOff, Activity } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { detectMultiplePeople } from '../utils/advancedPersonDetection';
-import axios from 'axios';
-import { API_BASE_URL } from '../config/api';
 
-const LiveCameraMonitor = ({ onViolationUpdate, candidateId, candidateName, examId, examName }) => {
+const LiveCameraMonitor = ({ onViolationUpdate }) => {
     const webcamRef = useRef(null);
     const canvasRef = useRef(null);
     const [cameraStatus, setCameraStatus] = useState('loading');
@@ -385,35 +383,61 @@ const LiveCameraMonitor = ({ onViolationUpdate, candidateId, candidateName, exam
         }
     };
 
-    const uploadToCloudinary = async (screenshot) => {
+    const captureScreenshot = async () => {
+        if (!webcamRef.current) return;
+        
         try {
-            const response = await axios.post(`${API_BASE_URL}/violations/upload-screenshot`, {
-                image: screenshot,
-                candidateId,
-                candidateName,
-                examId,
-                examName,
-                violationCount: 5
-            });
+            const screenshot = webcamRef.current.getScreenshot();
+            if (!screenshot) {
+                console.error('No screenshot captured');
+                return;
+            }
             
-            if (response.data.success) {
-                console.log('✅ Screenshot uploaded to Cloudinary:', response.data.url);
-                toast.success('📸 Violation screenshot captured', {
+            const response = await fetch(screenshot);
+            const blob = await response.blob();
+            
+            const timestamp = Math.round(Date.now() / 1000);
+            const apiKey = '212913295232361';
+            const apiSecret = 'FklRkFnZZzTVSEZAyx348LbRb1c';
+            const cloudName = 'dhue3xnpx';
+            
+            // Generate signature
+            const stringToSign = `timestamp=${timestamp}${apiSecret}`;
+            const signature = await crypto.subtle.digest('SHA-1', new TextEncoder().encode(stringToSign))
+                .then(hash => Array.from(new Uint8Array(hash))
+                    .map(b => b.toString(16).padStart(2, '0')).join(''));
+            
+            const formData = new FormData();
+            formData.append('file', blob);
+            formData.append('timestamp', timestamp);
+            formData.append('api_key', apiKey);
+            formData.append('signature', signature);
+            
+            const uploadResponse = await fetch(
+                `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+                {
+                    method: 'POST',
+                    body: formData
+                }
+            );
+            
+            const data = await uploadResponse.json();
+            
+            if (data.secure_url) {
+                console.log('✅ Screenshot uploaded:', data.secure_url);
+                toast.success('Screenshot captured!', {
                     duration: 3000,
                     style: { background: '#059669', color: '#fff', fontWeight: 'bold' }
                 });
+            } else {
+                throw new Error(data.error?.message || 'Upload failed');
             }
         } catch (error) {
-            console.error('❌ Cloudinary upload failed:', error);
-        }
-    };
-
-    const captureAndUploadScreenshot = async () => {
-        if (!webcamRef.current) return;
-        
-        const screenshot = webcamRef.current.getScreenshot();
-        if (screenshot) {
-            await uploadToCloudinary(screenshot);
+            console.error('❌ Screenshot error:', error);
+            toast.error('Screenshot capture failed', {
+                duration: 2000,
+                style: { background: '#DC2626', color: '#fff', fontWeight: 'bold' }
+            });
         }
     };
 
@@ -427,9 +451,9 @@ const LiveCameraMonitor = ({ onViolationUpdate, candidateId, candidateName, exam
         setViolations(prev => {
             const updated = [...prev, violation];
             
-            // Upload screenshot when violations reach exactly 5
-            if (updated.length === 5) {
-                setTimeout(() => captureAndUploadScreenshot(), 100);
+            // Capture screenshot on 6th violation
+            if (updated.length === 6) {
+                setTimeout(() => captureScreenshot(), 100);
             }
             
             if (onViolationUpdate) {

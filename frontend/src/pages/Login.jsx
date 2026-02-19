@@ -1,26 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Camera, Wifi, Globe, Lock, User, AlertCircle, CheckCircle, ShieldCheck, HelpCircle } from 'lucide-react';
-
-const SystemCheckItem = ({ icon: Icon, label, status }) => {
-    const statusConfig = {
-        pending: { color: 'text-slate-400', bg: 'bg-slate-100', border: 'border-slate-200', icon: <div className="w-4 h-4 rounded-full border-2 border-slate-300 border-t-blue-600 animate-spin" /> },
-        success: { color: 'text-emerald-700', bg: 'bg-emerald-50', border: 'border-emerald-200', icon: <CheckCircle className="w-4 h-4 text-emerald-600" /> },
-        error: { color: 'text-red-700', bg: 'bg-red-50', border: 'border-red-200', icon: <AlertCircle className="w-4 h-4 text-red-600" /> }
-    };
-
-    const config = statusConfig[status];
-
-    return (
-        <div className={`flex items-center justify-between p-3 rounded-md border text-sm transition-colors duration-200 ${config.bg} ${config.border}`}>
-            <div className="flex items-center gap-3">
-                <Icon className={`w-4 h-4 ${status === 'success' ? 'text-emerald-600' : 'text-slate-500'}`} />
-                <span className={`font-medium ${config.color}`}>{label}</span>
-            </div>
-            {config.icon}
-        </div>
-    );
-};
+import { Lock, User, AlertCircle, ShieldCheck, HelpCircle } from 'lucide-react';
 
 const Login = () => {
     const navigate = useNavigate();
@@ -28,34 +8,8 @@ const Login = () => {
         candidateId: '',
         password: ''
     });
-    const [systemStatus, setSystemStatus] = useState({
-        webcam: 'pending',
-        internet: 'pending',
-        browser: 'pending'
-    });
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-
-    useEffect(() => {
-        // Simulate system checks
-        const performChecks = async () => {
-            setTimeout(() => setSystemStatus(p => ({ ...p, internet: navigator.onLine ? 'success' : 'error' })), 800);
-            setTimeout(() => {
-                const isCompatible = /chrome|firefox|safari|edge/i.test(navigator.userAgent);
-                setSystemStatus(p => ({ ...p, browser: isCompatible ? 'success' : 'error' }));
-            }, 1500);
-            setTimeout(async () => {
-                try {
-                    // In a real app we would request permission here
-                    // await navigator.mediaDevices.getUserMedia({ video: true });
-                    setSystemStatus(p => ({ ...p, webcam: 'success' }));
-                } catch {
-                    setSystemStatus(p => ({ ...p, webcam: 'error' }));
-                }
-            }, 2500);
-        };
-        performChecks();
-    }, []);
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -97,8 +51,6 @@ const Login = () => {
             setIsLoading(false);
         }
     };
-
-    const allChecksPassed = Object.values(systemStatus).every(s => s === 'success');
 
     return (
         <div className="min-h-screen flex bg-slate-50 font-sans selection:bg-blue-100 selection:text-blue-900">
@@ -194,18 +146,6 @@ const Login = () => {
                             </div>
                         </div>
 
-                        {/* System Check Section */}
-                        <div className="mt-6 pt-6 border-t border-slate-100">
-                            <div className="flex items-center justify-between mb-3">
-                                <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wide">System Requirements</h3>
-                                {!allChecksPassed && <div className="text-[10px] font-medium text-blue-600 bg-blue-50 px-2 py-0.5 rounded">Checking...</div>}
-                            </div>
-                            <div className="space-y-2">
-                                <SystemCheckItem icon={Camera} label="Webcam" status={systemStatus.webcam} />
-                                <SystemCheckItem icon={Wifi} label="Internet Connectivity" status={systemStatus.internet} />
-                            </div>
-                        </div>
-
                         {error && (
                             <div className="flex items-start gap-3 p-3 text-sm text-red-700 bg-red-50 rounded-md border border-red-200">
                                 <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
@@ -215,13 +155,13 @@ const Login = () => {
 
                         <button
                             type="submit"
-                            disabled={!allChecksPassed || isLoading}
+                            disabled={isLoading}
                             className={`w-full flex justify-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-semibold text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all
-                                ${allChecksPassed && !isLoading
+                                ${!isLoading
                                     ? 'bg-blue-600 hover:bg-blue-700'
                                     : 'bg-slate-400 cursor-not-allowed'}`}
                         >
-                            {isLoading ? 'Authenticating...' : (allChecksPassed ? 'Proceed to Instructions' : 'Waiting for System Check...')}
+                            {isLoading ? 'Authenticating...' : 'Proceed to Instructions'}
                         </button>
                     </form>
 

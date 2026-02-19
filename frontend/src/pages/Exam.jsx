@@ -4,7 +4,6 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { Clock, Menu, X, ChevronLeft, ChevronRight, Flag, AlertTriangle, CheckCircle, ImageIcon, Save, Maximize } from 'lucide-react';
 import LiveCameraMonitor from '../components/LiveCameraMonitor';
 import { Toaster, toast } from 'react-hot-toast';
-import Meyda from 'meyda';
 
 const Exam = () => {
     const navigate = useNavigate();
@@ -55,93 +54,95 @@ const Exam = () => {
         { id: 10, section: 1, type: 'mcq', question: "Which of the following is a version control system?", options: ["Node.js", "Git", "NPM", "React"] },
     ];
 
-    // Voice Detection with Meyda - Works on ALL Laptops
+    // Simple Audio Detection - No Meyda Required
     useEffect(() => {
-        let meydaAnalyzer = null;
+        let animationFrameId = null;
         
         const startAudioDetection = async () => {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ 
-                    audio: true
+                    audio: {
+                        echoCancellation: true,
+                        noiseSuppression: true,
+                        autoGainControl: false
+                    }
                 });
                 micStreamRef.current = stream;
                 
                 audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
                 const microphone = audioContextRef.current.createMediaStreamSource(stream);
+                analyserRef.current = audioContextRef.current.createAnalyser();
+                analyserRef.current.fftSize = 512;
+                microphone.connect(analyserRef.current);
                 
+                const dataArray = new Uint8Array(analyserRef.current.frequencyBinCount);
                 let calibrationSamples = [];
-                let baselineRMS = 0;
+                let baselineVolume = 0;
                 
-                meydaAnalyzer = Meyda.createMeydaAnalyzer({
-                    audioContext: audioContextRef.current,
-                    source: microphone,
-                    bufferSize: 512,
-                    featureExtractors: ['rms', 'energy'],
-                    callback: (features) => {
-                        if (!features || !features.rms) return;
-                        
-                        const { rms, energy } = features;
-                        
-                        // Calibration - 40 samples
-                        if (calibrationSamples.length < 40) {
-                            calibrationSamples.push(rms);
-                            if (calibrationSamples.length === 40) {
-                                const sorted = [...calibrationSamples].sort((a, b) => a - b);
-                                baselineRMS = sorted[Math.floor(sorted.length * 0.6)];
-                                calibrationDoneRef.current = true;
-                                console.log('Calibrated - Baseline RMS:', baselineRMS.toFixed(4));
-                            }
-                            return;
+                const detectSound = () => {
+                    analyserRef.current.getByteFrequencyData(dataArray);
+                    const average = dataArray.reduce((a, b) => a + b) / dataArray.length;
+                    
+                    // Calibration - first 60 frames
+                    if (calibrationSamples.length < 60) {
+                        calibrationSamples.push(average);
+                        if (calibrationSamples.length === 60) {
+                            const sorted = [...calibrationSamples].sort((a, b) => a - b);
+                            baselineVolume = sorted[Math.floor(sorted.length * 0.7)];
+                            calibrationDoneRef.current = true;
+                            console.log('✅ Audio calibrated - Baseline:', baselineVolume.toFixed(2));
                         }
-                        
-                        // Dynamic threshold based on baseline
-                        let threshold;
-                        if (baselineRMS < 0.01) {
-                            threshold = baselineRMS + 0.008;
-                        } else if (baselineRMS < 0.03) {
-                            threshold = baselineRMS + 0.015;
-                        } else if (baselineRMS < 0.05) {
-                            threshold = baselineRMS + 0.025;
-                        } else {
-                            threshold = baselineRMS * 1.5;
-                        }
-                        
-                        // Detect voice
-                        if (rms > threshold && energy > 0.0001 && !soundLockRef.current) {
-                            soundLockRef.current = true;
-                            
-                            setSoundViolations(prev => {
-                                const newCount = prev + 1;
-                                
-                                toast.error(`🔊 Sound detected! Violation #${newCount}`, { 
-                                    id: 'sound-warning',
-                                    duration: 500,
-                                });
-                                
-                                console.log('VOICE! RMS:', rms.toFixed(4), 'Threshold:', threshold.toFixed(4), 'Energy:', energy.toFixed(6));
-                                return newCount;
-                            });
-                            
-                            setTimeout(() => {
-                                soundLockRef.current = false;
-                            }, 2000);
-                        }
+                        animationFrameId = requestAnimationFrame(detectSound);
+                        return;
                     }
-                });
+                    
+                    const threshold = baselineVolume + 15;
+                    
+                    if (average > threshold && !soundLockRef.current) {
+                        soundLockRef.current = true;
+                        
+                        setSoundViolations(prev => {
+                            const newCount = prev + 1;
+                            toast.error(`🔊 Sound detected! Violation #${newCount}`, { 
+                                id: 'sound-warning',
+                                duration: 500,
+                            });
+                            console.log('🔊 SOUND! Level:', average.toFixed(2), 'Threshold:', threshold.toFixed(2));
+                            return newCount;
+                        });
+                        
+                        setTimeout(() => {
+                            soundLockRef.current = false;
+                        }, 2000);
+                    }
+                    
+                    animationFrameId = requestAnimationFrame(detectSound);
+                };
                 
-                meydaAnalyzer.start();
+                detectSound();
+                console.log('✅ Microphone access granted');
                 
             } catch (err) {
-                console.error('Microphone error:', err);
-                toast.error('Microphone access required!');
+                console.error('❌ Microphone error:', err);
+                if (err.name === 'NotAllowedError') {
+                    toast.error('⚠️ Microphone access required!', {
+                        duration: Infinity,
+                        style: { background: '#DC2626', color: '#fff', fontWeight: 'bold', fontSize: '16px' }
+                    });
+                } else {
+                    toast.error('Microphone error: ' + err.message, {
+                        duration: 5000,
+                        style: { background: '#DC2626', color: '#fff', fontWeight: 'bold' }
+                    });
+                }
             }
         };
         
         startAudioDetection();
         
         return () => {
-            if (meydaAnalyzer) {
-                meydaAnalyzer.stop();
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
             }
             if (micStreamRef.current) {
                 micStreamRef.current.getTracks().forEach(track => track.stop());

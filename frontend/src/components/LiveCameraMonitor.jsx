@@ -386,45 +386,58 @@ const LiveCameraMonitor = ({ onViolationUpdate }) => {
     const captureScreenshot = async () => {
         if (!webcamRef.current) return;
         
-        const screenshot = webcamRef.current.getScreenshot();
-        if (screenshot) {
-            try {
-                const formData = new FormData();
-                formData.append('file', screenshot);
-                formData.append('api_key', '132891492545351');
-                formData.append('timestamp', Math.round(Date.now() / 1000));
-                formData.append('folder', 'fairexam');
-                
-                const response = await fetch(
-                    'https://api.cloudinary.com/v1_1/dqvpxwxsf/image/upload',
-                    {
-                        method: 'POST',
-                        body: formData
-                    }
-                );
-                
-                const data = await response.json();
-                
-                if (data.secure_url) {
-                    console.log('Screenshot stored:', data.secure_url);
-                    toast.success('Screenshot detected and stored in Cloudinary', {
-                        duration: 3000,
-                        style: { background: '#059669', color: '#fff', fontWeight: 'bold' }
-                    });
-                } else {
-                    console.error('Upload failed:', data);
-                    toast.error('Screenshot capture failed', {
-                        duration: 2000,
-                        style: { background: '#DC2626', color: '#fff', fontWeight: 'bold' }
-                    });
-                }
-            } catch (error) {
-                console.error('Upload error:', error);
-                toast.error('Screenshot capture failed', {
-                    duration: 2000,
-                    style: { background: '#DC2626', color: '#fff', fontWeight: 'bold' }
-                });
+        try {
+            const screenshot = webcamRef.current.getScreenshot();
+            if (!screenshot) {
+                console.error('No screenshot captured');
+                return;
             }
+            
+            const response = await fetch(screenshot);
+            const blob = await response.blob();
+            
+            const timestamp = Math.round(Date.now() / 1000);
+            const apiKey = '212913295232361';
+            const apiSecret = 'FklRkFnZZzTVSEZAyx348LbRb1c';
+            const cloudName = 'dhue3xnpx';
+            
+            // Generate signature
+            const stringToSign = `timestamp=${timestamp}${apiSecret}`;
+            const signature = await crypto.subtle.digest('SHA-1', new TextEncoder().encode(stringToSign))
+                .then(hash => Array.from(new Uint8Array(hash))
+                    .map(b => b.toString(16).padStart(2, '0')).join(''));
+            
+            const formData = new FormData();
+            formData.append('file', blob);
+            formData.append('timestamp', timestamp);
+            formData.append('api_key', apiKey);
+            formData.append('signature', signature);
+            
+            const uploadResponse = await fetch(
+                `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+                {
+                    method: 'POST',
+                    body: formData
+                }
+            );
+            
+            const data = await uploadResponse.json();
+            
+            if (data.secure_url) {
+                console.log('✅ Screenshot uploaded:', data.secure_url);
+                toast.success('Screenshot captured!', {
+                    duration: 3000,
+                    style: { background: '#059669', color: '#fff', fontWeight: 'bold' }
+                });
+            } else {
+                throw new Error(data.error?.message || 'Upload failed');
+            }
+        } catch (error) {
+            console.error('❌ Screenshot error:', error);
+            toast.error('Screenshot capture failed', {
+                duration: 2000,
+                style: { background: '#DC2626', color: '#fff', fontWeight: 'bold' }
+            });
         }
     };
 

@@ -79,9 +79,9 @@ const Instructions = () => {
                         <div>
                             <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
                                 <Shield className="w-5 h-5 text-slate-500" />
-                                Code of Conduct
+                                Code of Conduct & Violation Limits
                             </h3>
-                            <div className="bg-amber-50 border border-amber-200 rounded-lg p-6">
+                            <div className="bg-amber-50 border border-amber-200 rounded-lg p-6 space-y-4">
                                 <ul className="space-y-3">
                                     {[
                                         "Strict Prohibition: No generic materials, external sites, or communication tools.",
@@ -95,6 +95,27 @@ const Instructions = () => {
                                         </li>
                                     ))}
                                 </ul>
+                                <div className="mt-6 pt-4 border-t border-amber-200">
+                                    <h4 className="text-sm font-bold text-slate-900 mb-3">Violation Limits</h4>
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                        <div className="bg-white rounded-lg p-3 border border-amber-200">
+                                            <div className="text-xs text-slate-500 uppercase tracking-wider mb-1">Face Detection</div>
+                                            <div className="text-2xl font-bold text-red-600">5</div>
+                                            <div className="text-xs text-slate-600 mt-1">violations allowed</div>
+                                        </div>
+                                        <div className="bg-white rounded-lg p-3 border border-amber-200">
+                                            <div className="text-xs text-slate-500 uppercase tracking-wider mb-1">Sound Detection</div>
+                                            <div className="text-2xl font-bold text-red-600">5</div>
+                                            <div className="text-xs text-slate-600 mt-1">violations allowed</div>
+                                        </div>
+                                        <div className="bg-white rounded-lg p-3 border border-amber-200">
+                                            <div className="text-xs text-slate-500 uppercase tracking-wider mb-1">Fullscreen Exit</div>
+                                            <div className="text-2xl font-bold text-red-600">5</div>
+                                            <div className="text-xs text-slate-600 mt-1">violations allowed</div>
+                                        </div>
+                                    </div>
+                                    <p className="text-xs text-slate-600 mt-3 italic">⚠️ Exceeding these limits will result in automatic screenshot capture and potential exam termination.</p>
+                                </div>
                             </div>
                         </div>
                     </div>

@@ -7,7 +7,11 @@ import fs from 'fs';
 // @route   POST /api/exams
 // @access  Private (Examiner)
 export const createExam = asyncHandler(async (req, res) => {
-    req.body.examiner = req.user.id;
+    if (req.user.id === 'demo-user-id') {
+        req.body.examiner = '507f1f77bcf86cd799439011';
+    } else {
+        req.body.examiner = req.user.id;
+    }
 
     const exam = await Exam.create(req.body);
 
@@ -21,12 +25,30 @@ export const createExam = asyncHandler(async (req, res) => {
 // @route   GET /api/exams
 // @access  Private (Examiner)
 export const getExams = asyncHandler(async (req, res) => {
-    const exams = await Exam.find({ examiner: req.user.id });
+    const examinerId = req.user.id === 'demo-user-id' ? '507f1f77bcf86cd799439011' : req.user.id;
+    const exams = await Exam.find({ examiner: examinerId });
 
     res.status(200).json({
         success: true,
         count: exams.length,
         data: exams
+    });
+});
+
+// @desc    Get single exam (public - for students)
+// @route   GET /api/exams/public/:id
+// @access  Public
+export const getPublicExam = asyncHandler(async (req, res) => {
+    const exam = await Exam.findById(req.params.id).select('title violationLimits duration');
+
+    if (!exam) {
+        res.status(404);
+        throw new Error('Exam not found');
+    }
+
+    res.status(200).json({
+        success: true,
+        data: exam
     });
 });
 
@@ -64,8 +86,8 @@ export const updateExam = asyncHandler(async (req, res) => {
         throw new Error('Exam not found');
     }
 
-    // Make sure user is exam owner
-    if (exam.examiner.toString() !== req.user.id) {
+    const examinerId = req.user.id === 'demo-user-id' ? '507f1f77bcf86cd799439011' : req.user.id;
+    if (exam.examiner.toString() !== examinerId) {
         res.status(401);
         throw new Error('Not authorized to update this exam');
     }

@@ -43,10 +43,11 @@ const Examiner_DraftConfigure = () => {
         timezone: '(UTC+05:30) Mumbai, Kolkata, New Delhi',
         graceTime: 15,
         visibility: 'Draft',
-        aiProctoring: true,
-        fullScreen: true,
-        camera: false,
-        tabSwitchDetection: true,
+        violationLimits: {
+            faceLimit: 5,
+            soundLimit: 5,
+            fullscreenLimit: 5
+        }
     });
 
     useEffect(() => {
@@ -141,18 +142,46 @@ const Examiner_DraftConfigure = () => {
                     </div>
                 </FormSection>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    {/* Visibility */}
-                    <FormSection title="Visibility Options" icon={Eye}>
-                        <div className="space-y-3">
-                            {['Public', 'Scheduled'].map(status => (
-                                <div
-                                    key={status}
-                                    className="w-full px-4 py-3 rounded-xl border-2 border-[#E2E8F0] text-[#0F172A] transition-all flex items-center justify-between"
-                                >
-                                    <span className="text-[13px] font-medium">{status}</span>
-                                </div>
-                            ))}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    {/* Violation Limits */}
+                    <FormSection title="Violation Limits" icon={ShieldCheck}>
+                        <div className="space-y-5">
+                            <div className="space-y-2">
+                                <label className="text-[11px] font-bold text-[#64748B] uppercase tracking-widest ml-1">Face Detection Limit</label>
+                                <input 
+                                    type="number" 
+                                    min="1"
+                                    max="20"
+                                    className="w-full px-4 py-3 rounded-xl bg-white border border-[#E2E8F0] outline-none focus:border-[#0F172A] transition-colors"
+                                    value={examData.violationLimits?.faceLimit || 5}
+                                    onChange={e => updateField('violationLimits', { ...examData.violationLimits, faceLimit: parseInt(e.target.value) })}
+                                />
+                                <p className="text-[10px] text-[#64748B] ml-1">Max face violations before action</p>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[11px] font-bold text-[#64748B] uppercase tracking-widest ml-1">Sound Detection Limit</label>
+                                <input 
+                                    type="number" 
+                                    min="1"
+                                    max="20"
+                                    className="w-full px-4 py-3 rounded-xl bg-white border border-[#E2E8F0] outline-none focus:border-[#0F172A] transition-colors"
+                                    value={examData.violationLimits?.soundLimit || 5}
+                                    onChange={e => updateField('violationLimits', { ...examData.violationLimits, soundLimit: parseInt(e.target.value) })}
+                                />
+                                <p className="text-[10px] text-[#64748B] ml-1">Max sound violations before action</p>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[11px] font-bold text-[#64748B] uppercase tracking-widest ml-1">Fullscreen Exit Limit</label>
+                                <input 
+                                    type="number" 
+                                    min="1"
+                                    max="20"
+                                    className="w-full px-4 py-3 rounded-xl bg-white border border-[#E2E8F0] outline-none focus:border-[#0F172A] transition-colors"
+                                    value={examData.violationLimits?.fullscreenLimit || 5}
+                                    onChange={e => updateField('violationLimits', { ...examData.violationLimits, fullscreenLimit: parseInt(e.target.value) })}
+                                />
+                                <p className="text-[10px] text-[#64748B] ml-1">Max fullscreen exits before action</p>
+                            </div>
                         </div>
                     </FormSection>
 
@@ -232,37 +261,6 @@ const Examiner_DraftConfigure = () => {
                                     {examData.candidateFile?.endsWith('.pdf') && <div className="w-2 h-2 rounded-full bg-[#0F172A]" />}
                                 </button>
                             </div>
-                        </div>
-                    </FormSection>
-
-                    {/* Questions Overview */}
-                    <FormSection title="Questions Overview" icon={FileCheck}>
-                        <div className="space-y-4 max-h-[220px] overflow-y-auto custom-scrollbar pr-2">
-                            {(examData.questions || []).length > 0 ? (
-                                examData.questions.map((q, idx) => (
-                                    <div key={idx} className="p-3 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl flex items-center justify-between">
-                                        <div className="flex items-center gap-3 min-w-0">
-                                            <span className="text-[10px] font-bold text-[#94A3B8]">Q{idx + 1}</span>
-                                            <p className="text-[12px] font-medium text-[#0F172A] truncate">
-                                                {q.text || "No content..."}
-                                            </p>
-                                        </div>
-                                        <span className="text-[9px] font-bold px-1.5 py-0.5 bg-slate-50 text-[#0F172A] rounded">
-                                            {q.difficulty}
-                                        </span>
-                                    </div>
-                                ))
-                            ) : (
-                                <div className="py-10 text-center bg-[#F8FAFC] rounded-2xl border-2 border-dashed border-[#E2E8F0]">
-                                    <p className="text-[13px] font-medium text-[#94A3B8]">No questions added yet</p>
-                                    <button
-                                        onClick={() => navigate('/add-questions')}
-                                        className="mt-2 text-[11px] font-bold text-[#0F172A] uppercase tracking-wider hover:underline"
-                                    >
-                                        Add Now
-                                    </button>
-                                </div>
-                            )}
                         </div>
                     </FormSection>
                 </div>

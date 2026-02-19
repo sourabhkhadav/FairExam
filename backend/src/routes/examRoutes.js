@@ -6,7 +6,8 @@ import {
     getExam,
     updateExam,
     deleteExam,
-    importQuestions
+    importQuestions,
+    getPublicExam
 } from '../controllers/examController.js';
 import { protect, authorize } from '../middleware/authMiddleware.js';
 
@@ -16,7 +17,10 @@ const router = express.Router();
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
-// All routes are protected
+// Public route for students taking exam
+router.get('/public/:id', getPublicExam);
+
+// All routes below are protected
 router.use(protect);
 router.use(authorize('examiner'));
 

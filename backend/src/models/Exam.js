@@ -80,6 +80,20 @@ const examSchema = new mongoose.Schema({
         enum: ['draft', 'published'],
         default: 'draft'
     },
+    violationLimits: {
+        faceLimit: {
+            type: Number,
+            default: 5
+        },
+        soundLimit: {
+            type: Number,
+            default: 5
+        },
+        fullscreenLimit: {
+            type: Number,
+            default: 5
+        }
+    },
     createdAt: {
         type: Date,
         default: Date.now

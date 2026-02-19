@@ -12,7 +12,22 @@ export const protect = asyncHandler(async (req, res, next) => {
         try {
             token = req.headers.authorization.split(' ')[1];
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
-            req.user = await User.findById(decoded.id).select('-password');
+            
+            if (decoded.id === 'demo-user-id') {
+                req.user = {
+                    id: 'demo-user-id',
+                    _id: 'demo-user-id',
+                    name: 'Demo User',
+                    email: 'demo@fairexam.com',
+                    role: 'examiner'
+                };
+            } else {
+                req.user = await User.findById(decoded.id).select('-password');
+                if (!req.user) {
+                    res.status(401);
+                    throw new Error('User not found');
+                }
+            }
             next();
         } catch (error) {
             console.error(error);

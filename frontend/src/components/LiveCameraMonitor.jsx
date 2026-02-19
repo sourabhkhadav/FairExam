@@ -4,8 +4,10 @@ import * as faceapi from 'face-api.js';
 import { Camera, CameraOff, AlertTriangle, Users, EyeOff, Activity } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { detectMultiplePeople } from '../utils/advancedPersonDetection';
+import axios from 'axios';
+import { API_BASE_URL } from '../config/api';
 
-const LiveCameraMonitor = ({ onViolationUpdate }) => {
+const LiveCameraMonitor = ({ onViolationUpdate, candidateId, candidateName, examId, examName }) => {
     const webcamRef = useRef(null);
     const canvasRef = useRef(null);
     const [cameraStatus, setCameraStatus] = useState('loading');
@@ -383,20 +385,35 @@ const LiveCameraMonitor = ({ onViolationUpdate }) => {
         }
     };
 
-    const captureScreenshot = () => {
+    const uploadToCloudinary = async (screenshot) => {
+        try {
+            const response = await axios.post(`${API_BASE_URL}/violations/upload-screenshot`, {
+                image: screenshot,
+                candidateId,
+                candidateName,
+                examId,
+                examName,
+                violationCount: 5
+            });
+            
+            if (response.data.success) {
+                console.log('✅ Screenshot uploaded to Cloudinary:', response.data.url);
+                toast.success('📸 Violation screenshot captured', {
+                    duration: 3000,
+                    style: { background: '#059669', color: '#fff', fontWeight: 'bold' }
+                });
+            }
+        } catch (error) {
+            console.error('❌ Cloudinary upload failed:', error);
+        }
+    };
+
+    const captureAndUploadScreenshot = async () => {
         if (!webcamRef.current) return;
         
         const screenshot = webcamRef.current.getScreenshot();
         if (screenshot) {
-            const timestamp = new Date().toLocaleString();
-            const link = document.createElement('a');
-            link.href = screenshot;
-            link.download = `violation-${Date.now()}.jpg`;
-            link.click();
-            toast.success(`📸 Screenshot saved at ${timestamp}`, {
-                duration: 3000,
-                style: { background: '#059669', color: '#fff', fontWeight: 'bold' }
-            });
+            await uploadToCloudinary(screenshot);
         }
     };
 
@@ -410,9 +427,9 @@ const LiveCameraMonitor = ({ onViolationUpdate }) => {
         setViolations(prev => {
             const updated = [...prev, violation];
             
-            // Capture screenshot on 6th violation
-            if (updated.length === 6) {
-                setTimeout(() => captureScreenshot(), 100);
+            // Upload screenshot when violations reach exactly 5
+            if (updated.length === 5) {
+                setTimeout(() => captureAndUploadScreenshot(), 100);
             }
             
             if (onViolationUpdate) {

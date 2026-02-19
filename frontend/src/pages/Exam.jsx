@@ -11,6 +11,8 @@ const Exam = () => {
     const location = useLocation();
     const userName = location.state?.name || 'Candidate';
     const candidateId = 'SWE2026001';
+    const examId = '507f1f77bcf86cd799439011';
+    const examName = 'Software Engineering Assessment 2026';
 
     // State Management
     const [timeLeft, setTimeLeft] = useState(5400); // 90 minutes
@@ -326,7 +328,13 @@ const Exam = () => {
             />
             
             {/* Live Camera Monitor - Always Visible */}
-            <LiveCameraMonitor onViolationUpdate={handleViolationUpdate} />
+            <LiveCameraMonitor 
+                onViolationUpdate={handleViolationUpdate} 
+                candidateId={candidateId}
+                candidateName={userName}
+                examId={examId}
+                examName={examName}
+            />
 
             {/* Top Bar - Enterprise Style */}
             <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 z-30 shadow-sm flex-shrink-0">

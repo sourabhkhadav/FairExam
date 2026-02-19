@@ -383,6 +383,23 @@ const LiveCameraMonitor = ({ onViolationUpdate }) => {
         }
     };
 
+    const captureScreenshot = () => {
+        if (!webcamRef.current) return;
+        
+        const screenshot = webcamRef.current.getScreenshot();
+        if (screenshot) {
+            const timestamp = new Date().toLocaleString();
+            const link = document.createElement('a');
+            link.href = screenshot;
+            link.download = `violation-${Date.now()}.jpg`;
+            link.click();
+            toast.success(`📸 Screenshot saved at ${timestamp}`, {
+                duration: 3000,
+                style: { background: '#059669', color: '#fff', fontWeight: 'bold' }
+            });
+        }
+    };
+
     const logViolation = (type, description) => {
         const violation = {
             time: new Date().toLocaleTimeString(),
@@ -392,6 +409,12 @@ const LiveCameraMonitor = ({ onViolationUpdate }) => {
         };
         setViolations(prev => {
             const updated = [...prev, violation];
+            
+            // Capture screenshot on 6th violation
+            if (updated.length === 6) {
+                setTimeout(() => captureScreenshot(), 100);
+            }
+            
             if (onViolationUpdate) {
                 onViolationUpdate(updated);
             }

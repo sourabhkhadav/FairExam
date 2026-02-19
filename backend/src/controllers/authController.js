@@ -1,4 +1,6 @@
 import User from '../models/User.js';
+import Candidate from '../models/Candidate.js';
+import Exam from '../models/Exam.js';
 import jwt from 'jsonwebtoken';
 
 // Generate JWT
@@ -89,6 +91,85 @@ export const loginUser = async (req, res) => {
             res.status(401).json({ message: 'Invalid credentials' });
         }
     } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Candidate login with ID and password
+// @route   POST /api/auth/candidate-login
+// @access  Public
+export const candidateLogin = async (req, res) => {
+    try {
+        const { candidateId, password, examId } = req.body;
+
+        console.log('🔐 Login attempt:', { candidateId, password, examId });
+
+        if (!candidateId || !password || !examId) {
+            return res.status(400).json({ message: 'Please provide candidate ID, password, and exam ID' });
+        }
+
+        const candidate = await Candidate.findOne({ candidateId, examId });
+        console.log('👤 Found candidate:', candidate ? { id: candidate._id, candidateId: candidate.candidateId, hasPassword: !!candidate.password, password: candidate.password } : 'NOT FOUND');
+
+        if (!candidate) {
+            return res.status(401).json({ message: 'Invalid credentials - Candidate not found' });
+        }
+
+        if (!candidate.password) {
+            return res.status(401).json({ message: 'Credentials not generated yet. Please wait for exam to start.' });
+        }
+
+        if (candidate.password !== password) {
+            console.log('❌ Password mismatch:', { stored: candidate.password, provided: password });
+            return res.status(401).json({ message: 'Invalid credentials - Wrong password' });
+        }
+
+        const exam = await Exam.findById(examId);
+        if (!exam) {
+            return res.status(404).json({ message: 'Exam not found' });
+        }
+
+        const now = new Date();
+        const start = new Date(`${exam.startDate}T${exam.startTime}`);
+        const end = new Date(`${exam.endDate}T${exam.endTime}`);
+        const graceMinutes = exam.graceTime || 15;
+        const endWithGrace = new Date(end.getTime() + graceMinutes * 60000);
+
+        if (now < start) {
+            return res.status(403).json({ message: 'Exam has not started yet' });
+        }
+
+        if (now > endWithGrace) {
+            return res.status(403).json({ message: 'Exam has ended' });
+        }
+
+        const token = jwt.sign(
+            { candidateId: candidate._id, examId: exam._id },
+            process.env.JWT_SECRET,
+            { expiresIn: '24h' }
+        );
+
+        console.log('✅ Login successful');
+
+        res.json({
+            success: true,
+            candidate: {
+                id: candidate._id,
+                name: candidate.name,
+                candidateId: candidate.candidateId,
+                examId: exam._id,
+                examTitle: exam.title
+            },
+            exam: {
+                id: exam._id,
+                title: exam.title,
+                duration: exam.duration,
+                questions: exam.questions
+            },
+            token
+        });
+    } catch (error) {
+        console.error('❌ Login error:', error);
         res.status(500).json({ message: error.message });
     }
 };

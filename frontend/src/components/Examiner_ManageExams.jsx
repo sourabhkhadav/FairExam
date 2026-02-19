@@ -11,10 +11,6 @@ const Examiner_ManageExams = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedStatus, setSelectedStatus] = useState('All');
     const [showStatusDropdown, setShowStatusDropdown] = useState(false);
-    const [showScheduleModal, setShowScheduleModal] = useState(false);
-    const [selectedExam, setSelectedExam] = useState(null);
-    const [scheduleDate, setScheduleDate] = useState('');
-    const [scheduleTime, setScheduleTime] = useState('');
     const [exams, setExams] = useState([]);
 
     const fetchExams = async () => {
@@ -27,21 +23,40 @@ const Examiner_ManageExams = () => {
             });
             const data = await response.json();
             if (data.success) {
-                // Transform backend data to frontend structure if needed
-                const formattedExams = data.data.map(e => {
+                // Transform backend data to frontend structure
+                const formattedExams = await Promise.all(data.data.map(async (e) => {
+                    const now = new Date();
                     let status = "Draft";
+                    
                     if (e.status === 'published') {
-                        status = 'Public';
-                        // Check if effectively scheduled (future date)
-                        if (e.startDate) {
-                            const start = new Date(`${e.startDate}T${e.startTime || '00:00'}`);
-                            if (start > new Date()) status = 'Scheduled';
+                        const start = new Date(`${e.startDate}T${e.startTime || '00:00'}`);
+                        const end = new Date(`${e.endDate}T${e.endTime || '23:59'}`);
+                        
+                        if (now < start) {
+                            status = 'Scheduled';
+                        } else if (now >= start && now <= end) {
+                            status = 'Live';
+                        } else if (now > end) {
+                            status = 'Finished';
+                        } else {
+                            status = 'Public';
                         }
                     } else if (e.status === 'draft') {
                         status = 'Draft';
-                    } else if (e.status) {
-                        // Capitalize other statuses
-                        status = e.status.charAt(0).toUpperCase() + e.status.slice(1);
+                    }
+
+                    // Fetch candidate count
+                    let candidateCount = 0;
+                    try {
+                        const candidateResponse = await fetch(`http://localhost:5000/api/candidates/exam/${e._id}`, {
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        });
+                        const candidateData = await candidateResponse.json();
+                        if (candidateData.success) {
+                            candidateCount = candidateData.data.length;
+                        }
+                    } catch (err) {
+                        console.error('Failed to fetch candidates:', err);
                     }
 
                     return {
@@ -50,11 +65,11 @@ const Examiner_ManageExams = () => {
                         date: e.startDate || "TBD",
                         startTime: e.startTime || "TBD",
                         duration: `${e.duration || 0} min`,
-                        students: 0, // Placeholder
+                        students: candidateCount,
                         status: status,
                         examData: e
                     };
-                });
+                }));
                 setExams(formattedExams);
             }
         } catch (error) {
@@ -95,57 +110,33 @@ const Examiner_ManageExams = () => {
         navigate(`/configure-exam/${exam.id}`);
     };
 
-    const handleOpenSchedule = (exam) => {
-        setSelectedExam(exam);
-        const now = new Date();
-        setScheduleDate(now.toISOString().split('T')[0]);
-        setScheduleTime(now.toTimeString().slice(0, 5));
-        setShowScheduleModal(true);
-    };
-
-    const handleConfirmSchedule = async () => {
-        if (!scheduleDate || !scheduleTime) {
-            alert("Please select both date and time");
-            return;
-        }
-
-        try {
-            const token = localStorage.getItem('token');
-            const scheduledAt = `${scheduleDate}T${scheduleTime}`;
-
-            // Optimistic update or refetch? Let's use API update
-            const response = await fetch(`http://localhost:5000/api/exams/${selectedExam.id}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    startDate: scheduleDate,
-                    startTime: scheduleTime,
-                    status: 'Scheduled'
-                })
-            });
-
-            if (response.ok) {
-                alert("Exam scheduled successfully!");
-                fetchExams(); // Refresh list
-                setShowScheduleModal(false);
-                setSelectedExam(null);
-            } else {
-                throw new Error("Failed to update exam");
-            }
-        } catch (error) {
-            console.error("Scheduling error:", error);
-            alert("Failed to schedule exam.");
-        }
-    };
-
     const handleDelete = async (id) => {
-        if (!window.confirm("Are you sure you want to delete this exam?")) return;
+        const exam = exams.find(e => e.id === id);
+        const isPublishedOrScheduled = exam && (exam.status === 'Public' || exam.status === 'Scheduled');
+        
+        const confirmMessage = isPublishedOrScheduled 
+            ? "This exam is published/scheduled. Deleting will send cancellation emails to all candidates. Are you sure?"
+            : "Are you sure you want to delete this exam?";
+        
+        if (!window.confirm(confirmMessage)) return;
 
         try {
             const token = localStorage.getItem('token');
+            
+            // Send cancellation emails if published/scheduled
+            if (isPublishedOrScheduled) {
+                try {
+                    await fetch(`http://localhost:5000/api/email/cancel-exam/${id}`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+                } catch (emailError) {
+                    console.error('Failed to send cancellation emails:', emailError);
+                }
+            }
+            
             const response = await fetch(`http://localhost:5000/api/exams/${id}`, {
                 method: 'DELETE',
                 headers: {
@@ -155,35 +146,16 @@ const Examiner_ManageExams = () => {
 
             if (response.ok) {
                 setExams(prev => prev.filter(e => e.id !== id));
+                if (isPublishedOrScheduled) {
+                    alert('✅ Exam deleted and cancellation emails sent to candidates.');
+                } else {
+                    alert('✅ Exam deleted successfully.');
+                }
             } else {
                 alert("Failed to delete exam");
             }
         } catch (error) {
             console.error("Delete error:", error);
-        }
-    };
-
-    const handleSendInvitations = async (examId) => {
-        if (!window.confirm("Send exam invitations to all candidates?")) return;
-
-        try {
-            const token = localStorage.getItem('token');
-            const response = await fetch(`http://localhost:5000/api/email/bulk-invitation/${examId}`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-
-            const data = await response.json();
-            if (data.success) {
-                alert(`✅ ${data.message}`);
-            } else {
-                alert("Failed to send invitations");
-            }
-        } catch (error) {
-            console.error("Send invitations error:", error);
-            alert("Failed to send invitations");
         }
     };
 
@@ -224,7 +196,7 @@ const Examiner_ManageExams = () => {
 
                         {showStatusDropdown && (
                             <div className="absolute right-0 mt-2 w-full bg-white border border-[#E2E8F0] rounded-2xl shadow-xl z-10 overflow-hidden">
-                                {['All', 'Draft', 'Scheduled', 'Public', 'Completed'].map(status => (
+                                {['All', 'Draft', 'Scheduled', 'Live', 'Public', 'Finished'].map(status => (
                                     <button
                                         key={status}
                                         className="w-full px-6 py-3 text-left hover:bg-[#F8FAFC] text-[#0F172A] font-medium transition-colors"
@@ -249,11 +221,13 @@ const Examiner_ManageExams = () => {
                                 <div className="space-y-4">
                                     <div className="flex flex-wrap items-center gap-3">
                                         <h3 className="text-lg sm:text-[19px] font-medium text-[#0F172A]">{exam.title}</h3>
-                                        <span className={`px-3 py-1 rounded-full text-[10px] sm:text-[12px] font-medium ${exam.status === 'Scheduled' ? 'bg-[#F0F9FF] text-[#0369A1] border border-[#BAE6FD]' :
+                                        <span className={`px-3 py-1 rounded-full text-[10px] sm:text-[12px] font-medium ${
+                                            exam.status === 'Scheduled' ? 'bg-[#F0F9FF] text-[#0369A1] border border-[#BAE6FD]' :
+                                            exam.status === 'Live' ? 'bg-[#DCFCE7] text-[#15803D] border border-[#BBF7D0]' :
                                             exam.status === 'Public' ? 'bg-[#F0FDF4] text-[#15803D] border border-[#BBF7D0]' :
-                                                exam.status === 'Completed' ? 'bg-[#F8FAFC] text-[#64748B] border border-[#E2E8F0]' :
-                                                    'bg-orange-50 text-orange-700 border border-orange-200'
-                                            }`}>
+                                            exam.status === 'Finished' ? 'bg-[#F8FAFC] text-[#64748B] border border-[#E2E8F0]' :
+                                            'bg-orange-50 text-orange-700 border border-orange-200'
+                                        }`}>
                                             {exam.status}
                                         </span>
                                     </div>
@@ -275,38 +249,20 @@ const Examiner_ManageExams = () => {
                                 </div>
 
                                 <div className="flex items-center gap-2 border-t sm:border-t-0 pt-4 sm:pt-0">
-                                    {(exam.status === 'Draft' || exam.status === 'Scheduled') && (
-                                        <div className="flex gap-2">
-                                            <button
-                                                onClick={() => handleConfigure(exam)}
-                                                className="flex-1 sm:flex-none p-3 text-[#0F172A] hover:bg-slate-50 rounded-xl transition-colors cursor-pointer flex justify-center items-center gap-2"
-                                                title="Configure & Publish"
-                                            >
-                                                <Settings className="w-5 h-5" />
-                                                <span className="text-xs font-bold uppercase sm:hidden">Configure</span>
-                                            </button>
-                                            <button
-                                                onClick={() => handleOpenSchedule(exam)}
-                                                className="flex-1 sm:flex-none p-3 text-[#10B981] hover:bg-[#ECFDF5] rounded-xl transition-colors cursor-pointer flex justify-center items-center gap-2"
-                                                title="Schedule Exam"
-                                            >
-                                                <Calendar className="w-5 h-5" />
-                                                <span className="text-xs font-bold uppercase sm:hidden">Schedule</span>
-                                            </button>
-                                        </div>
+                                    {exam.status === 'Draft' && (
+                                        <button
+                                            onClick={() => handleConfigure(exam)}
+                                            className="flex-1 sm:flex-none p-3 text-[#0F172A] hover:bg-slate-50 rounded-xl transition-colors cursor-pointer flex justify-center items-center gap-2"
+                                            title="Configure & Publish"
+                                        >
+                                            <Settings className="w-5 h-5" />
+                                            <span className="text-xs font-bold uppercase sm:hidden">Configure</span>
+                                        </button>
                                     )}
-                                    <button
-                                        onClick={() => handleSendInvitations(exam.id)}
-                                        className="flex-1 sm:flex-none p-3 text-[#3B82F6] hover:bg-[#EFF6FF] rounded-xl transition-colors cursor-pointer flex justify-center items-center gap-2"
-                                        title="Send Invitations"
-                                    >
-                                        <Mail className="w-5 h-5" />
-                                        <span className="text-xs font-bold uppercase sm:hidden">Invite</span>
-                                    </button>
                                     <button
                                         onClick={() => handleEdit(exam)}
                                         className="flex-1 sm:flex-none p-3 text-slate-600 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer flex justify-center"
-                                        title="Edit Exam"
+                                        title="Edit Questions"
                                     >
                                         <Edit3 className="w-5 h-5" />
                                     </button>
@@ -322,68 +278,6 @@ const Examiner_ManageExams = () => {
                         </div>
                     ))}
                 </div>
-
-                {/* Scheduling Modal */}
-                {showScheduleModal && (
-                    <div className="fixed inset-0 bg-[#0F172A]/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                        <div className="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden border border-[#E2E8F0] animate-in fade-in zoom-in duration-200">
-                            <div className="p-8">
-                                <div className="flex items-center gap-4 mb-8">
-                                    <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center">
-                                        <Calendar className="w-6 h-6 text-[#0F172A]" />
-                                    </div>
-                                    <div>
-                                        <h3 className="text-xl font-bold text-[#0F172A]">Schedule Exam</h3>
-                                        <p className="text-[#64748B] text-sm font-medium">Set start date and time</p>
-                                    </div>
-                                </div>
-
-                                <div className="space-y-6">
-                                    <div className="space-y-2">
-                                        <label className="text-[11px] font-bold text-[#64748B] uppercase tracking-widest ml-1">Start Date</label>
-                                        <div className="relative group">
-                                            <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#94A3B8] group-focus-within:text-[#0F172A] transition-colors" />
-                                            <input
-                                                type="date"
-                                                className="w-full pl-11 pr-4 py-4 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] focus:border-[#0F172A]/40 focus:bg-white outline-none text-[#0F172A] font-medium transition-all"
-                                                value={scheduleDate}
-                                                onChange={(e) => setScheduleDate(e.target.value)}
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <label className="text-[11px] font-bold text-[#64748B] uppercase tracking-widest ml-1">Start Time</label>
-                                        <div className="relative group">
-                                            <Clock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#94A3B8] group-focus-within:text-[#0F172A] transition-colors" />
-                                            <input
-                                                type="time"
-                                                className="w-full pl-11 pr-4 py-4 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] focus:border-[#0F172A]/40 focus:bg-white outline-none text-[#0F172A] font-medium transition-all"
-                                                value={scheduleTime}
-                                                onChange={(e) => setScheduleTime(e.target.value)}
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="flex gap-4 mt-10">
-                                    <button
-                                        onClick={() => setShowScheduleModal(false)}
-                                        className="flex-1 px-6 py-4 bg-white border border-[#E2E8F0] text-[#64748B] font-bold text-sm rounded-2xl hover:bg-[#F8FAFC] transition-all cursor-pointer"
-                                    >
-                                        CANCEL
-                                    </button>
-                                    <button
-                                        onClick={handleConfirmSchedule}
-                                        className="flex-1 px-6 py-4 bg-[#0F172A] text-white font-bold text-sm rounded-2xl hover:bg-[#1E293B] transition-all shadow-lg shadow-slate-100 cursor-pointer"
-                                    >
-                                        SCHEDULE
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                )}
             </div>
         </div>
     );

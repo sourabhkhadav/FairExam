@@ -21,6 +21,14 @@ const candidateSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    candidateId: {
+        type: String,
+        unique: true,
+        sparse: true
+    },
+    password: {
+        type: String
+    },
     createdAt: {
         type: Date,
         default: Date.now

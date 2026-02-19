@@ -2,23 +2,87 @@ import transporter from '../config/email.js';
 
 // Send exam invitation email
 export const sendExamInvitation = async (to, examDetails) => {
+    const formatDate = (dateStr) => {
+        if (!dateStr || dateStr === 'TBD') return 'To Be Decided';
+        const date = new Date(dateStr);
+        return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    };
+
+    const formatTime = (timeStr) => {
+        if (!timeStr || timeStr === 'TBD') return 'To Be Decided';
+        const [hours, minutes] = timeStr.split(':');
+        const hour = parseInt(hours);
+        const ampm = hour >= 12 ? 'PM' : 'AM';
+        const displayHour = hour % 12 || 12;
+        return `${displayHour}:${minutes} ${ampm}`;
+    };
+
     const mailOptions = {
         from: process.env.EMAIL_FROM || 'FairExam <sourabhkhadav2@gmail.com>',
         to,
         subject: `Exam Invitation: ${examDetails.title}`,
         html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                <h2 style="color: #0F172A;">Exam Invitation</h2>
-                <p>You have been invited to take the following exam:</p>
-                <div style="background: #F8FAFC; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                    <h3 style="margin: 0 0 10px 0;">${examDetails.title}</h3>
-                    <p><strong>Date:</strong> ${examDetails.startDate}</p>
-                    <p><strong>Time:</strong> ${examDetails.startTime}</p>
-                    <p><strong>Duration:</strong> ${examDetails.duration} minutes</p>
-                </div>
-                <p>Please login to FairExam platform to take the exam.</p>
-                <p style="color: #64748B; font-size: 12px;">This is an automated email. Please do not reply.</p>
-            </div>
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            </head>
+            <body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: Arial, sans-serif;">
+                <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f8fafc; padding: 40px 20px;">
+                    <tr>
+                        <td align="center">
+                            <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 12px; overflow: hidden;">
+                                <!-- Header -->
+                                <tr>
+                                    <td style="background: #0F172A; padding: 30px; text-align: center;">
+                                        <h1 style="margin: 0; color: #ffffff; font-size: 24px;">📝 FairExam</h1>
+                                        <p style="margin: 5px 0 0 0; color: #94A3B8; font-size: 13px;">Online Examination Platform</p>
+                                    </td>
+                                </tr>
+                                
+                                <!-- Content -->
+                                <tr>
+                                    <td style="padding: 40px 30px;">
+                                        <p style="margin: 0 0 20px 0; color: #64748B; font-size: 15px;">Dear Student,</p>
+                                        
+                                        <p style="margin: 0 0 25px 0; color: #0F172A; font-size: 15px; line-height: 1.6;">
+                                            You have been invited to take the following exam:
+                                        </p>
+                                        
+                                        <h2 style="margin: 0 0 25px 0; color: #0F172A; font-size: 20px; font-weight: 600;">${examDetails.title}</h2>
+                                        
+                                        <!-- Exam Details -->
+                                        <table width="100%" cellpadding="0" cellspacing="0" style="background: #F8FAFC; border-radius: 8px; margin-bottom: 25px;">
+                                            <tr>
+                                                <td style="padding: 20px;">
+                                                    <p style="margin: 0 0 8px 0; color: #64748B; font-size: 13px;">Exam Date: <strong style="color: #0F172A;">${formatDate(examDetails.startDate)}</strong></p>
+                                                    <p style="margin: 0 0 8px 0; color: #64748B; font-size: 13px;">Exam Time: <strong style="color: #0F172A;">${formatTime(examDetails.startTime)}</strong></p>
+                                                    <p style="margin: 0; color: #64748B; font-size: 13px;">Duration: <strong style="color: #0F172A;">${examDetails.duration} minutes</strong></p>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                        
+                                        <p style="margin: 0; color: #64748B; font-size: 14px; line-height: 1.6; text-align: center;">
+                                            Best regards,<br/>FairExam Team
+                                        </p>
+                                    </td>
+                                </tr>
+                                
+                                <!-- Footer -->
+                                <tr>
+                                    <td style="background: #F8FAFC; padding: 20px 30px; text-align: center; border-top: 1px solid #E2E8F0;">
+                                        <p style="margin: 0; color: #94A3B8; font-size: 12px;">
+                                            This is an automated email. Please do not reply.
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </body>
+            </html>
         `
     };
 
@@ -86,6 +150,194 @@ export const sendTestEmail = async (to) => {
                 <p>Your Nodemailer configuration is working correctly.</p>
                 <p style="color: #64748B; font-size: 12px; margin-top: 20px;">Sent at: ${new Date().toLocaleString()}</p>
             </div>
+        `
+    };
+
+    return await transporter.sendMail(mailOptions);
+};
+
+// Send exam cancellation email
+export const sendExamCancellation = async (to, examDetails) => {
+    const formatDate = (dateStr) => {
+        if (!dateStr || dateStr === 'TBD') return 'To Be Decided';
+        const date = new Date(dateStr);
+        return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    };
+
+    const formatTime = (timeStr) => {
+        if (!timeStr || timeStr === 'TBD') return 'To Be Decided';
+        const [hours, minutes] = timeStr.split(':');
+        const hour = parseInt(hours);
+        const ampm = hour >= 12 ? 'PM' : 'AM';
+        const displayHour = hour % 12 || 12;
+        return `${displayHour}:${minutes} ${ampm}`;
+    };
+
+    const mailOptions = {
+        from: process.env.EMAIL_FROM || 'FairExam <sourabhkhadav2@gmail.com>',
+        to,
+        subject: `Exam Cancelled: ${examDetails.title}`,
+        html: `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            </head>
+            <body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: Arial, sans-serif;">
+                <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f8fafc; padding: 40px 20px;">
+                    <tr>
+                        <td align="center">
+                            <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 12px; overflow: hidden;">
+                                <tr>
+                                    <td style="background: #0F172A; padding: 30px; text-align: center;">
+                                        <h1 style="margin: 0; color: #ffffff; font-size: 24px;">📝 FairExam</h1>
+                                        <p style="margin: 5px 0 0 0; color: #94A3B8; font-size: 13px;">Online Examination Platform</p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 40px 30px;">
+                                        <p style="margin: 0 0 20px 0; color: #64748B; font-size: 15px;">Dear Student,</p>
+                                        
+                                        <div style="background: #FEF2F2; border-left: 4px solid #EF4444; padding: 16px 20px; border-radius: 8px; margin-bottom: 25px;">
+                                            <p style="margin: 0; color: #991B1B; font-size: 15px; font-weight: 600;">⚠️ Exam Cancelled</p>
+                                        </div>
+                                        
+                                        <p style="margin: 0 0 20px 0; color: #0F172A; font-size: 15px; line-height: 1.6;">
+                                            The following exam has been cancelled:
+                                        </p>
+                                        
+                                        <h2 style="margin: 0 0 25px 0; color: #0F172A; font-size: 20px; font-weight: 600;">${examDetails.title}</h2>
+                                        
+                                        <table width="100%" cellpadding="0" cellspacing="0" style="background: #F8FAFC; border-radius: 8px; margin-bottom: 25px;">
+                                            <tr>
+                                                <td style="padding: 20px;">
+                                                    <p style="margin: 0 0 10px 0; color: #64748B; font-size: 13px;"><strong>Originally Scheduled:</strong></p>
+                                                    <p style="margin: 0; color: #0F172A; font-size: 15px;">${formatDate(examDetails.startDate)} at ${formatTime(examDetails.startTime)}</p>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                        
+                                        <p style="margin: 0 0 20px 0; color: #0F172A; font-size: 15px; line-height: 1.6;">
+                                            You will receive further communication regarding any rescheduling.
+                                        </p>
+                                        
+                                        <p style="margin: 0; color: #64748B; font-size: 14px; line-height: 1.6; text-align: center;">
+                                            Best regards,<br/>FairExam Team
+                                        </p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="background: #F8FAFC; padding: 20px 30px; text-align: center; border-top: 1px solid #E2E8F0;">
+                                        <p style="margin: 0; color: #94A3B8; font-size: 12px;">
+                                            This is an automated email. Please do not reply.
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </body>
+            </html>
+        `
+    };
+
+    return await transporter.sendMail(mailOptions);
+};
+
+// Send exam start email with credentials
+export const sendExamStartEmail = async (to, examDetails, candidateDetails) => {
+    const formatDate = (dateStr) => {
+        if (!dateStr || dateStr === 'TBD') return 'To Be Decided';
+        const date = new Date(dateStr);
+        return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    };
+
+    const formatTime = (timeStr) => {
+        if (!timeStr || timeStr === 'TBD') return 'To Be Decided';
+        const [hours, minutes] = timeStr.split(':');
+        const hour = parseInt(hours);
+        const ampm = hour >= 12 ? 'PM' : 'AM';
+        const displayHour = hour % 12 || 12;
+        return `${displayHour}:${minutes} ${ampm}`;
+    };
+
+    const examUrl = `http://localhost:5173/candidate-login?examId=${examDetails.examId}&candidateId=${candidateDetails.candidateId}`;
+
+    const mailOptions = {
+        from: process.env.EMAIL_FROM || 'FairExam <sourabhkhadav2@gmail.com>',
+        to,
+        subject: `Exam Started: ${examDetails.title} - Login Credentials`,
+        html: `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            </head>
+            <body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: Arial, sans-serif;">
+                <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f8fafc; padding: 40px 20px;">
+                    <tr>
+                        <td align="center">
+                            <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 12px; overflow: hidden;">
+                                <tr>
+                                    <td style="background: #0F172A; padding: 30px; text-align: center;">
+                                        <h1 style="margin: 0; color: #ffffff; font-size: 24px;">📝 FairExam</h1>
+                                        <p style="margin: 5px 0 0 0; color: #94A3B8; font-size: 13px;">Online Examination Platform</p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 40px 30px;">
+                                        <div style="background: #DCFCE7; border-left: 4px solid #10B981; padding: 16px 20px; border-radius: 8px; margin-bottom: 25px;">
+                                            <p style="margin: 0; color: #065F46; font-size: 15px; font-weight: 600;">✅ Your Exam is Now Active</p>
+                                        </div>
+                                        
+                                        <p style="margin: 0 0 20px 0; color: #64748B; font-size: 15px;">Dear ${candidateDetails.name},</p>
+                                        
+                                        <p style="margin: 0 0 25px 0; color: #0F172A; font-size: 15px; line-height: 1.6;">
+                                            Your exam is now active and ready to begin.
+                                        </p>
+                                        
+                                        <h2 style="margin: 0 0 20px 0; color: #0F172A; font-size: 20px; font-weight: 600;">${examDetails.title}</h2>
+                                        
+                                        <table width="100%" cellpadding="0" cellspacing="0" style="background: #F8FAFC; border-radius: 8px; margin-bottom: 20px;">
+                                            <tr>
+                                                <td style="padding: 20px;">
+                                                    <p style="margin: 0 0 8px 0; color: #64748B; font-size: 13px;">Exam Date: <strong style="color: #0F172A;">${formatDate(examDetails.startDate)}</strong></p>
+                                                    <p style="margin: 0 0 8px 0; color: #64748B; font-size: 13px;">Exam Time: <strong style="color: #0F172A;">${formatTime(examDetails.startTime)}</strong></p>
+                                                    <p style="margin: 0; color: #64748B; font-size: 13px;">Duration: <strong style="color: #0F172A;">${examDetails.duration} minutes</strong></p>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                        
+                                        <div style="background: #EFF6FF; border: 2px solid #3B82F6; border-radius: 8px; padding: 20px; margin-bottom: 25px;">
+                                            <p style="margin: 0 0 15px 0; color: #1E40AF; font-size: 14px; font-weight: 600;">🔐 Your Login Credentials</p>
+                                            <p style="margin: 0 0 8px 0; color: #1E3A8A; font-size: 14px;">Candidate ID: <strong style="font-size: 16px;">${candidateDetails.candidateId}</strong></p>
+                                            <p style="margin: 0; color: #1E3A8A; font-size: 14px;">Password: <strong style="font-size: 16px;">${candidateDetails.password}</strong></p>
+                                        </div>
+                                        
+                                        <p style="margin: 0 0 15px 0; color: #64748B; font-size: 13px; text-align: center;">Use the credentials above to login at:</p>
+                                        <p style="margin: 0 0 20px 0; color: #3B82F6; font-size: 13px; text-align: center; word-break: break-all;">${examUrl}</p>
+                                        
+                                        <p style="margin: 0; color: #64748B; font-size: 14px; line-height: 1.6; text-align: center;">
+                                            Best regards,<br/>FairExam Team
+                                        </p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="background: #F8FAFC; padding: 20px 30px; text-align: center; border-top: 1px solid #E2E8F0;">
+                                        <p style="margin: 0; color: #94A3B8; font-size: 12px;">
+                                            This is an automated email. Please do not reply.
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </body>
+            </html>
         `
     };
 

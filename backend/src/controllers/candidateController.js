@@ -58,9 +58,16 @@ export const uploadExcelFile = async (req, res) => {
 
         const candidates = data.map((row, index) => {
             console.log(`Row ${index + 1}:`, row);
+            
+            // Generate unique candidate ID and password
+            const candidateId = `CAND${examId.slice(-4)}${String(index + 1).padStart(4, '0')}`;
+            const password = Math.random().toString(36).slice(-8).toUpperCase();
+            
             const candidate = {
                 name: row.name || row.Name || row.NAME,
                 mobileNumber: String(row.mobileNumber || row.MobileNumber || row.mobile || row.Mobile || row.MOBILE || row['Mobile Number'] || row['mobile number'] || ''),
+                candidateId,
+                password,
                 examId
             };
             
@@ -145,10 +152,16 @@ export const bulkUploadCandidates = async (req, res) => {
             });
         }
 
-        const candidateData = candidates.map(candidate => ({
-            ...candidate,
-            examId
-        }));
+        const candidateData = candidates.map((candidate, index) => {
+            const candidateId = `CAND${examId.slice(-4)}${String(index + 1).padStart(4, '0')}`;
+            const password = Math.random().toString(36).slice(-8).toUpperCase();
+            return {
+                ...candidate,
+                candidateId,
+                password,
+                examId
+            };
+        });
 
         const result = await Candidate.insertMany(candidateData, { ordered: false });
 

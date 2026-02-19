@@ -1,5 +1,5 @@
 import asyncHandler from '../middleware/asyncHandler.js';
-import { sendTestEmail, sendExamInvitation, sendViolationAlert, sendExamResult } from '../utils/emailService.js';
+import { sendTestEmail, sendExamInvitation, sendViolationAlert, sendExamResult, sendExamCancellation } from '../utils/emailService.js';
 import Exam from '../models/Exam.js';
 import Candidate from '../models/Candidate.js';
 
@@ -101,7 +101,10 @@ export const sendBulkInvitation = asyncHandler(async (req, res) => {
         title: exam.title,
         startDate: exam.startDate || 'TBD',
         startTime: exam.startTime || 'TBD',
-        duration: exam.duration || 0
+        endDate: exam.endDate,
+        endTime: exam.endTime,
+        duration: exam.duration || 0,
+        totalMarks: exam.totalMarks || 0
     };
 
     const results = { sent: 0, failed: 0, emails: [] };
@@ -125,6 +128,54 @@ export const sendBulkInvitation = asyncHandler(async (req, res) => {
     res.status(200).json({
         success: true,
         message: `Invitations sent to ${results.sent} candidates`,
+        results
+    });
+});
+
+// @desc    Send exam cancellation emails
+// @route   POST /api/email/cancel-exam/:examId
+// @access  Private
+export const sendCancellationEmail = asyncHandler(async (req, res) => {
+    const exam = await Exam.findById(req.params.examId);
+
+    if (!exam) {
+        res.status(404);
+        throw new Error('Exam not found');
+    }
+
+    const candidates = await Candidate.find({ examId: req.params.examId });
+
+    if (candidates.length === 0) {
+        res.status(200).json({
+            success: true,
+            message: 'No candidates to notify'
+        });
+        return;
+    }
+
+    const examDetails = {
+        title: exam.title,
+        startDate: exam.startDate || 'TBD',
+        startTime: exam.startTime || 'TBD'
+    };
+
+    const results = { sent: 0, failed: 0 };
+
+    for (const candidate of candidates) {
+        if (candidate.email) {
+            try {
+                await sendExamCancellation(candidate.email, examDetails);
+                results.sent++;
+            } catch (error) {
+                console.error(`Failed to send cancellation to ${candidate.email}:`, error.message);
+                results.failed++;
+            }
+        }
+    }
+
+    res.status(200).json({
+        success: true,
+        message: `Cancellation emails sent to ${results.sent} candidates`,
         results
     });
 });

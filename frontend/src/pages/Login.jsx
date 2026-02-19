@@ -1,15 +1,24 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Lock, User, AlertCircle, ShieldCheck, HelpCircle } from 'lucide-react';
 
 const Login = () => {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
     const [formData, setFormData] = useState({
         candidateId: '',
-        password: ''
+        password: '',
+        examId: ''
     });
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+
+    useEffect(() => {
+        const examId = searchParams.get('examId');
+        const candidateId = searchParams.get('candidateId');
+        if (examId) setFormData(prev => ({ ...prev, examId }));
+        if (candidateId) setFormData(prev => ({ ...prev, candidateId }));
+    }, [searchParams]);
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -17,14 +26,15 @@ const Login = () => {
         setIsLoading(true);
 
         try {
-            const response = await fetch('http://localhost:5000/api/auth/login', {
+            const response = await fetch('http://localhost:5000/api/auth/candidate-login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
                     candidateId: formData.candidateId,
-                    password: formData.password
+                    password: formData.password,
+                    examId: formData.examId
                 })
             });
 
@@ -36,15 +46,10 @@ const Login = () => {
 
             // Success
             localStorage.setItem('token', data.token);
-            localStorage.setItem('user', JSON.stringify({
-                _id: data._id,
-                name: data.name,
-                email: data.email,
-                role: data.role,
-                candidateId: data.candidateId
-            }));
+            localStorage.setItem('candidate', JSON.stringify(data.candidate));
+            localStorage.setItem('examData', JSON.stringify(data.exam));
 
-            navigate('/instructions', { state: { name: data.name } });
+            navigate('/exam');
         } catch (err) {
             setError(err.message);
         } finally {
@@ -105,6 +110,8 @@ const Login = () => {
 
                     <form onSubmit={handleLogin} className="space-y-5">
                         <div className="space-y-4">
+                            <input type="hidden" value={formData.examId} />
+                            
                             <div>
                                 <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1.5">
                                     Candidate ID
@@ -117,7 +124,7 @@ const Login = () => {
                                         type="text"
                                         required
                                         className="block w-full pl-10 pr-3 py-2.5 border border-slate-300 rounded-md text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 sm:text-sm transition-all"
-                                        placeholder="e.g. SWE2026001"
+                                        placeholder="e.g. CAND67a10001"
                                         value={formData.candidateId}
                                         onChange={(e) => setFormData({ ...formData, candidateId: e.target.value })}
                                         disabled={isLoading}
@@ -161,7 +168,7 @@ const Login = () => {
                                     ? 'bg-blue-600 hover:bg-blue-700'
                                     : 'bg-slate-400 cursor-not-allowed'}`}
                         >
-                            {isLoading ? 'Authenticating...' : 'Proceed to Instructions'}
+                            {isLoading ? 'Authenticating...' : 'Start Exam'}
                         </button>
                     </form>
 

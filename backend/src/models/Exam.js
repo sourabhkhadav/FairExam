@@ -60,6 +60,20 @@ const examSchema = new mongoose.Schema({
     category: String,
     startDate: String,
     startTime: String,
+    endDate: String,
+    endTime: String,
+    timezone: String,
+    graceTime: Number,
+    scheduleEmailDate: String,
+    scheduleEmailTime: String,
+    emailSent: {
+        type: Boolean,
+        default: false
+    },
+    examStartEmailSent: {
+        type: Boolean,
+        default: false
+    },
     duration: {
         type: Number,
         default: 0

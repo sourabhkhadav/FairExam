@@ -134,9 +134,12 @@ const Examiner_DraftConfigure = () => {
                                 </div>
                             </div>
                             <div className="space-y-1.5">
-                                <label className="text-[11px] font-bold text-[#64748B] uppercase tracking-widest ml-1">Grace Time (Min)</label>
+                                <label className="text-[11px] font-bold text-[#64748B] uppercase tracking-widest ml-1">Exam Duration (Min)</label>
                                 <input type="number" className="w-full px-4 py-3 rounded-xl bg-white border border-[#E2E8F0] outline-none"
-                                    value={examData.graceTime} onChange={e => updateField('graceTime', e.target.value)} />
+                                    placeholder="e.g., 60 for 1 hour"
+                                    value={examData.duration || ''} 
+                                    onChange={e => updateField('duration', parseInt(e.target.value) || 0)} />
+                                <p className="text-[10px] text-[#64748B] ml-1">Time given to complete exam once started</p>
                             </div>
                         </div>
                     </div>
@@ -268,6 +271,10 @@ const Examiner_DraftConfigure = () => {
                 <div className="flex justify-end gap-4 pt-10 border-t border-[#E2E8F0]">
                     <button
                         onClick={async () => {
+                            if (!examData.startDate || !examData.endDate || !examData.startTime || !examData.endTime || !examData.duration) {
+                                alert('❌ Please fill in all exam date, time, and duration fields before publishing');
+                                return;
+                            }
                             try {
                                 const token = localStorage.getItem('token');
                                 const updatedData = { 
@@ -286,7 +293,20 @@ const Examiner_DraftConfigure = () => {
                                 });
                                 
                                 if (response.ok) {
-                                    alert('✅ Exam Published Successfully! Email invitations sent to candidates.');
+                                    // Send emails immediately
+                                    const emailResponse = await fetch(`http://localhost:5000/api/email/bulk-invitation/${id}`, {
+                                        method: 'POST',
+                                        headers: {
+                                            'Authorization': `Bearer ${token}`
+                                        }
+                                    });
+                                    
+                                    const emailData = await emailResponse.json();
+                                    if (emailData.success) {
+                                        alert(`✅ Exam Published Successfully!\n\nEmail invitations sent to ${emailData.results.sent} candidates.\n\nExam Details:\n📅 Date: ${examData.startDate}\n⏰ Time: ${examData.startTime}\n⏱️ Duration: ${examData.duration} minutes`);
+                                    } else {
+                                        alert('✅ Exam Published! But failed to send some email invitations.');
+                                    }
                                     navigate('/manage-exams');
                                 } else {
                                     const error = await response.json();
@@ -302,7 +322,13 @@ const Examiner_DraftConfigure = () => {
                         Publish Exam
                     </button>
                     <button
-                        onClick={() => setShowScheduleModal(true)}
+                        onClick={() => {
+                            if (!examData.startDate || !examData.endDate || !examData.startTime || !examData.endTime || !examData.duration) {
+                                alert('❌ Please fill in all exam date, time, and duration fields before scheduling');
+                                return;
+                            }
+                            setShowScheduleModal(true);
+                        }}
                         className="px-10 py-3 bg-[#334155] text-white font-medium rounded-xl hover:bg-[#475569] transition-all shadow-sm"
                     >
                         Schedule Exam
@@ -319,29 +345,34 @@ const Examiner_DraftConfigure = () => {
                                 <Calendar className="w-6 h-6 text-[#0F172A]" />
                             </div>
                             <div>
-                                <h2 className="text-xl font-medium text-[#0F172A]">Exam Date and Time</h2>
-                                <p className="text-sm text-[#64748B]">Set exam schedule</p>
+                                <h2 className="text-xl font-medium text-[#0F172A]">Schedule Email Notification</h2>
+                                <p className="text-sm text-[#64748B]">When should we send invitations?</p>
                             </div>
+                        </div>
+
+                        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
+                            <p className="text-sm text-blue-900 font-medium">📧 Email will be sent on the selected date</p>
+                            <p className="text-xs text-blue-700 mt-1">Exam: {examData.startDate} at {examData.startTime}</p>
                         </div>
 
                         <div className="space-y-5">
                             <div>
-                                <label className="text-[11px] font-bold text-[#64748B] uppercase tracking-widest ml-1 block mb-2">Exam Date</label>
+                                <label className="text-[11px] font-bold text-[#64748B] uppercase tracking-widest ml-1 block mb-2">Send Email On</label>
                                 <input 
                                     type="date" 
                                     className="w-full px-4 py-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] outline-none focus:border-[#0F172A] transition-colors"
-                                    value={examData.startDate} 
-                                    onChange={e => updateField('startDate', e.target.value)} 
+                                    value={examData.scheduleEmailDate || ''} 
+                                    onChange={e => updateField('scheduleEmailDate', e.target.value)} 
                                 />
                             </div>
 
                             <div>
-                                <label className="text-[11px] font-bold text-[#64748B] uppercase tracking-widest ml-1 block mb-2">Exam Time</label>
+                                <label className="text-[11px] font-bold text-[#64748B] uppercase tracking-widest ml-1 block mb-2">Send Email At</label>
                                 <input 
                                     type="time" 
                                     className="w-full px-4 py-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] outline-none focus:border-[#0F172A] transition-colors"
-                                    value={examData.startTime} 
-                                    onChange={e => updateField('startTime', e.target.value)} 
+                                    value={examData.scheduleEmailTime || ''} 
+                                    onChange={e => updateField('scheduleEmailTime', e.target.value)} 
                                 />
                             </div>
                         </div>
@@ -355,16 +386,27 @@ const Examiner_DraftConfigure = () => {
                             </button>
                             <button
                                 onClick={async () => {
-                                    if (!examData.startDate || !examData.startTime) {
-                                        alert('❌ Please set start date and time for scheduling');
+                                    if (!examData.scheduleEmailDate || !examData.scheduleEmailTime) {
+                                        alert('❌ Please select date and time for sending email invitations');
                                         return;
                                     }
+                                    
+                                    const scheduleDateTime = new Date(`${examData.scheduleEmailDate}T${examData.scheduleEmailTime}`);
+                                    const now = new Date();
+                                    
+                                    if (scheduleDateTime <= now) {
+                                        alert('❌ Schedule date/time must be in the future');
+                                        return;
+                                    }
+                                    
                                     try {
                                         const token = localStorage.getItem('token');
                                         const updatedData = { 
                                             ...examData, 
                                             status: 'published',
-                                            violationLimits: examData.violationLimits
+                                            violationLimits: examData.violationLimits,
+                                            scheduleEmailDate: examData.scheduleEmailDate,
+                                            scheduleEmailTime: examData.scheduleEmailTime
                                         };
                                         
                                         const response = await fetch(`http://localhost:5000/api/exams/${id}`, {
@@ -378,7 +420,7 @@ const Examiner_DraftConfigure = () => {
                                         
                                         if (response.ok) {
                                             setShowScheduleModal(false);
-                                            alert('✅ Exam Scheduled Successfully! Email invitations sent to candidates.');
+                                            alert(`✅ Exam Scheduled Successfully!\n\nEmail invitations will be sent on:\n📅 ${examData.scheduleEmailDate}\n⏰ ${examData.scheduleEmailTime}\n\nExam Details:\n📅 Date: ${examData.startDate}\n⏰ Time: ${examData.startTime}`);
                                             navigate('/manage-exams');
                                         } else {
                                             const error = await response.json();

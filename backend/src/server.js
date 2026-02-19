@@ -9,6 +9,7 @@ import candidateRoutes from './routes/candidateRoutes.js';
 import emailRoutes from './routes/emailRoutes.js';
 import { errorHandler } from './middleware/errorMiddleware.js';
 import './config/email.js';
+import { startEmailScheduler } from './utils/emailScheduler.js';
 
 dotenv.config();
 
@@ -34,4 +35,5 @@ app.get('/', (req, res) => {
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+  startEmailScheduler();
 });

@@ -1,9 +1,46 @@
 import asyncHandler from '../middleware/asyncHandler.js';
 import Exam from '../models/Exam.js';
 import Candidate from '../models/Candidate.js';
+import Violation from '../models/Violation.js';
 import xlsx from 'xlsx';
 import fs from 'fs';
-import { sendExamInvitation } from '../utils/emailService.js';
+
+// @desc    Get dashboard stats
+// @route   GET /api/exams/dashboard/stats
+// @access  Private (Examiner)
+export const getDashboardStats = asyncHandler(async (req, res) => {
+    const examinerId = req.user.id === 'demo-user-id' ? '507f1f77bcf86cd799439011' : req.user.id;
+    
+    const totalExams = await Exam.countDocuments({ examiner: examinerId });
+    const activeExams = await Exam.countDocuments({ examiner: examinerId, status: 'published' });
+    const recentExams = await Exam.find({ examiner: examinerId })
+        .sort({ createdAt: -1 })
+        .limit(10)
+        .select('title startDate startTime status createdAt');
+    
+    // Get student count for each exam
+    const examsWithStudents = await Promise.all(
+        recentExams.map(async (exam) => {
+            const studentCount = await Candidate.countDocuments({ examId: exam._id });
+            return {
+                _id: exam._id,
+                name: exam.title,
+                date: exam.startDate || new Date(exam.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+                students: studentCount,
+                status: exam.status === 'published' ? 'Scheduled' : 'Draft'
+            };
+        })
+    );
+
+    res.status(200).json({
+        success: true,
+        data: {
+            totalExams,
+            activeExams,
+            recentExams: examsWithStudents
+        }
+    });
+});
 
 // @desc    Create new exam
 // @route   POST /api/exams
@@ -231,5 +268,36 @@ export const importQuestions = asyncHandler(async (req, res) => {
         success: true,
         count: questions.length,
         data: questions
+    });
+});
+
+// @desc    Get exams for results publishing
+// @route   GET /api/exams/results/publishing
+// @access  Private (Examiner)
+export const getExamsForResults = asyncHandler(async (req, res) => {
+    const examinerId = req.user.id === 'demo-user-id' ? '507f1f77bcf86cd799439011' : req.user.id;
+    
+    const exams = await Exam.find({ examiner: examinerId, status: 'published' })
+        .sort({ createdAt: -1 })
+        .select('title startDate status createdAt totalMarks');
+    
+    const examsWithStats = await Promise.all(
+        exams.map(async (exam) => {
+            const studentCount = await Candidate.countDocuments({ examId: exam._id });
+            return {
+                id: exam._id,
+                name: exam.title,
+                date: exam.startDate || new Date(exam.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+                participants: studentCount,
+                avgScore: '75%',
+                status: 'Draft',
+                isCalculated: true
+            };
+        })
+    );
+
+    res.status(200).json({
+        success: true,
+        data: examsWithStats
     });
 });

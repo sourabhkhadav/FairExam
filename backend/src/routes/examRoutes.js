@@ -7,7 +7,9 @@ import {
     updateExam,
     deleteExam,
     importQuestions,
-    getPublicExam
+    getPublicExam,
+    getDashboardStats,
+    getExamsForResults
 } from '../controllers/examController.js';
 import { protect, authorize } from '../middleware/authMiddleware.js';
 
@@ -23,6 +25,9 @@ router.get('/public/:id', getPublicExam);
 // All routes below are protected
 router.use(protect);
 router.use(authorize('examiner'));
+
+router.get('/dashboard/stats', getDashboardStats);
+router.get('/results/publishing', getExamsForResults);
 
 router
     .route('/')

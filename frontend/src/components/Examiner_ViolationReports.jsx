@@ -12,7 +12,7 @@ const MetricCard = ({ label, value, colorClass }) => (
 const Examiner_ViolationReports = () => {
     const [violations, setViolations] = useState([]);
     const [filteredViolations, setFilteredViolations] = useState([]);
-    const [stats, setStats] = useState({ totalViolations: 0, highSeverity: 0, underReview: 0 });
+    const [stats, setStats] = useState({ totalViolations: 0, highSeverity: 0 });
     const [loading, setLoading] = useState(true);
     const [exams, setExams] = useState([]);
     const [examStats, setExamStats] = useState([]);
@@ -65,7 +65,8 @@ const Examiner_ViolationReports = () => {
     };
 
     const applyFilters = () => {
-        let filtered = [...violations];
+        const existingExamNames = exams.map(e => e.title);
+        let filtered = violations.filter(v => existingExamNames.includes(v.exam));
 
         if (filters.exam) {
             filtered = filtered.filter(v => v.exam === filters.exam);
@@ -78,11 +79,17 @@ const Examiner_ViolationReports = () => {
         }
 
         setFilteredViolations(filtered);
+        
+        // Recalculate stats based on filtered violations
+        const totalViolations = filtered.length;
+        const highSeverity = filtered.filter(v => v.severity === 'High').length;
+        setStats({ totalViolations, highSeverity });
     };
 
     const calculateExamStats = () => {
+        const existingExamNames = exams.map(e => e.title);
         const examMap = {};
-        violations.forEach(v => {
+        violations.filter(v => existingExamNames.includes(v.exam)).forEach(v => {
             if (!examMap[v.exam]) {
                 examMap[v.exam] = { total: 0, high: 0, medium: 0, low: 0 };
             }

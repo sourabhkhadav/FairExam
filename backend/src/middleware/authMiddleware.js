@@ -32,17 +32,17 @@ export const protect = asyncHandler(async (req, res, next) => {
                 }
             } else {
                 // User token
-                req.user = await User.findById(decoded.id).select('-password');
-                if (!req.user) {
+                const foundUser = await User.findById(decoded.id).select('-password');
+                if (!foundUser) {
                     res.status(401);
                     throw new Error('User not found');
                 }
                 req.user = {
-                    id: user._id.toString(),
-                    _id: user._id,
-                    name: user.name,
-                    email: user.email,
-                    role: user.role
+                    id: foundUser._id.toString(),
+                    _id: foundUser._id,
+                    name: foundUser.name,
+                    email: foundUser.email,
+                    role: foundUser.role
                 };
             }
             next();

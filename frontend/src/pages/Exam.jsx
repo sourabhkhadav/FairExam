@@ -11,13 +11,13 @@ const Exam = () => {
     const location = useLocation();
     
     // Get real candidate and exam data from localStorage
-    const candidate = JSON.parse(localStorage.getItem('candidate') || '{}');
-    const examData = JSON.parse(localStorage.getItem('examData') || '{}');
+    const candidateData = JSON.parse(localStorage.getItem('candidate') || '{}');
+    const storedExamData = JSON.parse(localStorage.getItem('examData') || '{}');
     
-    const userName = candidate.name || location.state?.name || 'Candidate';
-    const candidateId = candidate.id || candidate._id || 'UNKNOWN';
-    const examId = examData.id || examData._id || 'UNKNOWN';
-    const examName = examData.title || 'Exam';
+    const userName = candidateData.name || location.state?.name || 'Candidate';
+    const candidateId = candidateData.id || candidateData._id || 'UNKNOWN';
+    const examId = storedExamData.id || storedExamData._id || 'UNKNOWN';
+    const examName = storedExamData.title || 'Exam';
 
     // State Management
     const [examData, setExamData] = useState(null);
@@ -341,7 +341,7 @@ const Exam = () => {
         try {
             const token = localStorage.getItem('token');
 
-            if (!candidate || !candidate.id) {
+            if (!candidateData || !candidateData.id) {
                 alert('Session expired. Please login again.');
                 navigate('/candidate-login');
                 return;
@@ -366,7 +366,7 @@ const Exam = () => {
                 },
                 body: JSON.stringify({
                     examId: examId,
-                    candidateId: candidate.id,
+                    candidateId: candidateData.id,
                     answers: submissionAnswers,
                     timeTaken: (examData.duration * 60) - timeLeft
                 })

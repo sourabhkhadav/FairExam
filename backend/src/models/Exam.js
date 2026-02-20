@@ -63,7 +63,6 @@ const examSchema = new mongoose.Schema({
     endDate: String,
     endTime: String,
     timezone: String,
-    graceTime: Number,
     scheduleEmailDate: String,
     scheduleEmailTime: String,
     emailSent: {

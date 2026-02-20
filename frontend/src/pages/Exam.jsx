@@ -10,13 +10,14 @@ const Exam = () => {
     const navigate = useNavigate();
     const location = useLocation();
     
-    // Get candidate and exam data from localStorage
-    const candidateData = JSON.parse(localStorage.getItem('candidate') || '{}');
-    const examData_stored = JSON.parse(localStorage.getItem('examData') || '{}');
+    // Get real candidate and exam data from localStorage
+    const candidate = JSON.parse(localStorage.getItem('candidate') || '{}');
+    const examData = JSON.parse(localStorage.getItem('examData') || '{}');
     
-    const userName = candidateData.name || location.state?.name || 'Candidate';
-    const candidateId = candidateData.candidateId || localStorage.getItem('candidateId') || 'Unknown';
-    const examId = examData_stored._id || examData_stored.id;
+    const userName = candidate.name || location.state?.name || 'Candidate';
+    const candidateId = candidate.id || candidate._id || 'UNKNOWN';
+    const examId = examData.id || examData._id || 'UNKNOWN';
+    const examName = examData.title || 'Exam';
 
     // State Management
     const [examData, setExamData] = useState(null);
@@ -338,7 +339,6 @@ const Exam = () => {
 
     const handleSubmit = async () => {
         try {
-            const candidate = JSON.parse(localStorage.getItem('candidate'));
             const token = localStorage.getItem('token');
 
             if (!candidate || !candidate.id) {
@@ -381,10 +381,10 @@ const Exam = () => {
                         'Authorization': `Bearer ${token}`
                     },
                     body: JSON.stringify({
-                        candidateId: candidate.id,
-                        candidateName: candidate.name,
-                        examId: examId,
-                        examName: examData.title,
+                        candidateId,
+                        candidateName: userName,
+                        examId,
+                        examName,
                         violationType: 'face',
                         violationCount: {
                             faceDetection: faceViolations,

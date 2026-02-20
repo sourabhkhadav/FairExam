@@ -5,6 +5,7 @@ import {
     Search, Filter, Info, Camera, Volume2, Maximize, MousePointer
 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 const MetricCard = ({ label, value, colorClass, icon: Icon }) => (
     <div className="bg-white p-6 rounded-2xl border border-[#E2E8F0] shadow-sm flex-1 min-w-[200px] group hover:shadow-md transition-all">
@@ -133,7 +134,19 @@ const Examiner_StudentViolations = () => {
                                             <span className="text-xs font-semibold text-[#64748B]">{v.time}</span>
                                         </div>
                                         <button 
-                                            onClick={() => setSelectedScreenshot(v.screenshotUrl)}
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                console.log('Violation data:', v);
+                                                console.log('Screenshot URL:', v.screenshotUrl);
+                                                if (v.screenshotUrl) {
+                                                    setSelectedScreenshot(v.screenshotUrl);
+                                                } else {
+                                                    setSelectedScreenshot('placeholder');
+                                                    toast.error('No screenshot available for this violation', {
+                                                        duration: 2000
+                                                    });
+                                                }
+                                            }}
                                             className="px-4 py-1.5 bg-slate-700 hover:bg-slate-800 text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1.5"
                                         >
                                             <Eye className="w-3 h-3" />
@@ -202,22 +215,48 @@ const Examiner_StudentViolations = () => {
 
                 {selectedScreenshot && (
                     <div 
-                        className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4"
+                        className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-50 p-4"
                         onClick={() => setSelectedScreenshot(null)}
                     >
-                        <div className="relative max-w-5xl w-full" onClick={(e) => e.stopPropagation()}>
-                            <button
-                                onClick={() => setSelectedScreenshot(null)}
-                                className="absolute -top-12 right-0 text-white hover:text-gray-300 text-sm font-bold flex items-center gap-2"
-                            >
-                                <span>Close</span>
-                                <span className="text-2xl">&times;</span>
-                            </button>
-                            <img 
-                                src={selectedScreenshot} 
-                                alt="Violation screenshot" 
-                                className="w-full h-auto rounded-2xl shadow-2xl"
-                            />
+                        <div className="relative max-w-6xl w-full bg-white rounded-3xl shadow-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                            <div className="bg-gradient-to-r from-slate-800 to-slate-900 px-6 py-4 flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center">
+                                        <Camera className="w-5 h-5 text-white" />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-white font-bold text-lg">Violation Screenshot</h3>
+                                        <p className="text-slate-300 text-xs">Captured during exam session</p>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => setSelectedScreenshot(null)}
+                                    className="w-10 h-10 bg-white/10 hover:bg-white/20 rounded-xl flex items-center justify-center transition-all group"
+                                >
+                                    <span className="text-white text-2xl group-hover:rotate-90 transition-transform">&times;</span>
+                                </button>
+                            </div>
+                            <div className="p-6 bg-slate-50">
+                                {selectedScreenshot && selectedScreenshot !== 'placeholder' ? (
+                                    <img 
+                                        src={selectedScreenshot} 
+                                        alt="Violation screenshot" 
+                                        className="w-full h-auto rounded-2xl shadow-lg border-4 border-white max-h-[70vh] object-contain"
+                                        onError={(e) => {
+                                            console.error('Image failed to load:', selectedScreenshot);
+                                            e.target.style.display = 'none';
+                                            e.target.nextSibling.style.display = 'flex';
+                                        }}
+                                    />
+                                ) : null}
+                                <div className="w-full h-96 bg-slate-200 rounded-2xl items-center justify-center" style={{display: selectedScreenshot === 'placeholder' ? 'flex' : 'none'}}>
+                                    <div className="text-center">
+                                        <Camera className="w-16 h-16 text-slate-400 mx-auto mb-4" />
+                                        <p className="text-slate-600 font-semibold text-lg">No screenshot available</p>
+                                        <p className="text-slate-500 text-sm mt-2">Screenshot was not captured for this violation</p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 )}

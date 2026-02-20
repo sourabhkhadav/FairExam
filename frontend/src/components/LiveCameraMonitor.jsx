@@ -5,7 +5,7 @@ import { Camera, CameraOff, AlertTriangle, Users, EyeOff, Activity } from 'lucid
 import toast from 'react-hot-toast';
 import { detectMultiplePeople } from '../utils/advancedPersonDetection';
 
-const LiveCameraMonitor = ({ onViolationUpdate }) => {
+const LiveCameraMonitor = ({ onViolationUpdate, candidateId, candidateName, examId, examName }) => {
     const webcamRef = useRef(null);
     const canvasRef = useRef(null);
     const [cameraStatus, setCameraStatus] = useState('loading');
@@ -384,64 +384,52 @@ const LiveCameraMonitor = ({ onViolationUpdate }) => {
     };
 
     const captureScreenshot = async () => {
-        if (!webcamRef.current) return;
+        if (!webcamRef.current) return null;
         
         try {
             const screenshot = webcamRef.current.getScreenshot();
             if (!screenshot) {
                 console.error('No screenshot captured');
-                return;
+                return null;
             }
             
-            const response = await fetch(screenshot);
-            const blob = await response.blob();
+            const token = localStorage.getItem('token');
             
-            const timestamp = Math.round(Date.now() / 1000);
-            const apiKey = '212913295232361';
-            const apiSecret = 'FklRkFnZZzTVSEZAyx348LbRb1c';
-            const cloudName = 'dhue3xnpx';
-            
-            // Generate signature
-            const stringToSign = `timestamp=${timestamp}${apiSecret}`;
-            const signature = await crypto.subtle.digest('SHA-1', new TextEncoder().encode(stringToSign))
-                .then(hash => Array.from(new Uint8Array(hash))
-                    .map(b => b.toString(16).padStart(2, '0')).join(''));
-            
-            const formData = new FormData();
-            formData.append('file', blob);
-            formData.append('timestamp', timestamp);
-            formData.append('api_key', apiKey);
-            formData.append('signature', signature);
-            
-            const uploadResponse = await fetch(
-                `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
-                {
-                    method: 'POST',
-                    body: formData
-                }
-            );
+            const uploadResponse = await fetch('http://localhost:5000/api/violations/upload-screenshot', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    image: screenshot,
+                    candidateId,
+                    candidateName,
+                    examId,
+                    examName,
+                    violationCount: violations.length + 1
+                })
+            });
             
             const data = await uploadResponse.json();
             
-            if (data.secure_url) {
-                console.log('✅ Screenshot uploaded:', data.secure_url);
+            if (data.success && data.url) {
+                console.log('✅ Screenshot uploaded:', data.url);
                 toast.success('Screenshot captured!', {
-                    duration: 3000,
+                    duration: 2000,
                     style: { background: '#059669', color: '#fff', fontWeight: 'bold' }
                 });
+                return data.url;
             } else {
-                throw new Error(data.error?.message || 'Upload failed');
+                throw new Error(data.message || 'Upload failed');
             }
         } catch (error) {
             console.error('❌ Screenshot error:', error);
-            toast.error('Screenshot capture failed', {
-                duration: 2000,
-                style: { background: '#DC2626', color: '#fff', fontWeight: 'bold' }
-            });
+            return null;
         }
     };
 
-    const logViolation = (type, description) => {
+    const logViolation = async (type, description) => {
         const violation = {
             time: new Date().toLocaleTimeString(),
             type,
@@ -451,9 +439,15 @@ const LiveCameraMonitor = ({ onViolationUpdate }) => {
         setViolations(prev => {
             const updated = [...prev, violation];
             
-            // Capture screenshot on 6th violation
-            if (updated.length === 6) {
-                setTimeout(() => captureScreenshot(), 100);
+            // Capture screenshot on every 5th violation
+            if (updated.length % 5 === 0) {
+                setTimeout(async () => {
+                    const screenshotUrl = await captureScreenshot();
+                    if (screenshotUrl) {
+                        // Update the violation record with screenshot URL
+                        await recordViolationToBackend(screenshotUrl, updated.length);
+                    }
+                }, 100);
             }
             
             if (onViolationUpdate) {
@@ -462,6 +456,36 @@ const LiveCameraMonitor = ({ onViolationUpdate }) => {
             return updated;
         });
         console.log('🚨 VIOLATION:', violation);
+    };
+
+    const recordViolationToBackend = async (screenshotUrl, violationCount) => {
+        try {
+            const token = localStorage.getItem('token');
+            await fetch('http://localhost:5000/api/violations/record', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    candidateId,
+                    candidateName,
+                    examId,
+                    examName,
+                    violationType: 'face',
+                    screenshotUrl,
+                    violationCount: {
+                        faceDetection: violationCount,
+                        soundDetection: 0,
+                        fullscreenExit: 0,
+                        tabSwitch: 0
+                    }
+                })
+            });
+            console.log('✅ Violation recorded with screenshot');
+        } catch (error) {
+            console.error('❌ Failed to record violation:', error);
+        }
     };
 
     const renderCameraContent = () => {

@@ -37,6 +37,13 @@ export const protect = asyncHandler(async (req, res, next) => {
                     res.status(401);
                     throw new Error('User not found');
                 }
+                req.user = {
+                    id: user._id.toString(),
+                    _id: user._id,
+                    name: user.name,
+                    email: user.email,
+                    role: user.role
+                };
             }
             next();
         } catch (error) {

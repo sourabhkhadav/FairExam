@@ -7,6 +7,7 @@ import examRoutes from './routes/examRoutes.js';
 import violationRoutes from './routes/violationRoutes.js';
 import candidateRoutes from './routes/candidateRoutes.js';
 import emailRoutes from './routes/emailRoutes.js';
+import userRoutes from './routes/userRoutes.js';
 import { errorHandler } from './middleware/errorMiddleware.js';
 import './config/email.js';
 import { startEmailScheduler } from './utils/emailScheduler.js';
@@ -25,6 +26,7 @@ app.use('/api/exams', examRoutes);
 app.use('/api/violations', violationRoutes);
 app.use('/api/candidates', candidateRoutes);
 app.use('/api/email', emailRoutes);
+app.use('/api/users', userRoutes);
 
 app.use(errorHandler);
 

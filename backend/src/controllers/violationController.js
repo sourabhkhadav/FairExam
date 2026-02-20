@@ -2,6 +2,81 @@ import { v2 as cloudinary } from 'cloudinary';
 import Violation from '../models/Violation.js';
 import Exam from '../models/Exam.js';
 
+// Record a violation
+export const recordViolation = async (req, res) => {
+    try {
+        const { candidateId, candidateName, examId, examName, violationType, screenshotUrl, violationCount } = req.body;
+
+        let violation = await Violation.findOne({ candidateId, examId });
+
+        if (violation) {
+            // Update with provided counts or increment
+            if (violationCount) {
+                violation.violationCount = violationCount;
+            } else {
+                if (violationType === 'face') violation.violationCount.faceDetection++;
+                if (violationType === 'sound') violation.violationCount.soundDetection++;
+                if (violationType === 'fullscreen') violation.violationCount.fullscreenExit++;
+                if (violationType === 'tab_switch') violation.violationCount.tabSwitch++;
+            }
+            
+            const total = violation.violationCount.faceDetection + 
+                         violation.violationCount.soundDetection + 
+                         violation.violationCount.fullscreenExit + 
+                         violation.violationCount.tabSwitch;
+            
+            if (total >= 10) violation.severity = 'High';
+            else if (total >= 5) violation.severity = 'Medium';
+            else violation.severity = 'Low';
+            
+            if (screenshotUrl) violation.screenshotUrl = screenshotUrl;
+            violation.timestamp = Date.now();
+            
+            await violation.save();
+        } else {
+            const newViolationCount = violationCount || {
+                faceDetection: violationType === 'face' ? 1 : 0,
+                soundDetection: violationType === 'sound' ? 1 : 0,
+                fullscreenExit: violationType === 'fullscreen' ? 1 : 0,
+                tabSwitch: violationType === 'tab_switch' ? 1 : 0
+            };
+            
+            const total = newViolationCount.faceDetection + 
+                         newViolationCount.soundDetection + 
+                         newViolationCount.fullscreenExit + 
+                         newViolationCount.tabSwitch;
+            
+            let severity = 'Low';
+            if (total >= 10) severity = 'High';
+            else if (total >= 5) severity = 'Medium';
+            
+            violation = await Violation.create({
+                candidateId,
+                candidateName,
+                examId,
+                examName,
+                violationType: violationType || 'face',
+                violationCount: newViolationCount,
+                screenshotUrl,
+                severity
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'Violation recorded',
+            violation
+        });
+    } catch (error) {
+        console.error('Record violation error:', error);
+        res.status(500).json({ 
+            success: false,
+            message: 'Failed to record violation',
+            error: error.message 
+        });
+    }
+};
+
 export const uploadViolationScreenshot = async (req, res) => {
     try {
         const { image, candidateId, candidateName, examId, examName, violationCount } = req.body;
@@ -74,19 +149,33 @@ export const getAllViolations = async (req, res) => {
             .sort({ timestamp: -1 })
             .limit(100);
         
-        const totalViolations = await Violation.countDocuments();
-        const highSeverity = violations.filter(v => v.violationCount >= 5).length;
-        const underReview = violations.filter(v => v.violationCount >= 3 && v.violationCount < 5).length;
+        const totalViolations = violations.length;
+        const highSeverity = violations.filter(v => v.severity === 'High').length;
+        const underReview = violations.filter(v => v.severity === 'Medium').length;
         
-        const formattedViolations = violations.map(v => ({
-            id: v._id,
-            name: v.candidateName,
-            exam: v.examName,
-            type: v.violationCount >= 5 ? 'Multiple Face Detected' : v.violationCount >= 3 ? 'Tab Switch' : 'Unusual Noise Detected',
-            time: new Date(v.timestamp).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true }),
-            severity: v.violationCount >= 5 ? 'High' : v.violationCount >= 3 ? 'Medium' : 'Low',
-            screenshotUrl: v.screenshotUrl
-        }));
+        const formattedViolations = violations.map(v => {
+            const total = v.violationCount.faceDetection + 
+                         v.violationCount.soundDetection + 
+                         v.violationCount.fullscreenExit + 
+                         v.violationCount.tabSwitch;
+            
+            let type = 'Multiple Violations';
+            if (v.violationCount.faceDetection > 0) type = 'Multiple Face Detected';
+            else if (v.violationCount.tabSwitch > 0) type = 'Tab Switch';
+            else if (v.violationCount.soundDetection > 0) type = 'Unusual Noise Detected';
+            else if (v.violationCount.fullscreenExit > 0) type = 'Fullscreen Exit';
+            
+            return {
+                id: v._id,
+                name: v.candidateName,
+                exam: v.examName,
+                type,
+                time: new Date(v.timestamp).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true }),
+                severity: v.severity,
+                screenshotUrl: v.screenshotUrl,
+                violationCount: v.violationCount
+            };
+        });
         
         res.status(200).json({ 
             success: true, 

@@ -286,9 +286,43 @@ const Exam = () => {
         setIsSidebarOpen(false);
     };
 
-    const handleSubmit = () => {
-        alert("Exam Submitted Successfully!");
-        navigate('/');
+    const handleSubmit = async () => {
+        try {
+            const candidate = JSON.parse(localStorage.getItem('candidate'));
+            const examData = JSON.parse(localStorage.getItem('examData'));
+            const token = localStorage.getItem('token');
+
+            // Record violations if any exist
+            if (faceViolations > 0 || soundViolations > 0 || violations > 0) {
+                await fetch('http://localhost:5000/api/violations/record', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        candidateId: candidate.id,
+                        candidateName: candidate.name,
+                        examId: examData.id,
+                        examName: examData.title,
+                        violationType: 'face',
+                        violationCount: {
+                            faceDetection: faceViolations,
+                            soundDetection: soundViolations,
+                            fullscreenExit: violations,
+                            tabSwitch: 0
+                        }
+                    })
+                });
+            }
+
+            alert("Exam Submitted Successfully!");
+            navigate('/');
+        } catch (error) {
+            console.error('Submit error:', error);
+            alert("Exam Submitted Successfully!");
+            navigate('/');
+        }
     };
 
     const getStatusColor = (id) => {

@@ -259,20 +259,24 @@ const Examiner_ManageExams = () => {
                                             <span className="text-xs font-bold uppercase sm:hidden">Configure</span>
                                         </button>
                                     )}
-                                    <button
-                                        onClick={() => handleEdit(exam)}
-                                        className="flex-1 sm:flex-none p-3 text-slate-600 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer flex justify-center"
-                                        title="Edit Questions"
-                                    >
-                                        <Edit3 className="w-5 h-5" />
-                                    </button>
-                                    <button
-                                        onClick={() => handleDelete(exam.id)}
-                                        className="flex-1 sm:flex-none p-3 text-[#EF4444] hover:bg-[#FEF2F2] rounded-xl transition-colors cursor-pointer flex justify-center"
-                                        title="Delete Exam"
-                                    >
-                                        <Trash2 className="w-5 h-5" />
-                                    </button>
+                                    {exam.status !== 'Live' && (
+                                        <>
+                                            <button
+                                                onClick={() => handleEdit(exam)}
+                                                className="flex-1 sm:flex-none p-3 text-slate-600 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer flex justify-center"
+                                                title="Edit Questions"
+                                            >
+                                                <Edit3 className="w-5 h-5" />
+                                            </button>
+                                            <button
+                                                onClick={() => handleDelete(exam.id)}
+                                                className="flex-1 sm:flex-none p-3 text-[#EF4444] hover:bg-[#FEF2F2] rounded-xl transition-colors cursor-pointer flex justify-center"
+                                                title="Delete Exam"
+                                            >
+                                                <Trash2 className="w-5 h-5" />
+                                            </button>
+                                        </>
+                                    )}
                                 </div>
                             </div>
                         </div>

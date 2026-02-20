@@ -100,15 +100,15 @@ export const loginUser = async (req, res) => {
 // @access  Public
 export const candidateLogin = async (req, res) => {
     try {
-        const { candidateId, password, examId } = req.body;
+        const { candidateId, password } = req.body;
 
-        console.log('🔐 Login attempt:', { candidateId, password, examId });
+        console.log('🔐 Login attempt:', { candidateId, password });
 
-        if (!candidateId || !password || !examId) {
-            return res.status(400).json({ message: 'Please provide candidate ID, password, and exam ID' });
+        if (!candidateId || !password) {
+            return res.status(400).json({ message: 'Please provide candidate ID and password' });
         }
 
-        const candidate = await Candidate.findOne({ candidateId, examId });
+        const candidate = await Candidate.findOne({ candidateId });
         console.log('👤 Found candidate:', candidate ? { id: candidate._id, candidateId: candidate.candidateId, hasPassword: !!candidate.password, password: candidate.password } : 'NOT FOUND');
 
         if (!candidate) {
@@ -124,7 +124,7 @@ export const candidateLogin = async (req, res) => {
             return res.status(401).json({ message: 'Invalid credentials - Wrong password' });
         }
 
-        const exam = await Exam.findById(examId);
+        const exam = await Exam.findById(candidate.examId);
         if (!exam) {
             return res.status(404).json({ message: 'Exam not found' });
         }

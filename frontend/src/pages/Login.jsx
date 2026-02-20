@@ -7,16 +7,13 @@ const Login = () => {
     const [searchParams] = useSearchParams();
     const [formData, setFormData] = useState({
         candidateId: '',
-        password: '',
-        examId: ''
+        password: ''
     });
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
-        const examId = searchParams.get('examId');
         const candidateId = searchParams.get('candidateId');
-        if (examId) setFormData(prev => ({ ...prev, examId }));
         if (candidateId) setFormData(prev => ({ ...prev, candidateId }));
     }, [searchParams]);
 
@@ -33,8 +30,7 @@ const Login = () => {
                 },
                 body: JSON.stringify({
                     candidateId: formData.candidateId,
-                    password: formData.password,
-                    examId: formData.examId
+                    password: formData.password
                 })
             });
 
@@ -49,7 +45,7 @@ const Login = () => {
             localStorage.setItem('candidate', JSON.stringify(data.candidate));
             localStorage.setItem('examData', JSON.stringify(data.exam));
 
-            navigate('/exam');
+            navigate('/instructions', { state: { name: data.candidate.name } });
         } catch (err) {
             setError(err.message);
         } finally {
@@ -110,8 +106,6 @@ const Login = () => {
 
                     <form onSubmit={handleLogin} className="space-y-5">
                         <div className="space-y-4">
-                            <input type="hidden" value={formData.examId} />
-                            
                             <div>
                                 <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1.5">
                                     Candidate ID

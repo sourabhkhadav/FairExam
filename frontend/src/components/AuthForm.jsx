@@ -53,7 +53,8 @@ const AuthForm = ({ initialMode = 'login' }) => {
                     {
                         name: formData.name,
                         email: formData.email,
-                        password: formData.password
+                        password: formData.password,
+                        role: 'examiner'
                     }
                 )
             });
@@ -69,7 +70,8 @@ const AuthForm = ({ initialMode = 'login' }) => {
             localStorage.setItem('user', JSON.stringify({
                 _id: data._id,
                 name: data.name,
-                email: data.email
+                email: data.email,
+                role: data.role || 'examiner'
             }));
 
             navigate('/dashboard');

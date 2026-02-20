@@ -2,7 +2,8 @@ import mongoose from 'mongoose';
 
 const violationSchema = new mongoose.Schema({
     candidateId: {
-        type: String,
+        type: mongoose.Schema.ObjectId,
+        ref: 'Candidate',
         required: true
     },
     candidateName: {
@@ -18,13 +19,22 @@ const violationSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    screenshotUrl: {
+    violationType: {
         type: String,
+        enum: ['face', 'sound', 'fullscreen', 'tab_switch'],
         required: true
     },
     violationCount: {
-        type: Number,
-        required: true
+        faceDetection: { type: Number, default: 0 },
+        soundDetection: { type: Number, default: 0 },
+        fullscreenExit: { type: Number, default: 0 },
+        tabSwitch: { type: Number, default: 0 }
+    },
+    screenshotUrl: String,
+    severity: {
+        type: String,
+        enum: ['Low', 'Medium', 'High'],
+        default: 'Low'
     },
     timestamp: {
         type: Date,

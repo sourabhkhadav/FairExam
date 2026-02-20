@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
     PlusCircle, ArrowLeft, AlertCircle, Calendar, Clock,
     Monitor, Shield, Eye, FileText, BarChart3, ChevronRight,
-    Search, Filter, Info
+    Search, Filter, Info, Camera, Volume2, Maximize, MousePointer
 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 
@@ -22,41 +22,61 @@ const Examiner_StudentViolations = () => {
     const navigate = useNavigate();
     const { id } = useParams();
     const [loading, setLoading] = useState(true);
+    const [selectedScreenshot, setSelectedScreenshot] = useState(null);
     const [studentData, setStudentData] = useState({
         name: "",
         violations: []
     });
 
     useEffect(() => {
-        // Mock data fetching based on the ID or placeholder logic
-        // In a real app, this would be an API call
-        const mockAllViolations = [
-            { id: 1, name: "Charlie Brown", exam: "Database Management Final", type: "Multiple Face Detected", time: "Feb 12, 2026 - 10:45 AM", severity: "High", details: "Artificial intelligence system detected a second person in the camera frame for 45 seconds." },
-            { id: 2, name: "Bob Smith", exam: "Database Management Final", type: "Tab Switch", time: "Feb 12, 2026 - 10:30 AM", severity: "Medium", details: "Student switched tabs 4 times during the examination period." },
-            { id: 3, name: "Edward Lee", exam: "Computer Networks Test", type: "Unusual Noise Detected", time: "Feb 12, 2026 - 10:20 AM", severity: "Low", details: "Background noise exceeded the permissible threshold of 60dB." },
-            { id: 4, name: "Alice Wagner", exam: "Database Management Final", type: "Camera Disabled", time: "Feb 12, 2026 - 10:15 AM", severity: "High", details: "Camera feed was interrupted for more than 5 minutes." },
-            { id: 5, name: "Charlie Brown", exam: "Operating Systems Final", type: "Mobile usage", time: "Jan 12, 2026 - 11:30 AM", severity: "High", details: "AI detected mobile device usage during the test." },
-        ];
+        fetchStudentViolations();
+    }, [id]);
 
-        // Grouping by student name for simplicity of this demo page
-        // If we had numerical IDs, we'd use those. 
-        // For now, let's assume the "id" passed is actually the student name for this mock flow
-        const filtered = mockAllViolations.filter(v => v.name === id || v.id.toString() === id);
-
-        if (filtered.length > 0) {
-            setStudentData({
-                name: filtered[0].name,
-                violations: filtered
+    const fetchStudentViolations = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch('http://localhost:5000/api/violations/all', {
+                headers: { 'Authorization': `Bearer ${token}` }
             });
-        } else {
+            const data = await response.json();
+            
+            if (data.success) {
+                const filtered = data.data.violations.filter(v => v.name === decodeURIComponent(id));
+                
+                if (filtered.length > 0) {
+                    setStudentData({
+                        name: filtered[0].name,
+                        violations: filtered.map(v => ({
+                            id: v.id,
+                            name: v.name,
+                            exam: v.exam,
+                            type: v.type,
+                            time: v.time,
+                            severity: v.severity,
+                            faceDetection: v.violationCount?.faceDetection || 0,
+                            soundDetection: v.violationCount?.soundDetection || 0,
+                            fullscreenExit: v.violationCount?.fullscreenExit || 0,
+                            tabSwitch: v.violationCount?.tabSwitch || 0,
+                            screenshotUrl: v.screenshotUrl
+                        }))
+                    });
+                } else {
+                    setStudentData({
+                        name: decodeURIComponent(id),
+                        violations: []
+                    });
+                }
+            }
+        } catch (error) {
+            console.error('Error fetching student violations:', error);
             setStudentData({
-                name: id || "Unknown Student",
+                name: decodeURIComponent(id),
                 violations: []
             });
+        } finally {
+            setLoading(false);
         }
-
-        setTimeout(() => setLoading(false), 500);
-    }, [id]);
+    };
 
     if (loading) {
         return (
@@ -74,7 +94,6 @@ const Examiner_StudentViolations = () => {
     return (
         <div className="p-10 bg-[#F8FAFC] min-h-screen">
             <div className="max-w-6xl mx-auto">
-                {/* Header */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-10">
                     <div className="flex items-center gap-6">
                         <button
@@ -90,46 +109,82 @@ const Examiner_StudentViolations = () => {
                     </div>
                 </div>
 
-                {/* Metrics Grid */}
                 <div className="flex flex-wrap gap-4 sm:gap-6 mb-10">
                     <MetricCard label="Total Flags" value={studentData.violations.length} colorClass="text-[#0F172A]" icon={AlertCircle} />
                     <MetricCard label="High Severity" value={studentData.violations.filter(v => v.severity === 'High').length} colorClass="text-[#EF4444]" icon={Shield} />
                     <MetricCard label="Recent Violation" value={studentData.violations.length > 0 ? "Today" : "None"} colorClass="text-[#D97706]" icon={Clock} />
                 </div>
 
-                {/* Violation Details List */}
                 <div className="space-y-6">
-                    <h2 className="text-xl font-bold text-[#0F172A] px-1">Detailed Log</h2>
+                    <h2 className="text-2xl font-bold text-[#0F172A]">Detailed Log</h2>
                     {studentData.violations.length > 0 ? (
                         studentData.violations.map((v, idx) => (
-                            <div key={v.id} className="bg-white p-6 sm:p-8 rounded-[24px] border border-[#E2E8F0] shadow-sm hover:shadow-md transition-all group">
-                                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-                                    <div className="flex-1 space-y-4">
+                            <div key={v.id} className="bg-white rounded-3xl border border-[#E2E8F0] shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
+                                <div className="p-8">
+                                    <div className="flex items-center justify-between mb-4">
                                         <div className="flex items-center gap-3">
-                                            <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${v.severity === 'High' ? 'bg-[#FEF2F2] text-[#EF4444] border border-red-100' :
-                                                v.severity === 'Medium' ? 'bg-[#FFFBEB] text-[#D97706] border border-amber-100' :
-                                                    'bg-[#EFF6FF] text-[#3B82F6] border border-blue-100'
-                                                }`}>
+                                            <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                                                v.severity === 'High' ? 'bg-red-500 text-white' :
+                                                v.severity === 'Medium' ? 'bg-amber-500 text-white' :
+                                                'bg-blue-500 text-white'
+                                            }`}>
                                                 {v.severity} Severity
                                             </span>
-                                            <span className="text-[11px] font-bold text-[#94A3B8] uppercase tracking-[0.1em]">{v.time}</span>
+                                            <span className="text-xs font-semibold text-[#64748B]">{v.time}</span>
                                         </div>
-                                        <div className="p-4 bg-[#F8FAFC] rounded-xl border border-[#E2E8F0] text-sm text-[#475569] leading-relaxed">
-                                            <div className="flex gap-2">
-                                                <Info className="w-4 h-4 text-[#64748B] shrink-0 mt-0.5" />
-                                                <span>{v.details}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center lg:flex-col gap-3 justify-end lg:border-l border-[#E2E8F0] lg:pl-8 min-w-[120px]">
-                                        <button className="flex-1 lg:w-full px-4 py-2.5 bg-white border border-[#E2E8F0] rounded-xl text-xs font-bold text-[#64748B] hover:text-[#1E293B] hover:border-[#1E293B]/30 transition-all flex items-center justify-center gap-2">
-                                            <Eye className="w-4 h-4" />
+                                        <button 
+                                            onClick={() => setSelectedScreenshot(v.screenshotUrl)}
+                                            className="px-4 py-1.5 bg-slate-700 hover:bg-slate-800 text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1.5"
+                                        >
+                                            <Eye className="w-3 h-3" />
                                             View Clip
                                         </button>
-                                        <button className="flex-1 lg:w-full px-4 py-2.5 bg-white border border-[#E2E8F0] rounded-xl text-xs font-bold text-[#64748B] hover:text-[#EF4444] hover:border-[#EF4444]/30 transition-all flex items-center justify-center gap-2">
-                                            <Shield className="w-4 h-4" />
-                                            Flag User
-                                        </button>
+                                    </div>
+                                    
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                        <div className="bg-white p-4 rounded-lg border border-slate-200 hover:shadow-sm transition-all">
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <div className="p-1.5 bg-slate-100 rounded">
+                                                    <Camera className="w-3.5 h-3.5 text-slate-600" />
+                                                </div>
+                                                <span className="text-xs font-semibold text-slate-700 uppercase">Face</span>
+                                            </div>
+                                            <div className="text-2xl font-bold text-slate-900">{v.faceDetection}</div>
+                                            <div className="text-xs text-slate-500">times violated</div>
+                                        </div>
+
+                                        <div className="bg-white p-4 rounded-lg border border-slate-200 hover:shadow-sm transition-all">
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <div className="p-1.5 bg-slate-100 rounded">
+                                                    <Volume2 className="w-3.5 h-3.5 text-slate-600" />
+                                                </div>
+                                                <span className="text-xs font-semibold text-slate-700 uppercase">Sound</span>
+                                            </div>
+                                            <div className="text-2xl font-bold text-slate-900">{v.soundDetection}</div>
+                                            <div className="text-xs text-slate-500">times violated</div>
+                                        </div>
+
+                                        <div className="bg-white p-4 rounded-lg border border-slate-200 hover:shadow-sm transition-all">
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <div className="p-1.5 bg-slate-100 rounded">
+                                                    <Maximize className="w-3.5 h-3.5 text-slate-600" />
+                                                </div>
+                                                <span className="text-xs font-semibold text-slate-700 uppercase">Fullscreen</span>
+                                            </div>
+                                            <div className="text-2xl font-bold text-slate-900">{v.fullscreenExit}</div>
+                                            <div className="text-xs text-slate-500">times violated</div>
+                                        </div>
+
+                                        <div className="bg-white p-4 rounded-lg border border-slate-200 hover:shadow-sm transition-all">
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <div className="p-1.5 bg-slate-100 rounded">
+                                                    <MousePointer className="w-3.5 h-3.5 text-slate-600" />
+                                                </div>
+                                                <span className="text-xs font-semibold text-slate-700 uppercase">Tab Switch</span>
+                                            </div>
+                                            <div className="text-2xl font-bold text-slate-900">{v.tabSwitch}</div>
+                                            <div className="text-xs text-slate-500">times violated</div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -144,6 +199,28 @@ const Examiner_StudentViolations = () => {
                         </div>
                     )}
                 </div>
+
+                {selectedScreenshot && (
+                    <div 
+                        className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4"
+                        onClick={() => setSelectedScreenshot(null)}
+                    >
+                        <div className="relative max-w-5xl w-full" onClick={(e) => e.stopPropagation()}>
+                            <button
+                                onClick={() => setSelectedScreenshot(null)}
+                                className="absolute -top-12 right-0 text-white hover:text-gray-300 text-sm font-bold flex items-center gap-2"
+                            >
+                                <span>Close</span>
+                                <span className="text-2xl">&times;</span>
+                            </button>
+                            <img 
+                                src={selectedScreenshot} 
+                                alt="Violation screenshot" 
+                                className="w-full h-auto rounded-2xl shadow-2xl"
+                            />
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

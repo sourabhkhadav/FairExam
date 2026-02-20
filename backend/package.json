@@ -21,6 +21,8 @@
     "mongoose": "^8.0.0",
     "multer": "^2.0.2",
     "nodemailer": "^8.0.1",
+    "pdf-parse-fork": "^1.2.0",
+    "pdfjs-dist": "^5.4.624",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {

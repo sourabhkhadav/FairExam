@@ -162,9 +162,10 @@ export const candidateLogin = async (req, res) => {
             },
             exam: {
                 id: exam._id,
+                _id: exam._id,
                 title: exam.title,
                 duration: exam.duration,
-                questions: exam.questions
+                violationLimits: exam.violationLimits
             },
             token
         });

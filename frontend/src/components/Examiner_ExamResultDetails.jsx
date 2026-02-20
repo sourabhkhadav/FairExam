@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     ChevronLeft, Search, Filter, ArrowUpDown, MoreHorizontal,
     UserCheck, UserX, BarChart3, PieChart, TrendingUp, CheckCircle,
@@ -8,34 +8,34 @@ import { useNavigate, useParams } from 'react-router-dom';
 
 const Examiner_ExamResultDetails = () => {
     const navigate = useNavigate();
-    const { examId } = useParams();
+    const { id: examId } = useParams();
     const [searchQuery, setSearchQuery] = useState('');
     const [cutoff, setCutoff] = useState(40);
+    const [examDetails, setExamDetails] = useState(null);
+    const [students, setStudents] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    // Mock Data - In a real app, this would be fetched based on examId
-    const examDetails = {
-        name: "Database Management Final",
-        date: "Feb 12, 2026",
-        totalCandidates: 124,
-        passed: 98,
-        failed: 26,
-        avgScore: 78,
-        highestScore: 98,
-        status: "Completed"
+    useEffect(() => {
+        fetchExamResults();
+    }, [examId]);
+
+    const fetchExamResults = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`http://localhost:5000/api/exams/${examId}/results`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await response.json();
+            if (data.success) {
+                setExamDetails(data.data.examDetails);
+                setStudents(data.data.students);
+            }
+        } catch (error) {
+            console.error('Error fetching results:', error);
+        } finally {
+            setLoading(false);
+        }
     };
-
-    const students = [
-        { id: 1, name: "Alex Johnson", roll: "CS2026001", marks: 92, total: 100, status: "Pass", email: "alex.j@college.edu", timeTaken: "115 min" },
-        { id: 2, name: "Sarah Williams", roll: "CS2026002", marks: 45, total: 100, status: "Fail", email: "sarah.w@college.edu", timeTaken: "120 min" },
-        { id: 3, name: "Michael Chen", roll: "CS2026003", marks: 88, total: 100, status: "Pass", email: "m.chen@college.edu", timeTaken: "98 min" },
-        { id: 4, name: "Emma Davis", roll: "CS2026004", marks: 76, total: 100, status: "Pass", email: "emma.d@college.edu", timeTaken: "110 min" },
-        { id: 5, name: "James Wilson", roll: "CS2026005", marks: 32, total: 100, status: "Fail", email: "j.wilson@college.edu", timeTaken: "45 min" },
-        { id: 6, name: "Olivia Brown", roll: "CS2026006", marks: 95, total: 100, status: "Pass", email: "olivia.b@college.edu", timeTaken: "118 min" },
-        { id: 7, name: "William Taylor", roll: "CS2026007", marks: 68, total: 100, status: "Pass", email: "will.t@college.edu", timeTaken: "120 min" },
-        { id: 8, name: "Sophia Miller", roll: "CS2026008", marks: 82, total: 100, status: "Pass", email: "sophia.m@college.edu", timeTaken: "105 min" },
-        { id: 9, name: "Daniel Anderson", roll: "CS2026009", marks: 55, total: 100, status: "Pass", email: "daniel.a@college.edu", timeTaken: "120 min" },
-        { id: 10, name: "Isabella Thomas", roll: "CS2026010", marks: 28, total: 100, status: "Fail", email: "isabella.t@college.edu", timeTaken: "60 min" },
-    ];
 
     const filteredStudents = students.filter(student =>
         student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -51,9 +51,25 @@ const Examiner_ExamResultDetails = () => {
     };
 
     // Calculate dynamic stats based on cutoff (mock data is limited to 10 students)
-    const passedCount = students.filter(s => s.marks >= cutoff).length;
+    const passedCount = students.filter(s => s.percentage >= cutoff).length;
     const failedCount = students.length - passedCount;
     const totalStudents = students.length;
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-screen">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0F172A]"></div>
+            </div>
+        );
+    }
+
+    if (!examDetails) {
+        return (
+            <div className="flex items-center justify-center h-screen">
+                <div className="text-lg font-medium text-slate-600">Exam not found</div>
+            </div>
+        );
+    }
 
     const StatCard = ({ icon: Icon, label, value, subtext, color }) => (
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between h-full">
@@ -145,7 +161,7 @@ const Examiner_ExamResultDetails = () => {
                 <StatCard
                     icon={BarChart3}
                     label="Average Score"
-                    value={`${examDetails.avgScore}/100`}
+                    value={`${examDetails.avgScore}/${examDetails.totalCandidates > 0 ? Math.round(students.reduce((acc, s) => acc + s.total, 0) / students.length) : 100}`}
                     subtext={`Highest: ${examDetails.highestScore}`}
                     color="bg-slate-500 text-slate-600"
                 />
@@ -200,7 +216,7 @@ const Examiner_ExamResultDetails = () => {
                                     </td>
                                     <td className="px-6 py-4 text-slate-600 font-medium text-sm">{student.roll}</td>
                                     <td className="px-6 py-4 text-center">
-                                        <span className={`font-bold text-base ${student.marks < 40 ? 'text-rose-600' : 'text-slate-700'}`}>
+                                        <span className={`font-bold text-base ${student.percentage < 40 ? 'text-rose-600' : 'text-slate-700'}`}>
                                             {student.marks}
                                             <span className="text-slate-400 text-xs font-normal ml-1">/ {student.total}</span>
                                         </span>
@@ -208,23 +224,23 @@ const Examiner_ExamResultDetails = () => {
                                     <td className="px-6 py-4 text-center">
                                         <div className="w-full max-w-[100px] mx-auto h-2 bg-slate-100 rounded-full overflow-hidden">
                                             <div
-                                                className={`h-full rounded-full ${student.marks < 40 ? 'bg-rose-500' :
-                                                    student.marks >= 80 ? 'bg-emerald-500' : 'bg-blue-500'
+                                                className={`h-full rounded-full ${student.percentage < 40 ? 'bg-rose-500' :
+                                                    student.percentage >= 80 ? 'bg-emerald-500' : 'bg-blue-500'
                                                     }`}
-                                                style={{ width: `${(student.marks / student.total) * 100}%` }}
+                                                style={{ width: `${student.percentage}%` }}
                                             />
                                         </div>
                                         <div className="text-xs font-semibold text-slate-500 mt-1.5">
-                                            {((student.marks / student.total) * 100).toFixed(0)}%
+                                            {student.percentage}%
                                         </div>
                                     </td>
                                     <td className="px-6 py-4 text-center">
-                                        <span className={`inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-bold border ${student.marks >= cutoff
+                                        <span className={`inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-bold border ${student.percentage >= cutoff
                                             ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                                             : 'bg-rose-50 text-rose-700 border-rose-200'
                                             }`}>
-                                            {student.marks >= cutoff ? <CheckCircle className="w-3 h-3 mr-1.5" /> : <XCircle className="w-3 h-3 mr-1.5" />}
-                                            {student.marks >= cutoff ? 'Pass' : 'Fail'}
+                                            {student.percentage >= cutoff ? <CheckCircle className="w-3 h-3 mr-1.5" /> : <XCircle className="w-3 h-3 mr-1.5" />}
+                                            {student.status}
                                         </span>
                                     </td>
                                     <td className="px-6 py-4 text-right text-slate-500 text-sm font-medium">

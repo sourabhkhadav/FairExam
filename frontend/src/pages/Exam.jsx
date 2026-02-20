@@ -1,20 +1,28 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Clock, Menu, X, ChevronLeft, ChevronRight, Flag, AlertTriangle, CheckCircle, ImageIcon, Save, Maximize } from 'lucide-react';
 import LiveCameraMonitor from '../components/LiveCameraMonitor';
 import { Toaster, toast } from 'react-hot-toast';
+import { API_BASE_URL } from '../config/api';
 
 const Exam = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const userName = location.state?.name || 'Candidate';
-    const candidateId = 'SWE2026001';
-    const examId = '507f1f77bcf86cd799439011';
-    const examName = 'Software Engineering Assessment 2026';
+    
+    // Get candidate and exam data from localStorage
+    const candidateData = JSON.parse(localStorage.getItem('candidate') || '{}');
+    const examData_stored = JSON.parse(localStorage.getItem('examData') || '{}');
+    
+    const userName = candidateData.name || location.state?.name || 'Candidate';
+    const candidateId = candidateData.candidateId || localStorage.getItem('candidateId') || 'Unknown';
+    const examId = examData_stored._id || examData_stored.id;
 
     // State Management
-    const [timeLeft, setTimeLeft] = useState(5400); // 90 minutes
+    const [examData, setExamData] = useState(null);
+    const [allQuestions, setAllQuestions] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [timeLeft, setTimeLeft] = useState(5400);
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [answers, setAnswers] = useState({});
     const [questionStatus, setQuestionStatus] = useState({});
@@ -25,34 +33,49 @@ const Exam = () => {
     const [faceViolations, setFaceViolations] = useState(0);
     const [isFullscreen, setIsFullscreen] = useState(false);
 
+    useEffect(() => {
+        if (!examId) {
+            toast.error('No exam ID found. Please login again.');
+            navigate('/candidate-login');
+            return;
+        }
+        fetchExamQuestions();
+    }, [examId]);
+
+    const fetchExamQuestions = async () => {
+        try {
+            console.log('Fetching exam with ID:', examId);
+            const url = `${API_BASE_URL}/exams/public/${examId}/questions`;
+            console.log('API URL:', url);
+            
+            const response = await fetch(url);
+            console.log('Response status:', response.status);
+            
+            const data = await response.json();
+            console.log('Response data:', data);
+            
+            if (data.success) {
+                setExamData(data.data);
+                setAllQuestions(data.data.questions);
+                if (data.data.duration) {
+                    setTimeLeft(data.data.duration * 60);
+                }
+                console.log('Loaded', data.data.questions.length, 'questions');
+            } else {
+                toast.error(data.message || 'Failed to load exam');
+            }
+        } catch (error) {
+            console.error('Error fetching exam:', error);
+            toast.error('Failed to load exam: ' + error.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     // Handle face violations from LiveCameraMonitor
     const handleViolationUpdate = (violationsList) => {
         setFaceViolations(violationsList.length);
     };
-    const audioContextRef = useRef(null);
-    const analyserRef = useRef(null);
-    const micStreamRef = useRef(null);
-    const [showFullscreenWarning, setShowFullscreenWarning] = useState(false);
-    const warningAudioRef = useRef(null);
-    const violationLockRef = useRef(false);
-    const [forceFullscreenModal, setForceFullscreenModal] = useState(false);
-    const soundLockRef = useRef(false);
-    const baselineRef = useRef(0);
-    const calibrationDoneRef = useRef(false);
-
-    // Mock Data
-    const allQuestions = [
-        { id: 1, section: 1, type: 'mcq', question: "Which data structure is primarily used to implement a LIFO (Last In First Out) system?", options: ["Queue", "Stack", "Linked List", "Binary Tree"] },
-        { id: 2, section: 1, type: 'mcq', question: "What is the time complexity of a binary search algorithm in the worst case?", options: ["O(n)", "O(n^2)", "O(log n)", "O(1)"] },
-        { id: 3, section: 1, type: 'mcq', question: "Which of the following is NOT a JavaScript primitive data type?", options: ["String", "Number", "Boolean", "Object"] },
-        { id: 4, section: 1, type: 'mcq', question: "What does CSS stand for?", options: ["Creative Style Sheets", "Cascading Style Sheets", "Computer Style Sheets", "Colorful Style Sheets"] },
-        { id: 5, section: 1, type: 'mcq', question: "Which HTML tag is used to define an internal style sheet?", options: ["<script>", "<style>", "<css>", "<link>"] },
-        { id: 6, section: 1, type: 'mcq', question: "Which method is used to remove the last element from an array in JavaScript?", options: ["shift()", "pop()", "push()", "unshift()"] },
-        { id: 7, section: 1, type: 'mcq', question: "What is the purpose of the 'useEffect' hook in React?", options: ["To manage state", "To perform side effects", "To create context", "To memorize values"] },
-        { id: 8, section: 1, type: 'mcq', question: "Which SQL statement is used to extract data from a database?", options: ["GET", "OPEN", "SELECT", "EXTRACT"] },
-        { id: 9, section: 1, type: 'mcq', question: "What is the default port number for HTTP?", options: ["80", "443", "21", "22"] },
-        { id: 10, section: 1, type: 'mcq', question: "Which of the following is a version control system?", options: ["Node.js", "Git", "NPM", "React"] },
-    ];
 
     // Simple Audio Detection - No Meyda Required
     useEffect(() => {
@@ -254,6 +277,33 @@ const Exam = () => {
         return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     };
 
+    const audioContextRef = useRef(null);
+    const analyserRef = useRef(null);
+    const micStreamRef = useRef(null);
+    const [showFullscreenWarning, setShowFullscreenWarning] = useState(false);
+    const warningAudioRef = useRef(null);
+    const violationLockRef = useRef(false);
+    const [forceFullscreenModal, setForceFullscreenModal] = useState(false);
+    const soundLockRef = useRef(false);
+    const baselineRef = useRef(0);
+    const calibrationDoneRef = useRef(false);
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-screen">
+                <div className="text-lg font-medium text-slate-600">Loading exam...</div>
+            </div>
+        );
+    }
+
+    if (!examData || allQuestions.length === 0) {
+        return (
+            <div className="flex items-center justify-center h-screen">
+                <div className="text-lg font-medium text-slate-600">No questions available</div>
+            </div>
+        );
+    }
+
     const currentQuestion = allQuestions[currentQuestionIndex];
 
     // Navigation & Interaction Handlers
@@ -289,12 +339,42 @@ const Exam = () => {
     const handleSubmit = async () => {
         try {
             const candidate = JSON.parse(localStorage.getItem('candidate'));
-            const examData = JSON.parse(localStorage.getItem('examData'));
             const token = localStorage.getItem('token');
+
+            if (!candidate || !candidate.id) {
+                alert('Session expired. Please login again.');
+                navigate('/candidate-login');
+                return;
+            }
+
+            // Prepare answers for submission
+            const submissionAnswers = Object.entries(answers).map(([questionId, selectedOption]) => {
+                const question = allQuestions.find(q => q.id.toString() === questionId);
+                const optionIndex = question?.options.indexOf(selectedOption);
+                return {
+                    questionId,
+                    selectedOption: optionIndex !== undefined ? optionIndex : -1
+                };
+            });
+
+            // Submit exam with auto-grading
+            await fetch(`${API_BASE_URL}/submissions`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    examId: examId,
+                    candidateId: candidate.id,
+                    answers: submissionAnswers,
+                    timeTaken: (examData.duration * 60) - timeLeft
+                })
+            });
 
             // Record violations if any exist
             if (faceViolations > 0 || soundViolations > 0 || violations > 0) {
-                await fetch('http://localhost:5000/api/violations/record', {
+                await fetch(`${API_BASE_URL}/violations/record`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -303,7 +383,7 @@ const Exam = () => {
                     body: JSON.stringify({
                         candidateId: candidate.id,
                         candidateName: candidate.name,
-                        examId: examData.id,
+                        examId: examId,
                         examName: examData.title,
                         violationType: 'face',
                         violationCount: {
@@ -317,10 +397,12 @@ const Exam = () => {
             }
 
             alert("Exam Submitted Successfully!");
+            localStorage.clear();
             navigate('/');
         } catch (error) {
             console.error('Submit error:', error);
             alert("Exam Submitted Successfully!");
+            localStorage.clear();
             navigate('/');
         }
     };
@@ -384,7 +466,7 @@ const Exam = () => {
                 candidateId={candidateId}
                 candidateName={userName}
                 examId={examId}
-                examName={examName}
+                examName={examData?.title || 'Exam'}
             />
 
             {/* Top Bar - Enterprise Style */}
@@ -459,7 +541,7 @@ const Exam = () => {
                                 <div className="flex justify-between items-start mb-4">
                                     <div className="flex items-center gap-3">
                                         <span className="px-2.5 py-0.5 rounded text-xs font-bold bg-white text-slate-600 border border-slate-200 uppercase tracking-wide shadow-sm">
-                                            Q.{currentQuestion.id}
+                                            Q.{currentQuestionIndex + 1}
                                         </span>
                                         <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">
                                             Multiple Choice
@@ -583,16 +665,16 @@ const Exam = () => {
                                     Questions
                                 </h4>
                                 <div className="grid grid-cols-5 gap-2">
-                                    {allQuestions.map(q => (
+                                    {allQuestions.map((q, idx) => (
                                         <button
-                                            key={q.id}
-                                            onClick={() => handleJumpToQuestion(allQuestions.indexOf(q))}
+                                            key={idx}
+                                            onClick={() => handleJumpToQuestion(idx)}
                                             className={`
                                                     h-9 w-9 rounded flex items-center justify-center text-sm font-medium border transition-all
                                                     ${getStatusColor(q.id)}
                                                 `}
                                         >
-                                            {q.id}
+                                            {idx + 1}
                                         </button>
                                     ))}
                                 </div>

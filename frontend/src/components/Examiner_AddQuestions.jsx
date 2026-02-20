@@ -17,19 +17,7 @@ const Examiner_AddQuestions = () => {
     const [sections, setSections] = useState([
         { id: 0, name: 'Section 1' }
     ]);
-    const [questions, setQuestions] = useState([
-        {
-            id: 1,
-            sectionId: 0,
-            type: 'MCQ',
-            text: 'Which architectural pattern is best suited for decoupling frontend and backend services in a distributed system?',
-            options: ['Layered Architecture', 'Microservices', 'Monolithic', 'Client-Server'],
-            correct: 1,
-            marks: 2,
-            difficulty: 'Medium',
-            tags: ['Architecture', 'Scaling']
-        }
-    ]);
+    const [questions, setQuestions] = useState([]);
 
     useEffect(() => {
         const draftStr = localStorage.getItem('examDraft');
@@ -127,21 +115,7 @@ const Examiner_AddQuestions = () => {
             }
 
             if (data.data && Array.isArray(data.data)) {
-                // Append imported questions to existing ones (or replace? Let's append)
-                // Or better, ask user? For now, let's just append or if empty replace.
-                // Actually, let's replace/append logic:
-                // If there's only 1 default question and it's empty, replace it.
-                // Otherwise append.
-
-                let newQuestions = [...data.data];
-
-                // If current questions are just the default one and empty, replace
-                if (questions.length === 1 && questions[0].text === '' && questions[0].options[0] === '') {
-                    setQuestions(newQuestions);
-                } else {
-                    setQuestions([...questions, ...newQuestions]);
-                }
-
+                setQuestions(data.data);
                 alert(`Successfully imported ${data.count} questions.`);
             }
         } catch (error) {
@@ -185,6 +159,31 @@ const Examiner_AddQuestions = () => {
             return;
         }
 
+        if (questions.length === 0) {
+            alert("Please add at least one question before submitting");
+            return;
+        }
+
+        // Validate questions
+        for (let i = 0; i < questions.length; i++) {
+            const q = questions[i];
+            if (!q.text.trim()) {
+                alert(`Question ${i + 1} is missing content`);
+                return;
+            }
+            if (q.type === 'MCQ') {
+                const validOptions = q.options.filter(opt => opt.trim());
+                if (validOptions.length < 2) {
+                    alert(`Question ${i + 1} needs at least 2 options`);
+                    return;
+                }
+                if (!q.options[q.correct]?.trim()) {
+                    alert(`Question ${i + 1} has invalid correct answer`);
+                    return;
+                }
+            }
+        }
+
         setIsLoading(true);
         try {
             const token = localStorage.getItem('token');
@@ -223,11 +222,11 @@ const Examiner_AddQuestions = () => {
             if (status === 'published') {
                 alert('Exam published successfully!');
                 localStorage.removeItem('examDraft');
-                window.location.href = '/manage-exams';
+                navigate('/manage-exams');
             } else {
                 alert('Draft saved successfully!');
-                localStorage.removeItem('examDraft'); // Clear draft after saving to DB to avoid stale data
-                window.location.href = '/manage-exams';
+                localStorage.removeItem('examDraft');
+                navigate('/manage-exams');
             }
 
         } catch (error) {
@@ -242,7 +241,17 @@ const Examiner_AddQuestions = () => {
 
     const handlePublish = () => saveExamToBackend('published');
 
-    const currentQuestion = questions[focusedIndex];
+    const currentQuestion = questions[focusedIndex] || {
+        id: 1,
+        sectionId: 0,
+        type: 'MCQ',
+        text: '',
+        options: ['', '', '', ''],
+        correct: 0,
+        marks: 2,
+        difficulty: 'Medium',
+        tags: []
+    };
 
     return (
         <div className="h-full lg:h-[calc(100vh-100px)] flex flex-col min-w-0">
@@ -419,7 +428,7 @@ const Examiner_AddQuestions = () => {
                         <div className="relative group">
                             <input
                                 type="file"
-                                accept=".xlsx,.xls,.csv,.doc,.docx"
+                                accept=".xlsx,.xls,.pdf"
                                 onChange={handleImport}
                                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                             />
@@ -474,6 +483,17 @@ const Examiner_AddQuestions = () => {
                         </div>
 
                         {/* Focused Question Editor */}
+                        {questions.length === 0 ? (
+                            <div className="bg-white rounded-2xl sm:rounded-[32px] border border-[#E2E8F0] shadow-sm p-10 text-center">
+                                <p className="text-slate-500 mb-4">No questions yet. Click "Add New Section" or "Bulk Import" to get started.</p>
+                                <button
+                                    onClick={() => addQuestion(sections[0]?.id || 0)}
+                                    className="px-6 py-3 bg-[#0F172A] text-white font-semibold rounded-xl hover:bg-[#1E293B] transition-all"
+                                >
+                                    Add First Question
+                                </button>
+                            </div>
+                        ) : (
                         <div className="bg-white rounded-2xl sm:rounded-[32px] border border-[#E2E8F0] shadow-sm p-6 sm:p-10 space-y-6 sm:space-y-8 relative overflow-hidden">
                             <div className="absolute top-0 right-0 p-10 opacity-[0.03] pointer-events-none hidden sm:block">
                                 <Zap className="w-64 h-64 text-[#0F172A]" />
@@ -559,6 +579,7 @@ const Examiner_AddQuestions = () => {
                                 </button>
                             </div>
                         </div>
+                        )}
 
                     </div>
                 </div>

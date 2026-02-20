@@ -4,6 +4,7 @@ import Candidate from '../models/Candidate.js';
 import Violation from '../models/Violation.js';
 import xlsx from 'xlsx';
 import fs from 'fs';
+import pdfParse from 'pdf-parse-fork';
 
 // @desc    Get dashboard stats
 // @route   GET /api/exams/dashboard/stats
@@ -204,65 +205,125 @@ export const deleteExam = asyncHandler(async (req, res) => {
     });
 });
 
-// @desc    Import questions from Excel
+// @desc    Import questions from Excel or PDF
 // @route   POST /api/exams/import-questions
 // @access  Private (Examiner)
 export const importQuestions = asyncHandler(async (req, res) => {
     if (!req.file) {
         res.status(400);
-        throw new Error('Please upload an Excel file');
+        throw new Error('Please upload a file');
     }
 
-    const workbook = xlsx.read(req.file.buffer, { type: 'buffer' });
-    const sheetName = workbook.SheetNames[0];
-    const sheet = workbook.Sheets[sheetName];
-    const data = xlsx.utils.sheet_to_json(sheet);
+    const fileType = req.file.mimetype;
+    let questions = [];
 
-    // Map data to Question format
-    // Expected columns: Question Text, Option A, Option B, Option C, Option D, Correct Answer (A/B/C/D or 1/2/3/4), Marks, Difficulty, Tags (comma separated)
-    const questions = data.map((row, index) => {
-        const options = [
-            row['Option A'] || row['OptionA'] || '',
-            row['Option B'] || row['OptionB'] || '',
-            row['Option C'] || row['OptionC'] || '',
-            row['Option D'] || row['OptionD'] || ''
-        ];
-
-        // Parse correct answer
-        let correctIdx = 0;
-        const correctVal = row['Correct Answer'] || row['CorrectAnswer'];
-        
-        if (typeof correctVal === 'number') {
-            correctIdx = correctVal - 1; // Assuming 1-based index in excel
-        } else if (typeof correctVal === 'string') {
-            const lower = correctVal.trim().toLowerCase();
-            if (lower === 'a') correctIdx = 0;
-            else if (lower === 'b') correctIdx = 1;
-            else if (lower === 'c') correctIdx = 2;
-            else if (lower === 'd') correctIdx = 3;
-            else {
-                 // Try to match text
-                 const idx = options.findIndex(opt => opt.toLowerCase() === lower);
-                 if (idx !== -1) correctIdx = idx;
+    if (fileType === 'application/pdf') {
+        try {
+            const pdfData = await pdfParse(req.file.buffer, { max: 0 });
+            const text = pdfData.text;
+            
+            console.log('PDF Text:', text);
+            
+            // Try multiple patterns to split questions
+            let questionBlocks = text.split(/(?=Q\d+\.)/).filter(block => block.trim() && block.match(/^Q\d+\./));
+            
+            // If no matches, try alternative patterns
+            if (questionBlocks.length === 0) {
+                questionBlocks = text.split(/(?=\d+\.)/).filter(block => block.trim() && block.match(/^\d+\./));
             }
+            
+            if (questionBlocks.length === 0) {
+                questionBlocks = text.split(/(?=Question\s*\d+)/i).filter(block => block.trim() && block.match(/Question\s*\d+/i));
+            }
+            
+            console.log('Question blocks found:', questionBlocks.length);
+            
+            questions = questionBlocks.map((block, index) => {
+                const lines = block.split('\n').filter(l => l.trim());
+                const firstLine = lines[0] || '';
+                const questionText = firstLine.replace(/^(Q\d+\.|\d+\.|Question\s*\d+:?)\s*/i, '').trim() || lines[1]?.trim() || 'Question';
+                
+                const options = [];
+                let correctAnswer = 1;
+                let marks = 2;
+                
+                lines.forEach(line => {
+                    const optionMatch = line.match(/^([1-4]|[A-D])[\).\)]\s*(.+)/);
+                    if (optionMatch) {
+                        options.push(optionMatch[2]?.trim());
+                    }
+                    
+                    const answerMatch = line.match(/Answer:\s*([1-4A-D])/i);
+                    if (answerMatch) {
+                        const ans = answerMatch[1];
+                        correctAnswer = isNaN(ans) ? ans.charCodeAt(0) - 64 : parseInt(ans);
+                    }
+                    
+                    const marksMatch = line.match(/Marks:\s*(\d+)/i);
+                    if (marksMatch) {
+                        marks = parseInt(marksMatch[1]);
+                    }
+                });
+                
+                return {
+                    id: Date.now() + index,
+                    sectionId: 0,
+                    type: 'MCQ',
+                    text: questionText,
+                    options: options.length === 4 ? options : ['Option 1', 'Option 2', 'Option 3', 'Option 4'],
+                    correct: correctAnswer - 1,
+                    marks: marks,
+                    difficulty: 'Medium',
+                    tags: []
+                };
+            });
+        } catch (pdfError) {
+            console.error('PDF parsing error:', pdfError.message);
+            res.status(400);
+            throw new Error('Failed to parse PDF. Please ensure the PDF is not corrupted or password protected.');
         }
+    } else {
+        const workbook = xlsx.read(req.file.buffer, { type: 'buffer' });
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        const data = xlsx.utils.sheet_to_json(sheet);
 
-        // Clamp index
-        if (correctIdx < 0) correctIdx = 0;
-        if (correctIdx > 3) correctIdx = 3;
+        questions = data.map((row, index) => {
+            const options = [
+                row['Option 1'] || row['1'] || '',
+                row['Option 2'] || row['2'] || '',
+                row['Option 3'] || row['3'] || '',
+                row['Option 4'] || row['4'] || ''
+            ];
 
-        return {
-            id: Date.now() + index, // Temporary ID for frontend
-            sectionId: row['Section ID'] || row['SectionID'] || 0,
-            type: 'MCQ',
-            text: row['Question Text'] || row['QuestionText'] || row['Question'] || 'New Question',
-            options,
-            correct: correctIdx,
-            marks: parseInt(row['Marks'] || 2),
-            difficulty: row['Difficulty'] || 'Medium',
-            tags: row['Tags'] ? row['Tags'].split(',').map(t => t.trim()) : []
-        };
-    });
+            let correctIdx = 0;
+            const correctVal = row['Answer'] || row['Correct'];
+            
+            if (typeof correctVal === 'number') {
+                correctIdx = correctVal - 1;
+            } else if (typeof correctVal === 'string') {
+                const num = parseInt(correctVal.trim());
+                if (num >= 1 && num <= 4) {
+                    correctIdx = num - 1;
+                }
+            }
+
+            if (correctIdx < 0) correctIdx = 0;
+            if (correctIdx > 3) correctIdx = 3;
+
+            return {
+                id: Date.now() + index,
+                sectionId: 0,
+                type: 'MCQ',
+                text: row['Question'] || 'New Question',
+                options,
+                correct: correctIdx,
+                marks: parseInt(row['Marks'] || 2),
+                difficulty: 'Medium',
+                tags: []
+            };
+        });
+    }
 
     res.status(200).json({
         success: true,
@@ -299,5 +360,121 @@ export const getExamsForResults = asyncHandler(async (req, res) => {
     res.status(200).json({
         success: true,
         data: examsWithStats
+    });
+});
+
+// @desc    Get exam questions for candidate
+// @route   GET /api/exams/public/:id/questions
+// @access  Public
+export const getExamQuestions = asyncHandler(async (req, res) => {
+    console.log('Fetching questions for exam ID:', req.params.id);
+    
+    const exam = await Exam.findById(req.params.id).select('title duration questions sections');
+
+    if (!exam) {
+        console.log('Exam not found with ID:', req.params.id);
+        res.status(404);
+        throw new Error('Exam not found');
+    }
+
+    console.log('Exam found:', exam.title);
+    console.log('Number of questions:', exam.questions?.length || 0);
+
+    if (!exam.questions || exam.questions.length === 0) {
+        console.log('No questions in exam');
+        res.status(200).json({
+            success: true,
+            data: {
+                title: exam.title,
+                duration: exam.duration,
+                questions: [],
+                sections: exam.sections || []
+            }
+        });
+        return;
+    }
+
+    const formattedQuestions = exam.questions.map((q, index) => ({
+        id: index + 1,
+        questionNumber: index + 1,
+        sectionId: q.sectionId || 0,
+        type: 'mcq',
+        question: q.text || q.question || '',
+        options: q.options || [],
+        marks: q.marks || 1
+    }));
+
+    console.log('Sending', formattedQuestions.length, 'questions');
+
+    res.status(200).json({
+        success: true,
+        data: {
+            title: exam.title,
+            duration: exam.duration,
+            questions: formattedQuestions,
+            sections: exam.sections || []
+        }
+    });
+});
+
+// @desc    Get exam results details
+// @route   GET /api/exams/:id/results
+// @access  Private (Examiner)
+export const getExamResults = asyncHandler(async (req, res) => {
+    const exam = await Exam.findById(req.params.id);
+
+    if (!exam) {
+        res.status(404);
+        throw new Error('Exam not found');
+    }
+
+    const examinerId = req.user.id === 'demo-user-id' ? '507f1f77bcf86cd799439011' : req.user.id;
+    if (exam.examiner.toString() !== examinerId) {
+        res.status(401);
+        throw new Error('Not authorized to access this exam');
+    }
+
+    const Submission = (await import('../models/Submission.js')).default;
+    const submissions = await Submission.find({ examId: req.params.id })
+        .populate('candidateId', 'name email candidateId')
+        .sort({ score: -1 });
+
+    const students = submissions.map(sub => ({
+        id: sub._id,
+        name: sub.candidateId?.name || 'Unknown',
+        roll: sub.candidateId?.candidateId || 'N/A',
+        email: sub.candidateId?.email || '',
+        marks: sub.score,
+        total: sub.totalMarks,
+        percentage: sub.percentage,
+        timeTaken: Math.floor(sub.timeTaken / 60) + ' min',
+        status: sub.percentage >= 40 ? 'Pass' : 'Fail'
+    }));
+
+    const totalCandidates = students.length;
+    const passedStudents = students.filter(s => s.percentage >= 40).length;
+    const failedStudents = totalCandidates - passedStudents;
+    const avgScore = totalCandidates > 0 
+        ? Math.round(students.reduce((acc, s) => acc + s.marks, 0) / totalCandidates)
+        : 0;
+    const highestScore = totalCandidates > 0 
+        ? Math.max(...students.map(s => s.marks))
+        : 0;
+
+    res.status(200).json({
+        success: true,
+        data: {
+            examDetails: {
+                name: exam.title,
+                date: exam.startDate || new Date(exam.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+                totalCandidates,
+                passed: passedStudents,
+                failed: failedStudents,
+                avgScore,
+                highestScore,
+                status: 'Completed'
+            },
+            students
+        }
     });
 });

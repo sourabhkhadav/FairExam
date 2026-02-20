@@ -9,7 +9,9 @@ import {
     importQuestions,
     getPublicExam,
     getDashboardStats,
-    getExamsForResults
+    getExamsForResults,
+    getExamResults,
+    getExamQuestions
 } from '../controllers/examController.js';
 import { protect, authorize } from '../middleware/authMiddleware.js';
 
@@ -21,6 +23,7 @@ const upload = multer({ storage: storage });
 
 // Public route for students taking exam
 router.get('/public/:id', getPublicExam);
+router.get('/public/:id/questions', getExamQuestions);
 
 // All routes below are protected
 router.use(protect);
@@ -43,5 +46,7 @@ router
     .get(getExam)
     .put(updateExam)
     .delete(deleteExam);
+
+router.get('/:id/results', getExamResults);
 
 export default router;

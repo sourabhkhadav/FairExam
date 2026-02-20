@@ -121,4 +121,13 @@ examSchema.pre('save', function (next) {
     next();
 });
 
+// Calculate total marks before updating
+examSchema.pre('findOneAndUpdate', function (next) {
+    const update = this.getUpdate();
+    if (update.questions && update.questions.length > 0) {
+        update.totalMarks = update.questions.reduce((acc, q) => acc + (q.marks || 0), 0);
+    }
+    next();
+});
+
 export default mongoose.model('Exam', examSchema);

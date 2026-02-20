@@ -43,6 +43,7 @@ const Login = () => {
             // Success
             localStorage.setItem('token', data.token);
             localStorage.setItem('candidate', JSON.stringify(data.candidate));
+            localStorage.setItem('candidateId', data.candidate.candidateId);
             localStorage.setItem('examData', JSON.stringify(data.exam));
 
             navigate('/instructions', { state: { name: data.candidate.name } });

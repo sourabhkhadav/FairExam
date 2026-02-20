@@ -22,11 +22,18 @@ export const protect = asyncHandler(async (req, res, next) => {
                     role: 'examiner'
                 };
             } else {
-                req.user = await User.findById(decoded.id).select('-password');
-                if (!req.user) {
+                const user = await User.findById(decoded.id).select('-password');
+                if (!user) {
                     res.status(401);
                     throw new Error('User not found');
                 }
+                req.user = {
+                    id: user._id.toString(),
+                    _id: user._id,
+                    name: user.name,
+                    email: user.email,
+                    role: user.role
+                };
             }
             next();
         } catch (error) {

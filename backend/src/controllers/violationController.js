@@ -82,7 +82,7 @@ export const uploadViolationScreenshot = async (req, res) => {
         const { image, candidateId, candidateName, examId, examName, violationCount } = req.body;
 
         if (!image) {
-            return res.status(400).json({ message: 'No image provided' });
+            return res.status(400).json({ success: false, message: 'No image provided' });
         }
 
         cloudinary.config({
@@ -93,18 +93,34 @@ export const uploadViolationScreenshot = async (req, res) => {
 
         const uploadResult = await cloudinary.uploader.upload(image, {
             folder: 'exam-violations',
-            public_id: `${candidateId}_violation_${violationCount}_${Date.now()}`,
+            public_id: `${candidateId}_violation_${Date.now()}`,
             resource_type: 'image'
         });
 
-        const violation = await Violation.create({
-            candidateId,
-            candidateName,
-            examId,
-            examName,
-            screenshotUrl: uploadResult.secure_url,
-            violationCount
-        });
+        // Update existing violation or create new one
+        let violation = await Violation.findOne({ candidateId, examId });
+        
+        if (violation) {
+            violation.screenshotUrl = uploadResult.secure_url;
+            violation.timestamp = Date.now();
+            await violation.save();
+        } else {
+            violation = await Violation.create({
+                candidateId,
+                candidateName,
+                examId,
+                examName,
+                violationType: 'face',
+                screenshotUrl: uploadResult.secure_url,
+                violationCount: {
+                    faceDetection: violationCount || 0,
+                    soundDetection: 0,
+                    fullscreenExit: 0,
+                    tabSwitch: 0
+                },
+                severity: 'Low'
+            });
+        }
 
         res.status(200).json({
             success: true,

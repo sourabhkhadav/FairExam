@@ -8,10 +8,15 @@ import { Toaster, toast } from 'react-hot-toast';
 const Exam = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const userName = location.state?.name || 'Candidate';
-    const candidateId = 'SWE2026001';
-    const examId = '507f1f77bcf86cd799439011';
-    const examName = 'Software Engineering Assessment 2026';
+    
+    // Get real candidate and exam data from localStorage
+    const candidate = JSON.parse(localStorage.getItem('candidate') || '{}');
+    const examData = JSON.parse(localStorage.getItem('examData') || '{}');
+    
+    const userName = candidate.name || location.state?.name || 'Candidate';
+    const candidateId = candidate.id || candidate._id || 'UNKNOWN';
+    const examId = examData.id || examData._id || 'UNKNOWN';
+    const examName = examData.title || 'Exam';
 
     // State Management
     const [timeLeft, setTimeLeft] = useState(5400); // 90 minutes
@@ -288,8 +293,6 @@ const Exam = () => {
 
     const handleSubmit = async () => {
         try {
-            const candidate = JSON.parse(localStorage.getItem('candidate'));
-            const examData = JSON.parse(localStorage.getItem('examData'));
             const token = localStorage.getItem('token');
 
             // Record violations if any exist
@@ -301,10 +304,10 @@ const Exam = () => {
                         'Authorization': `Bearer ${token}`
                     },
                     body: JSON.stringify({
-                        candidateId: candidate.id,
-                        candidateName: candidate.name,
-                        examId: examData.id,
-                        examName: examData.title,
+                        candidateId,
+                        candidateName: userName,
+                        examId,
+                        examName,
                         violationType: 'face',
                         violationCount: {
                             faceDetection: faceViolations,

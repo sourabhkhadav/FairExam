@@ -2,8 +2,7 @@ import mongoose from 'mongoose';
 
 const violationSchema = new mongoose.Schema({
     candidateId: {
-        type: mongoose.Schema.ObjectId,
-        ref: 'Candidate',
+        type: String,
         required: true
     },
     candidateName: {
@@ -11,8 +10,7 @@ const violationSchema = new mongoose.Schema({
         required: true
     },
     examId: {
-        type: mongoose.Schema.ObjectId,
-        ref: 'Exam',
+        type: String,
         required: true
     },
     examName: {

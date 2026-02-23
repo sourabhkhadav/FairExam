@@ -17,7 +17,7 @@ const Exam = () => {
     
     const userName = candidateData.name || location.state?.name || 'Candidate';
     const candidateId = candidateData.id || candidateData._id || 'UNKNOWN';
-    const examId = storedExamData.id || storedExamData._id || urlExamId || 'UNKNOWN';
+    const examId = candidateData.examId || storedExamData.examId || storedExamData._id || urlExamId || 'UNKNOWN';
     const examName = storedExamData.title || 'Exam';
 
     // State Management

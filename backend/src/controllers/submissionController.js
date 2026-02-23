@@ -91,6 +91,20 @@ export const submitExam = asyncHandler(async (req, res) => {
     });
 });
 
+// @desc    Check if candidate has already submitted
+// @route   GET /api/submissions/check/:examId/:candidateId
+// @access  Public
+export const checkSubmission = asyncHandler(async (req, res) => {
+    const { examId, candidateId } = req.params;
+
+    const submission = await Submission.findOne({ examId, candidateId });
+
+    res.status(200).json({
+        success: true,
+        hasSubmitted: !!submission
+    });
+});
+
 // @desc    Send detailed results to candidates
 // @route   POST /api/submissions/send-results/:examId
 // @access  Private

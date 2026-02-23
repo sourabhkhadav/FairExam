@@ -31,10 +31,20 @@ const Instructions = () => {
             try {
                 const candidateData = JSON.parse(localStorage.getItem('candidate') || '{}');
                 const examId = candidateData.examId;
+                const candidateId = candidateData._id || candidateData.id;
 
                 if (!examId) {
                     console.error('No exam ID found');
                     setLoading(false);
+                    return;
+                }
+
+                const checkResponse = await fetch(`http://localhost:5000/api/submissions/check/${examId}/${candidateId}`);
+                const checkData = await checkResponse.json();
+
+                if (checkData.success && checkData.hasSubmitted) {
+                    alert('You have already submitted this exam.');
+                    navigate('/candidate-login');
                     return;
                 }
 

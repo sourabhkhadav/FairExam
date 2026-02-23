@@ -45,6 +45,14 @@ const Examiner_Layout = () => {
     const location = useLocation();
     const navigate = useNavigate();
 
+    React.useEffect(() => {
+        const token = localStorage.getItem('token');
+        const user = localStorage.getItem('user');
+        if (!token || !user) {
+            navigate('/login', { replace: true });
+        }
+    }, [navigate]);
+
     const menuItems = [
         { icon: LayoutDashboard, label: "Dashboard", to: "/dashboard" },
         { icon: PlusCircle, label: "Create Exam", to: "/create-exam" },
@@ -59,7 +67,7 @@ const Examiner_Layout = () => {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         localStorage.removeItem('examDraft');
-        navigate('/login');
+        navigate('/');
     };
 
     return (

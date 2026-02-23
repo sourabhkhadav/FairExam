@@ -79,7 +79,7 @@ export const getExams = asyncHandler(async (req, res) => {
 // @route   GET /api/exams/public/:id
 // @access  Public
 export const getPublicExam = asyncHandler(async (req, res) => {
-    const exam = await Exam.findById(req.params.id).select('title violationLimits duration');
+    const exam = await Exam.findById(req.params.id).select('title description duration violationLimits questions');
 
     if (!exam) {
         res.status(404);
@@ -88,7 +88,14 @@ export const getPublicExam = asyncHandler(async (req, res) => {
 
     res.status(200).json({
         success: true,
-        data: exam
+        data: {
+            examId: exam._id,
+            title: exam.title,
+            description: exam.description,
+            duration: exam.duration,
+            violationLimits: exam.violationLimits,
+            totalQuestions: exam.questions?.length || 0
+        }
     });
 });
 

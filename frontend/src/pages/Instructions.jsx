@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Shield, Clock, FileText, CheckSquare, ArrowRight, AlertTriangle, Monitor, MousePointer } from 'lucide-react';
 import EnvironmentCheck from '../components/EnvironmentCheck';
@@ -23,6 +23,37 @@ const Instructions = () => {
     const userName = location.state?.name || 'Candidate';
     const [agreed, setAgreed] = useState(false);
     const [showEnvironmentCheck, setShowEnvironmentCheck] = useState(false);
+    const [examDetails, setExamDetails] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchExamDetails = async () => {
+            try {
+                const candidateData = JSON.parse(localStorage.getItem('candidate') || '{}');
+                const examId = candidateData.examId;
+
+                if (!examId) {
+                    console.error('No exam ID found');
+                    setLoading(false);
+                    return;
+                }
+
+                const response = await fetch(`http://localhost:5000/api/exams/public/${examId}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    setExamDetails(data.data);
+                    localStorage.setItem('examData', JSON.stringify(data.data));
+                }
+            } catch (error) {
+                console.error('Error fetching exam details:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchExamDetails();
+    }, []);
 
     const handleStart = () => {
         if (agreed) {
@@ -38,6 +69,20 @@ const Instructions = () => {
         }
     };
 
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+                <div className="text-slate-600">Loading exam details...</div>
+            </div>
+        );
+    }
+
+    const candidateData = JSON.parse(localStorage.getItem('candidate') || '{}');
+    const assessmentId = candidateData.examId || '#SWE-2026-X1';
+    const duration = examDetails?.duration || 90;
+    const totalQuestions = examDetails?.totalQuestions || 10;
+    const violationLimits = examDetails?.violationLimits || { faceLimit: 5, soundLimit: 5, fullscreenLimit: 5 };
+
     return (
         <div className="min-h-screen bg-slate-50 font-sans text-slate-900 py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-4xl mx-auto space-y-8">
@@ -47,7 +92,7 @@ const Instructions = () => {
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-slate-100 pb-8 mb-8">
                         <div>
                             <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 text-xs font-medium border border-blue-100 mb-4">
-                                Assessment ID: #SWE-2026-X1
+                                Assessment ID: {assessmentId}
                             </div>
                             <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Examination Guidelines</h1>
                             <p className="mt-2 text-slate-500">
@@ -57,8 +102,8 @@ const Instructions = () => {
                         <div className="flex items-center gap-4 bg-slate-50 p-4 rounded-lg border border-slate-200">
                             <Clock className="w-8 h-8 text-blue-600" />
                             <div>
-                                <div className="text-sm font-semibold text-slate-900">Duration: 90 Minutes</div>
-                                <div className="text-xs text-slate-500">Total Questions: 10</div>
+                                <div className="text-sm font-semibold text-slate-900">Duration: {duration} Minutes</div>
+                                <div className="text-xs text-slate-500">Total Questions: {totalQuestions}</div>
                             </div>
                         </div>
                     </div>
@@ -72,7 +117,7 @@ const Instructions = () => {
                             <InstructionCard
                                 icon={MousePointer}
                                 title="Multiple Choice Questions"
-                                desc="10 Questions. Single correct option. Analytical & Logical reasoning."
+                                desc={`${totalQuestions} Questions. Single correct option. Analytical & Logical reasoning.`}
                             />
                         </div>
 
@@ -100,17 +145,17 @@ const Instructions = () => {
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                                         <div className="bg-white rounded-lg p-3 border border-amber-200">
                                             <div className="text-xs text-slate-500 uppercase tracking-wider mb-1">Face Detection</div>
-                                            <div className="text-2xl font-bold text-red-600">5</div>
+                                            <div className="text-2xl font-bold text-red-600">{violationLimits.faceLimit}</div>
                                             <div className="text-xs text-slate-600 mt-1">violations allowed</div>
                                         </div>
                                         <div className="bg-white rounded-lg p-3 border border-amber-200">
                                             <div className="text-xs text-slate-500 uppercase tracking-wider mb-1">Sound Detection</div>
-                                            <div className="text-2xl font-bold text-red-600">5</div>
+                                            <div className="text-2xl font-bold text-red-600">{violationLimits.soundLimit}</div>
                                             <div className="text-xs text-slate-600 mt-1">violations allowed</div>
                                         </div>
                                         <div className="bg-white rounded-lg p-3 border border-amber-200">
                                             <div className="text-xs text-slate-500 uppercase tracking-wider mb-1">Fullscreen Exit</div>
-                                            <div className="text-2xl font-bold text-red-600">5</div>
+                                            <div className="text-2xl font-bold text-red-600">{violationLimits.fullscreenLimit}</div>
                                             <div className="text-xs text-slate-600 mt-1">violations allowed</div>
                                         </div>
                                     </div>

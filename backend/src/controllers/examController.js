@@ -382,19 +382,25 @@ export const getExamsForResults = asyncHandler(async (req, res) => {
     
     const exams = await Exam.find({ examiner: examinerId, status: 'published' })
         .sort({ createdAt: -1 })
-        .select('title startDate status createdAt totalMarks');
+        .select('title startDate endDate endTime status createdAt totalMarks resultsSent');
+    
+    const now = new Date();
     
     const examsWithStats = await Promise.all(
         exams.map(async (exam) => {
             const studentCount = await Candidate.countDocuments({ examId: exam._id });
+            const examEndDateTime = new Date(`${exam.endDate}T${exam.endTime}`);
+            const isExamEnded = now >= examEndDateTime;
+            
             return {
                 id: exam._id,
                 name: exam.title,
                 date: exam.startDate || new Date(exam.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
                 participants: studentCount,
                 avgScore: '75%',
-                status: 'Draft',
-                isCalculated: true
+                status: exam.resultsSent ? 'Results Sent' : 'Draft',
+                isCalculated: isExamEnded,
+                isExamEnded
             };
         })
     );

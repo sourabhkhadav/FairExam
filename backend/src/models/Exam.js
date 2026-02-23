@@ -107,6 +107,10 @@ const examSchema = new mongoose.Schema({
             default: 5
         }
     },
+    resultsSent: {
+        type: Boolean,
+        default: false
+    },
     createdAt: {
         type: Date,
         default: Date.now

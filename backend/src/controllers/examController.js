@@ -289,6 +289,12 @@ export const importQuestions = asyncHandler(async (req, res) => {
         const data = xlsx.utils.sheet_to_json(sheet);
 
         questions = data.map((row, index) => {
+            // Skip empty rows
+            if (!row['Question'] || row['Question'].trim() === '') {
+                console.warn(`Row ${index + 1}: Skipping empty question`);
+                return null;
+            }
+            
             const options = [
                 row['Option 1'] || row['1'] || '',
                 row['Option 2'] || row['2'] || '',
@@ -341,7 +347,7 @@ export const importQuestions = asyncHandler(async (req, res) => {
             console.log(`Q${index + 1}: Answer=${correctVal} → Index=${correctIdx}, Marks=${marks}`);
 
             return {
-                id: Date.now() + index,
+                id: index + 1, // Use sequential ID starting from 1
                 sectionId: 0,
                 type: 'MCQ',
                 text: row['Question'] || 'New Question',
@@ -351,7 +357,7 @@ export const importQuestions = asyncHandler(async (req, res) => {
                 difficulty: 'Medium',
                 tags: []
             };
-        });
+        }).filter(q => q !== null); // Remove null entries from skipped rows
     }
 
     res.status(200).json({

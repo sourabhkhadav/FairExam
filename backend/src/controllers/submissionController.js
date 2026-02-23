@@ -33,35 +33,36 @@ export const submitExam = asyncHandler(async (req, res) => {
     // Auto-grade the exam
     let score = 0;
     const gradedAnswers = answers.map(answer => {
-        // Find question by matching the question ID (1-based index from frontend)
-        const questionIndex = parseInt(answer.questionId) - 1;
-        const question = exam.questions[questionIndex];
+        // Frontend sends questionId as 1-based (1, 2, 3...)
+        // We need to find the actual question in the array
+        const questionId = parseInt(answer.questionId);
+        
+        // Find question by its ID property, not array index
+        const question = exam.questions.find(q => q.id === questionId || parseInt(q.id) === questionId);
         
         if (!question) {
-            console.warn(`Question not found for ID: ${answer.questionId}`);
-            return {
-                questionId: answer.questionId,
-                selectedOption: answer.selectedOption,
-                isCorrect: false
-            };
+            // Fallback: try array index (questionId - 1)
+            const questionIndex = questionId - 1;
+            const questionByIndex = exam.questions[questionIndex];
+            
+            if (questionByIndex) {
+                console.warn(`Q${questionId}: Found by index ${questionIndex} instead of ID`);
+                const isCorrect = answer.selectedOption === questionByIndex.correct;
+                if (isCorrect) score += questionByIndex.marks || 0;
+                console.log(`Q${questionId}: Selected=${answer.selectedOption}, Correct=${questionByIndex.correct}, IsCorrect=${isCorrect}, Marks=${questionByIndex.marks}`);
+                return { questionId: answer.questionId, selectedOption: answer.selectedOption, isCorrect };
+            }
+            
+            console.error(`Q${questionId}: NOT FOUND in exam (Total questions: ${exam.questions.length})`);
+            return { questionId: answer.questionId, selectedOption: answer.selectedOption, isCorrect: false };
         }
 
-        // Compare selected option (0-based index) with correct answer (0-based index)
-        // Frontend sends: selectedOption as 0-based index (0,1,2,3)
-        // Backend stores: correct as 0-based index (0,1,2,3)
         const isCorrect = answer.selectedOption === question.correct;
+        if (isCorrect) score += question.marks || 0;
         
-        if (isCorrect) {
-            score += question.marks || 0;
-        }
+        console.log(`Q${questionId}: Selected=${answer.selectedOption}, Correct=${question.correct}, IsCorrect=${isCorrect}, Marks=${question.marks}`);
         
-        console.log(`Q${answer.questionId}: Selected=${answer.selectedOption}, Correct=${question.correct}, IsCorrect=${isCorrect}, Marks=${question.marks}`);
-        
-        return {
-            questionId: answer.questionId,
-            selectedOption: answer.selectedOption,
-            isCorrect
-        };
+        return { questionId: answer.questionId, selectedOption: answer.selectedOption, isCorrect };
     });
 
     console.log(`Candidate: ${candidate.name}, Score: ${score}/${exam.totalMarks}`);

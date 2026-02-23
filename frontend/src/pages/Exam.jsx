@@ -9,6 +9,7 @@ import { API_BASE_URL } from '../config/api';
 const Exam = () => {
     const navigate = useNavigate();
     const location = useLocation();
+    const { examId: urlExamId } = useParams();
     
     // Get real candidate and exam data from localStorage
     const candidateData = JSON.parse(localStorage.getItem('candidate') || '{}');
@@ -16,7 +17,7 @@ const Exam = () => {
     
     const userName = candidateData.name || location.state?.name || 'Candidate';
     const candidateId = candidateData.id || candidateData._id || 'UNKNOWN';
-    const examId = storedExamData.id || storedExamData._id || 'UNKNOWN';
+    const examId = storedExamData.id || storedExamData._id || urlExamId || 'UNKNOWN';
     const examName = storedExamData.title || 'Exam';
 
     // State Management

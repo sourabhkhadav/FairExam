@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Lock, User, AlertCircle, ShieldCheck, HelpCircle, Mail, KeyRound } from 'lucide-react';
+import { Lock, User, AlertCircle, ShieldCheck, HelpCircle } from 'lucide-react';
 
 const Login = () => {
     const navigate = useNavigate();
@@ -11,11 +11,6 @@ const Login = () => {
     });
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-    const [showForgotPassword, setShowForgotPassword] = useState(false);
-    const [forgotEmail, setForgotEmail] = useState('');
-    const [otp, setOtp] = useState('');
-    const [newPassword, setNewPassword] = useState('');
-    const [step, setStep] = useState(1);
     const [success, setSuccess] = useState('');
 
     useEffect(() => {
@@ -26,7 +21,6 @@ const Login = () => {
     const handleLogin = async (e) => {
         e.preventDefault();
         setError('');
-        setSuccess('');
         setIsLoading(true);
 
         try {
@@ -61,67 +55,7 @@ const Login = () => {
         }
     };
 
-    const handleForgotPassword = async (e) => {
-        e.preventDefault();
-        setError('');
-        setSuccess('');
-        setIsLoading(true);
 
-        try {
-            const response = await fetch('http://localhost:5000/api/auth/forgot-password', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: forgotEmail })
-            });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.message || 'Failed to send OTP');
-            }
-
-            setSuccess('OTP sent to your email');
-            setStep(2);
-        } catch (err) {
-            setError(err.message);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    const handleResetPassword = async (e) => {
-        e.preventDefault();
-        setError('');
-        setSuccess('');
-        setIsLoading(true);
-
-        try {
-            const response = await fetch('http://localhost:5000/api/auth/reset-password', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email: forgotEmail, otp, newPassword })
-            });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.message || 'Failed to reset password');
-            }
-
-            setSuccess('Password reset successful! You can now login.');
-            setTimeout(() => {
-                setShowForgotPassword(false);
-                setStep(1);
-                setForgotEmail('');
-                setOtp('');
-                setNewPassword('');
-            }, 2000);
-        } catch (err) {
-            setError(err.message);
-        } finally {
-            setIsLoading(false);
-        }
-    };
 
     return (
         <div className="min-h-screen flex bg-slate-50 font-sans selection:bg-blue-100 selection:text-blue-900">
@@ -169,12 +103,10 @@ const Login = () => {
             {/* Right Side: Login Form */}
             <div className="flex-1 flex flex-col justify-center items-center p-6 lg:p-12 relative">
                 <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-sm border border-slate-200">
-                    {!showForgotPassword ? (
-                        <>
-                            <div className="mb-8">
-                                <h2 className="text-2xl font-bold text-slate-900 mb-2">Candidate Login</h2>
-                                <p className="text-slate-500 text-sm">Enter your credentials to access the examination portal.</p>
-                            </div>
+                    <div className="mb-8">
+                        <h2 className="text-2xl font-bold text-slate-900 mb-2">Candidate Login</h2>
+                        <p className="text-slate-500 text-sm">Enter your credentials to access the examination portal.</p>
+                    </div>
 
                             <form onSubmit={handleLogin} className="space-y-5">
                                 <div className="space-y-4">
@@ -226,13 +158,6 @@ const Login = () => {
                                     </div>
                                 )}
 
-                                {success && (
-                                    <div className="flex items-start gap-3 p-3 text-sm text-green-700 bg-green-50 rounded-md border border-green-200">
-                                        <ShieldCheck className="w-5 h-5 flex-shrink-0 mt-0.5" />
-                                        <span>{success}</span>
-                                    </div>
-                                )}
-
                                 <button
                                     type="submit"
                                     disabled={isLoading}
@@ -245,158 +170,11 @@ const Login = () => {
                                 </button>
                             </form>
 
-                            <div className="mt-6 text-center space-y-2">
-                                <button
-                                    onClick={() => setShowForgotPassword(true)}
-                                    className="text-sm text-blue-600 hover:text-blue-700 font-medium"
-                                >
-                                    Forgot Password?
-                                </button>
-                                <div>
-                                    <a href="#" className="text-xs text-slate-500 hover:text-blue-600 flex items-center justify-center gap-1">
-                                        <HelpCircle className="w-3 h-3" /> Technical Support
-                                    </a>
-                                </div>
-                            </div>
-                        </>
-                    ) : (
-                        <>
-                            <div className="mb-8">
-                                <h2 className="text-2xl font-bold text-slate-900 mb-2">Reset Password</h2>
-                                <p className="text-slate-500 text-sm">
-                                    {step === 1 ? 'Enter your email to receive OTP' : 'Enter OTP and new password'}
-                                </p>
-                            </div>
-
-                            {step === 1 ? (
-                                <form onSubmit={handleForgotPassword} className="space-y-5">
-                                    <div>
-                                        <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1.5">
-                                            Email Address
-                                        </label>
-                                        <div className="relative">
-                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                <Mail className="h-5 w-5 text-slate-400" />
-                                            </div>
-                                            <input
-                                                type="email"
-                                                required
-                                                className="block w-full pl-10 pr-3 py-2.5 border border-slate-300 rounded-md text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 sm:text-sm transition-all"
-                                                placeholder="your@email.com"
-                                                value={forgotEmail}
-                                                onChange={(e) => setForgotEmail(e.target.value)}
-                                                disabled={isLoading}
-                                            />
-                                        </div>
-                                    </div>
-
-                                    {error && (
-                                        <div className="flex items-start gap-3 p-3 text-sm text-red-700 bg-red-50 rounded-md border border-red-200">
-                                            <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
-                                            <span>{error}</span>
-                                        </div>
-                                    )}
-
-                                    {success && (
-                                        <div className="flex items-start gap-3 p-3 text-sm text-green-700 bg-green-50 rounded-md border border-green-200">
-                                            <ShieldCheck className="w-5 h-5 flex-shrink-0 mt-0.5" />
-                                            <span>{success}</span>
-                                        </div>
-                                    )}
-
-                                    <button
-                                        type="submit"
-                                        disabled={isLoading}
-                                        className={`w-full flex justify-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-semibold text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all
-                                            ${!isLoading ? 'bg-blue-600 hover:bg-blue-700' : 'bg-slate-400 cursor-not-allowed'}`}
-                                    >
-                                        {isLoading ? 'Sending...' : 'Send OTP'}
-                                    </button>
-                                </form>
-                            ) : (
-                                <form onSubmit={handleResetPassword} className="space-y-5">
-                                    <div>
-                                        <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1.5">
-                                            OTP Code
-                                        </label>
-                                        <div className="relative">
-                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                <KeyRound className="h-5 w-5 text-slate-400" />
-                                            </div>
-                                            <input
-                                                type="text"
-                                                required
-                                                maxLength="6"
-                                                className="block w-full pl-10 pr-3 py-2.5 border border-slate-300 rounded-md text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 sm:text-sm transition-all"
-                                                placeholder="Enter 6-digit OTP"
-                                                value={otp}
-                                                onChange={(e) => setOtp(e.target.value)}
-                                                disabled={isLoading}
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1.5">
-                                            New Password
-                                        </label>
-                                        <div className="relative">
-                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                                <Lock className="h-5 w-5 text-slate-400" />
-                                            </div>
-                                            <input
-                                                type="password"
-                                                required
-                                                minLength="6"
-                                                className="block w-full pl-10 pr-3 py-2.5 border border-slate-300 rounded-md text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 sm:text-sm transition-all"
-                                                placeholder="••••••••"
-                                                value={newPassword}
-                                                onChange={(e) => setNewPassword(e.target.value)}
-                                                disabled={isLoading}
-                                            />
-                                        </div>
-                                    </div>
-
-                                    {error && (
-                                        <div className="flex items-start gap-3 p-3 text-sm text-red-700 bg-red-50 rounded-md border border-red-200">
-                                            <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
-                                            <span>{error}</span>
-                                        </div>
-                                    )}
-
-                                    {success && (
-                                        <div className="flex items-start gap-3 p-3 text-sm text-green-700 bg-green-50 rounded-md border border-green-200">
-                                            <ShieldCheck className="w-5 h-5 flex-shrink-0 mt-0.5" />
-                                            <span>{success}</span>
-                                        </div>
-                                    )}
-
-                                    <button
-                                        type="submit"
-                                        disabled={isLoading}
-                                        className={`w-full flex justify-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-semibold text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all
-                                            ${!isLoading ? 'bg-blue-600 hover:bg-blue-700' : 'bg-slate-400 cursor-not-allowed'}`}
-                                    >
-                                        {isLoading ? 'Resetting...' : 'Reset Password'}
-                                    </button>
-                                </form>
-                            )}
-
-                            <div className="mt-6 text-center">
-                                <button
-                                    onClick={() => {
-                                        setShowForgotPassword(false);
-                                        setStep(1);
-                                        setError('');
-                                        setSuccess('');
-                                    }}
-                                    className="text-sm text-slate-600 hover:text-blue-600"
-                                >
-                                    Back to Login
-                                </button>
-                            </div>
-                        </>
-                    )}
+                    <div className="mt-6 text-center">
+                        <a href="#" className="text-xs text-slate-500 hover:text-blue-600 flex items-center justify-center gap-1">
+                            <HelpCircle className="w-3 h-3" /> Technical Support
+                        </a>
+                    </div>
                 </div>
 
                 {/* Mobile Footer */}

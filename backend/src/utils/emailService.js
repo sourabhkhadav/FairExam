@@ -492,3 +492,64 @@ export const sendExamStartEmail = async (to, examDetails, candidateDetails) => {
 
     return await transporter.sendMail(mailOptions);
 };
+
+// Send OTP email for password reset
+export const sendOtpEmail = async (to, otp, name) => {
+    const mailOptions = {
+        from: process.env.EMAIL_FROM || 'FairExam <sourabhkhadav2@gmail.com>',
+        to,
+        subject: 'Password Reset OTP - FairExam',
+        html: `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            </head>
+            <body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: Arial, sans-serif;">
+                <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f8fafc; padding: 40px 20px;">
+                    <tr>
+                        <td align="center">
+                            <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 12px; overflow: hidden;">
+                                <tr>
+                                    <td style="background: #0F172A; padding: 30px; text-align: center;">
+                                        <h1 style="margin: 0; color: #ffffff; font-size: 24px;">📝 FairExam</h1>
+                                        <p style="margin: 5px 0 0 0; color: #94A3B8; font-size: 13px;">Password Reset Request</p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 40px 30px;">
+                                        <p style="margin: 0 0 20px 0; color: #64748B; font-size: 15px;">Dear ${name},</p>
+                                        <p style="margin: 0 0 25px 0; color: #0F172A; font-size: 15px; line-height: 1.6;">
+                                            We received a request to reset your password. Use the OTP below to proceed:
+                                        </p>
+                                        <div style="background: #EFF6FF; border: 2px solid #3B82F6; border-radius: 8px; padding: 20px; margin-bottom: 25px; text-align: center;">
+                                            <p style="margin: 0 0 10px 0; color: #1E40AF; font-size: 14px; font-weight: 600;">Your OTP Code</p>
+                                            <p style="margin: 0; color: #1E3A8A; font-size: 32px; font-weight: bold; letter-spacing: 8px;">${otp}</p>
+                                        </div>
+                                        <p style="margin: 0 0 15px 0; color: #EF4444; font-size: 13px; text-align: center;">
+                                            This OTP will expire in 10 minutes.
+                                        </p>
+                                        <p style="margin: 0; color: #64748B; font-size: 14px; line-height: 1.6;">
+                                            If you didn't request this, please ignore this email.
+                                        </p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="background: #F8FAFC; padding: 20px 30px; text-align: center; border-top: 1px solid #E2E8F0;">
+                                        <p style="margin: 0; color: #94A3B8; font-size: 12px;">
+                                            This is an automated email. Please do not reply.
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </body>
+            </html>
+        `
+    };
+
+    return await transporter.sendMail(mailOptions);
+};

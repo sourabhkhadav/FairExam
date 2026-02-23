@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Link } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Link, Navigate } from 'react-router-dom'
 import Landing_Home from './components/Landing_Home'
 import AuthForm from './components/AuthForm'
 import Examiner_Layout from './components/Examiner_Layout'

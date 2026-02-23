@@ -31,6 +31,8 @@ const userSchema = new mongoose.Schema({
         unique: true,
         sparse: true // Allows null/missing values to not collide on unique constraint
     },
+    resetOtp: String,
+    resetOtpExpire: Date,
     createdAt: {
         type: Date,
         default: Date.now

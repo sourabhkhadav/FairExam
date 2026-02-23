@@ -296,20 +296,49 @@ export const importQuestions = asyncHandler(async (req, res) => {
                 row['Option 4'] || row['4'] || ''
             ];
 
+            // Validate all options are present
+            if (options.some(opt => !opt || opt.trim() === '')) {
+                console.warn(`Row ${index + 1}: Missing or empty options`);
+            }
+
             let correctIdx = 0;
             const correctVal = row['Answer'] || row['Correct'];
             
+            // Parse correct answer (1-based from Excel → 0-based for storage)
             if (typeof correctVal === 'number') {
-                correctIdx = correctVal - 1;
+                correctIdx = correctVal - 1; // Convert 1,2,3,4 → 0,1,2,3
             } else if (typeof correctVal === 'string') {
-                const num = parseInt(correctVal.trim());
-                if (num >= 1 && num <= 4) {
-                    correctIdx = num - 1;
+                const trimmed = correctVal.trim();
+                const num = parseInt(trimmed);
+                
+                // Check if it's a number (1-4)
+                if (!isNaN(num) && num >= 1 && num <= 4) {
+                    correctIdx = num - 1; // Convert 1,2,3,4 → 0,1,2,3
+                } else {
+                    // It's text - match against options
+                    const matchIndex = options.findIndex(opt => 
+                        opt && opt.trim().toLowerCase() === trimmed.toLowerCase()
+                    );
+                    
+                    if (matchIndex !== -1) {
+                        correctIdx = matchIndex;
+                        console.log(`Row ${index + 1}: Matched answer text '${trimmed}' to option ${matchIndex + 1}`);
+                    } else {
+                        console.warn(`Row ${index + 1}: Could not match answer '${correctVal}' to any option, defaulting to 1`);
+                    }
                 }
             }
 
+            // Ensure correctIdx is within valid range [0-3]
             if (correctIdx < 0) correctIdx = 0;
             if (correctIdx > 3) correctIdx = 3;
+
+            const marks = parseInt(row['Marks'] || 2);
+            if (marks <= 0) {
+                console.warn(`Row ${index + 1}: Invalid marks value, defaulting to 2`);
+            }
+
+            console.log(`Q${index + 1}: Answer=${correctVal} → Index=${correctIdx}, Marks=${marks}`);
 
             return {
                 id: Date.now() + index,
@@ -317,8 +346,8 @@ export const importQuestions = asyncHandler(async (req, res) => {
                 type: 'MCQ',
                 text: row['Question'] || 'New Question',
                 options,
-                correct: correctIdx,
-                marks: parseInt(row['Marks'] || 2),
+                correct: correctIdx, // 0-based index (0,1,2,3)
+                marks: marks > 0 ? marks : 2,
                 difficulty: 'Medium',
                 tags: []
             };

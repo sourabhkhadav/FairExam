@@ -42,7 +42,6 @@ const Examiner_DraftConfigure = () => {
         endDate: '',
         endTime: '',
         timezone: '(UTC+05:30) Mumbai, Kolkata, New Delhi',
-        graceTime: 15,
         visibility: 'Draft',
         violationLimits: {
             faceLimit: 5,

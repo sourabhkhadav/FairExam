@@ -145,141 +145,128 @@ export const sendDetailedExamResult = async (to, resultDetails) => {
     } = resultDetails;
 
     const formatTime = (timeValue) => {
-        // Handle if time is in milliseconds (> 10000 suggests milliseconds)
         const seconds = timeValue > 10000 ? Math.floor(timeValue / 1000) : timeValue;
-        
-        const hrs = Math.floor(seconds / 3600);
-        const mins = Math.floor((seconds % 3600) / 60);
+        const mins = Math.floor(seconds / 60);
         const secs = seconds % 60;
-        
-        if (hrs > 0) {
-            return `${hrs}h ${mins}m ${secs}s`;
-        } else if (mins > 0) {
-            return `${mins}m ${secs}s`;
-        } else {
-            return `${secs}s`;
-        }
+        return mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
     };
 
-    const getViolationSummary = () => {
-        if (totalViolations === 0) return '';
-        
-        const violationTypes = violations.reduce((acc, v) => {
+    const formatDate = (date) => {
+        return new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    };
+
+    const requiredMarks = Math.ceil((passingPercentage / 100) * totalMarks);
+
+    const getViolationCounts = () => {
+        if (!violations || violations.length === 0) return { face: 0, sound: 0, fullscreen: 0 };
+        return violations.reduce((acc, v) => {
             const counts = v.count || {};
             acc.face += counts.faceDetection || 0;
             acc.sound += counts.soundDetection || 0;
             acc.fullscreen += counts.fullscreenExit || 0;
-            acc.tab += counts.tabSwitch || 0;
             return acc;
-        }, { face: 0, sound: 0, fullscreen: 0, tab: 0 });
-
-        const items = [];
-        if (violationTypes.face > 0) items.push(`Face Detection: ${violationTypes.face}`);
-        if (violationTypes.sound > 0) items.push(`Sound Detection: ${violationTypes.sound}`);
-        if (violationTypes.fullscreen > 0) items.push(`Fullscreen Exit: ${violationTypes.fullscreen}`);
-        if (violationTypes.tab > 0) items.push(`Tab Switch: ${violationTypes.tab}`);
-        
-        return items.length > 0 ? `
-            <div style="background: #FEF2F2; border-left: 4px solid #EF4444; padding: 16px 20px; border-radius: 8px; margin: 20px 0;">
-                <p style="margin: 0 0 10px 0; color: #991B1B; font-size: 14px; font-weight: 600;">⚠️ Violations Detected (${totalViolations} total)</p>
-                ${items.map(item => `<p style="margin: 0 0 5px 0; color: #7F1D1D; font-size: 13px;">• ${item}</p>`).join('')}
-            </div>
-        ` : '';
+        }, { face: 0, sound: 0, fullscreen: 0 });
     };
+
+    const violationCounts = getViolationCounts();
 
     const mailOptions = {
         from: process.env.EMAIL_FROM || 'FairExam <sourabhkhadav2@gmail.com>',
         to,
         subject: `${isPassed ? '🎉' : '📋'} Exam Results: ${examTitle}`,
         html: `
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            </head>
-            <body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: Arial, sans-serif;">
-                <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f8fafc; padding: 40px 20px;">
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin:0;padding:0;background:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:#f1f5f9;padding:20px 10px">
+        <tr>
+            <td align="center">
+                <table width="560" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08)">
+                    <!-- Header -->
                     <tr>
-                        <td align="center">
-                            <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                        <td style="background:#0f172a;padding:16px 20px;text-align:center">
+                            <div style="font-size:20px;font-weight:700;color:#fff;margin:0">FairExam</div>
+                            <div style="font-size:11px;color:#94a3b8;margin:2px 0 0 0">Online Examination Platform</div>
+                        </td>
+                    </tr>
+                    <!-- Status Banner -->
+                    <tr>
+                        <td style="background:${isPassed ? '#dcfce7' : '#fed7aa'};padding:12px 20px;text-align:center">
+                            <div style="font-size:15px;font-weight:600;color:${isPassed ? '#065f46' : '#9a3412'};margin:0">
+                                ${isPassed ? 'Congratulations! You Passed 🎉' : 'You did not pass this time'}
+                            </div>
+                        </td>
+                    </tr>
+                    <!-- Content -->
+                    <tr>
+                        <td style="padding:20px">
+                            <!-- Student Info Row -->
+                            <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 16px 0">
                                 <tr>
-                                    <td style="background: ${isPassed ? 'linear-gradient(135deg, #10B981, #059669)' : 'linear-gradient(135deg, #EF4444, #DC2626)'}; padding: 30px; text-align: center;">
-                                        <h1 style="margin: 0; color: #ffffff; font-size: 24px;">📝 FairExam Results</h1>
-                                        <p style="margin: 5px 0 0 0; color: rgba(255,255,255,0.8); font-size: 13px;">Online Examination Platform</p>
+                                    <td style="font-size:12px;color:#64748b;padding:0 8px 0 0">
+                                        <strong style="color:#0f172a">${candidateName}</strong>
                                     </td>
-                                </tr>
-                                <tr>
-                                    <td style="padding: 40px 30px;">
-                                        <p style="margin: 0 0 20px 0; color: #64748B; font-size: 15px;">Dear ${candidateName},</p>
-                                        
-                                        <div style="background: ${isPassed ? '#DCFCE7' : '#FEF2F2'}; border-left: 4px solid ${isPassed ? '#10B981' : '#EF4444'}; padding: 20px; border-radius: 8px; margin-bottom: 25px; text-align: center;">
-                                            <h2 style="margin: 0 0 10px 0; color: ${isPassed ? '#065F46' : '#991B1B'}; font-size: 24px; font-weight: 700;">
-                                                ${isPassed ? '🎉 Congratulations!' : '📋 Result Summary'}
-                                            </h2>
-                                            <p style="margin: 0; color: ${isPassed ? '#047857' : '#7F1D1D'}; font-size: 16px; font-weight: 600;">
-                                                You have ${isPassed ? 'PASSED' : 'NOT PASSED'} the examination
-                                            </p>
-                                        </div>
-                                        
-                                        <h3 style="margin: 0 0 20px 0; color: #0F172A; font-size: 20px; font-weight: 600;">${examTitle}</h3>
-                                        
-                                        <table width="100%" cellpadding="0" cellspacing="0" style="background: #F8FAFC; border-radius: 8px; margin-bottom: 20px; border: 1px solid #E2E8F0;">
-                                            <tr>
-                                                <td style="padding: 25px;">
-                                                    <p style="margin: 0 0 15px 0; color: #64748B; font-size: 14px;">Your Score: <strong style="color: #0F172A; font-size: 18px;">${score} / ${totalMarks}</strong></p>
-                                                    <p style="margin: 0 0 15px 0; color: #64748B; font-size: 14px;">Percentage: <strong style="color: ${isPassed ? '#059669' : '#DC2626'}; font-size: 18px;">${percentage}%</strong></p>
-                                                    <p style="margin: 0 0 15px 0; color: #64748B; font-size: 14px;">Passing Percentage: <strong style="color: #0F172A; font-size: 16px;">${passingPercentage}%</strong></p>
-                                                    <p style="margin: 0; color: #64748B; font-size: 14px;">Time Taken: <strong style="color: #0F172A; font-size: 16px;">${formatTime(timeTaken)}</strong></p>
-                                                </td>
-                                            </tr>
-                                        </table>
-                                        
-                                        ${getViolationSummary()}
-                                        
-                                        ${isPassed ? `
-                                            <div style="background: #ECFDF5; border: 2px solid #10B981; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: center;">
-                                                <p style="margin: 0; color: #065F46; font-size: 15px; line-height: 1.6;">
-                                                    <strong>🌟 Excellent work!</strong><br/>
-                                                    You have successfully completed the examination with a score of ${percentage}%. 
-                                                    Your dedication and hard work have paid off. Keep up the great work!
-                                                </p>
-                                            </div>
-                                        ` : `
-                                            <div style="background: #FEF7F7; border: 2px solid #F87171; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: center;">
-                                                <p style="margin: 0; color: #7F1D1D; font-size: 15px; line-height: 1.6;">
-                                                    <strong>📚 Keep Learning!</strong><br/>
-                                                    You scored ${percentage}%, which is below the passing threshold of ${passingPercentage}%. 
-                                                    Don't be discouraged - this is an opportunity to learn and improve. 
-                                                    Review the material and you'll do better next time!
-                                                </p>
-                                            </div>
-                                        `}
-                                        
-                                        <div style="background: #F1F5F9; padding: 15px; border-radius: 8px; margin: 20px 0;">
-                                            <p style="margin: 0; color: #475569; font-size: 13px; text-align: center;">
-                                                <strong>Submitted:</strong> ${new Date(submittedAt).toLocaleString()}
-                                            </p>
-                                        </div>
-                                        
-                                        <p style="margin: 0; color: #64748B; font-size: 14px; line-height: 1.6; text-align: center;">
-                                            Best regards,<br/>FairExam Team
-                                        </p>
+                                    <td style="font-size:12px;color:#64748b;padding:0 8px">
+                                        ${examTitle}
                                     </td>
-                                </tr>
-                                <tr>
-                                    <td style="background: #F8FAFC; padding: 20px 30px; text-align: center; border-top: 1px solid #E2E8F0;">
-                                        <p style="margin: 0; color: #94A3B8; font-size: 12px;">
-                                            This is an automated email. Please do not reply.
-                                        </p>
+                                    <td style="font-size:12px;color:#64748b;padding:0 0 0 8px;text-align:right">
+                                        ${formatDate(submittedAt)}
                                     </td>
                                 </tr>
                             </table>
+                            <!-- Performance Card -->
+                            <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;border-radius:8px;margin:0 0 12px 0">
+                                <tr>
+                                    <td style="padding:14px;text-align:center;border-right:1px solid #e2e8f0">
+                                        <div style="font-size:11px;color:#64748b;margin:0 0 4px 0">Score</div>
+                                        <div style="font-size:18px;font-weight:700;color:#0f172a">${score}/${totalMarks}</div>
+                                    </td>
+                                    <td style="padding:14px;text-align:center;border-right:1px solid #e2e8f0">
+                                        <div style="font-size:11px;color:#64748b;margin:0 0 4px 0">Percentage</div>
+                                        <div style="font-size:18px;font-weight:700;color:${isPassed ? '#059669' : '#dc2626'}">${percentage}%</div>
+                                    </td>
+                                    <td style="padding:14px;text-align:center${!isPassed ? ';border-right:1px solid #e2e8f0' : ''}">
+                                        <div style="font-size:11px;color:#64748b;margin:0 0 4px 0">Passing</div>
+                                        <div style="font-size:18px;font-weight:700;color:#0f172a">${passingPercentage}%</div>
+                                    </td>
+                                    ${!isPassed ? `
+                                    <td style="padding:14px;text-align:center">
+                                        <div style="font-size:11px;color:#64748b;margin:0 0 4px 0">Required</div>
+                                        <div style="font-size:18px;font-weight:700;color:#dc2626">${requiredMarks}</div>
+                                    </td>
+                                    ` : ''}
+                                </tr>
+                            </table>
+                            ${!isPassed && totalViolations > 0 ? `
+                            <!-- Violations -->
+                            <div style="font-size:11px;color:#7f1d1d;background:#fef2f2;padding:8px 12px;border-radius:6px;margin:0 0 12px 0">
+                                <strong>Proctoring Flags:</strong> Face: ${violationCounts.face} | Sound: ${violationCounts.sound} | Fullscreen: ${violationCounts.fullscreen}
+                            </div>
+                            ` : ''}
+                            <!-- Message -->
+                            <div style="background:${isPassed ? '#ecfdf5' : '#fff7ed'};border-left:3px solid ${isPassed ? '#10b981' : '#f97316'};padding:12px;border-radius:6px;margin:0">">
+                                <div style="font-size:13px;color:${isPassed ? '#065f46' : '#9a3412'};line-height:1.5;margin:0">
+                                    ${isPassed ? 'Great work! Keep achieving more.' : "Don't worry — you can improve in the next attempt."}
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    <!-- Footer -->
+                    <tr>
+                        <td style="background:#f8fafc;padding:12px 20px;text-align:center;border-top:1px solid #e2e8f0">
+                            <div style="font-size:10px;color:#94a3b8;margin:0">This is an automated email. Please do not reply.</div>
                         </td>
                     </tr>
                 </table>
-            </body>
-            </html>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
         `
     };
 

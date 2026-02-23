@@ -15,6 +15,7 @@ const Examiner_ExamResultDetails = () => {
     const [students, setStudents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [exporting, setExporting] = useState(false);
+    const [sending, setSending] = useState(false);
 
     useEffect(() => {
         fetchExamResults();
@@ -68,12 +69,37 @@ const Examiner_ExamResultDetails = () => {
         }
     };
 
-    const handlePublishResults = () => {
-        const storedStatuses = JSON.parse(localStorage.getItem('exam_statuses') || '{}');
-        storedStatuses[examId] = "Results Sent";
-        localStorage.setItem('exam_statuses', JSON.stringify(storedStatuses));
-        alert("Results have been sent successfully!");
-        navigate(-1); // Go back to the previous page
+    const handlePublishResults = async () => {
+        setSending(true);
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`http://localhost:5000/api/submissions/send-results/${examId}`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ passingPercentage: cutoff })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                const storedStatuses = JSON.parse(localStorage.getItem('exam_statuses') || '{}');
+                storedStatuses[examId] = "Results Sent";
+                localStorage.setItem('exam_statuses', JSON.stringify(storedStatuses));
+                
+                alert(`Results sent successfully! ${data.results.sent} emails sent, ${data.results.failed} failed.`);
+                navigate(-1);
+            } else {
+                alert('Failed to send results: ' + (data.message || 'Unknown error'));
+            }
+        } catch (error) {
+            console.error('Error sending results:', error);
+            alert('Failed to send results. Please try again.');
+        } finally {
+            setSending(false);
+        }
     };
 
     // Calculate dynamic stats based on cutoff (mock data is limited to 10 students)
@@ -154,10 +180,24 @@ const Examiner_ExamResultDetails = () => {
                     </button>
                     <button
                         onClick={handlePublishResults}
-                        className="px-5 py-2.5 bg-[#0F172A] text-white font-medium text-sm rounded-xl hover:bg-[#1E293B] transition-colors shadow-lg shadow-slate-100 flex items-center gap-2"
+                        disabled={sending}
+                        className={`px-5 py-2.5 font-medium text-sm rounded-xl transition-colors shadow-lg shadow-slate-100 flex items-center gap-2 ${
+                            sending 
+                                ? 'bg-slate-400 text-white cursor-not-allowed' 
+                                : 'bg-[#0F172A] text-white hover:bg-[#1E293B]'
+                        }`}
                     >
-                        <Send className="w-4 h-4" />
-                        Send Results
+                        {sending ? (
+                            <>
+                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                Sending Results...
+                            </>
+                        ) : (
+                            <>
+                                <Send className="w-4 h-4" />
+                                Send Results
+                            </>
+                        )}
                     </button>
                 </div>
             </div>

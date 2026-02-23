@@ -6,6 +6,7 @@ const Examiner_ResultsPublishing = () => {
     const navigate = useNavigate();
     const [exams, setExams] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [sendingExamId, setSendingExamId] = useState(null);
 
     useEffect(() => {
         fetchExams();
@@ -28,8 +29,33 @@ const Examiner_ResultsPublishing = () => {
         }
     };
 
-    const handlePublish = (id) => {
-        navigate(`/exam-results/${id}`);
+    const handlePublish = async (id) => {
+        setSendingExamId(id);
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`http://localhost:5000/api/submissions/send-results/${id}`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ passingPercentage: 40 })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                alert(`Results sent successfully! ${data.results.sent} emails sent, ${data.results.failed} failed.`);
+                fetchExams();
+            } else {
+                alert('Failed to send results: ' + (data.message || 'Unknown error'));
+            }
+        } catch (error) {
+            console.error('Error sending results:', error);
+            alert('Failed to send results. Please try again.');
+        } finally {
+            setSendingExamId(null);
+        }
     };
 
     return (
@@ -89,21 +115,48 @@ const Examiner_ResultsPublishing = () => {
                                             </td>
                                             <td className="py-6 text-right whitespace-nowrap">
                                                 {exam.status !== 'Results Sent' ? (
-                                                    <button
-                                                        onClick={() => handlePublish(exam.id)}
-                                                        disabled={!exam.isCalculated}
-                                                        className={`px-6 py-2 font-medium text-[11px] rounded-lg transition-all shadow-sm flex items-center gap-2 ml-auto cursor-pointer ${
-                                                            exam.isCalculated
-                                                                ? 'bg-[#0F172A] text-white hover:bg-[#1E293B]'
-                                                                : 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                                                        }`}
-                                                    >
-                                                        <Send className="w-3 h-3" /> Send Results
-                                                    </button>
+                                                    <div className="flex items-center gap-2 justify-end">
+                                                        <button
+                                                            onClick={() => navigate(`/exam-results/${exam.id}`)}
+                                                            className="px-4 py-2 bg-white border border-[#E2E8F0] text-[#0F172A] font-medium text-[11px] rounded-lg hover:bg-[#F8FAFC] transition-all flex items-center gap-2 cursor-pointer"
+                                                        >
+                                                            View Details
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handlePublish(exam.id)}
+                                                            disabled={!exam.isCalculated || sendingExamId === exam.id}
+                                                            className={`px-6 py-2 font-medium text-[11px] rounded-lg transition-all shadow-sm flex items-center gap-2 cursor-pointer ${
+                                                                sendingExamId === exam.id
+                                                                    ? 'bg-slate-400 text-white cursor-not-allowed'
+                                                                    : exam.isCalculated
+                                                                    ? 'bg-[#0F172A] text-white hover:bg-[#1E293B]'
+                                                                    : 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                                                            }`}
+                                                        >
+                                                            {sendingExamId === exam.id ? (
+                                                                <>
+                                                                    <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                                                    Sending...
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    <Send className="w-3 h-3" /> Send Results
+                                                                </>
+                                                            )}
+                                                        </button>
+                                                    </div>
                                                 ) : (
-                                                    <button className="px-6 py-2 bg-white border border-[#E2E8F0] text-[#0F172A] font-medium text-[11px] rounded-lg hover:bg-[#F8FAFC] transition-all flex items-center gap-2 ml-auto cursor-pointer">
-                                                        <CheckCircle2 className="w-3 h-3 text-emerald-500" /> Results Sent
-                                                    </button>
+                                                    <div className="flex items-center gap-2 justify-end">
+                                                        <button 
+                                                            onClick={() => navigate(`/exam-results/${exam.id}`)}
+                                                            className="px-4 py-2 bg-white border border-[#E2E8F0] text-[#0F172A] font-medium text-[11px] rounded-lg hover:bg-[#F8FAFC] transition-all flex items-center gap-2 cursor-pointer"
+                                                        >
+                                                            View Details
+                                                        </button>
+                                                        <button className="px-6 py-2 bg-white border border-[#E2E8F0] text-[#0F172A] font-medium text-[11px] rounded-lg hover:bg-[#F8FAFC] transition-all flex items-center gap-2 ml-auto cursor-pointer">
+                                                            <CheckCircle2 className="w-3 h-3 text-emerald-500" /> Results Sent
+                                                        </button>
+                                                    </div>
                                                 )}
                                             </td>
                                         </tr>

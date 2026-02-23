@@ -2,6 +2,8 @@ import asyncHandler from '../middleware/asyncHandler.js';
 import Submission from '../models/Submission.js';
 import Exam from '../models/Exam.js';
 import Candidate from '../models/Candidate.js';
+import Violation from '../models/Violation.js';
+import { sendDetailedExamResult } from '../utils/emailService.js';
 
 // @desc    Submit exam and auto-grade
 // @route   POST /api/submissions
@@ -86,5 +88,86 @@ export const submitExam = asyncHandler(async (req, res) => {
             totalMarks: exam.totalMarks,
             percentage: submission.percentage
         }
+    });
+});
+
+// @desc    Send detailed results to candidates
+// @route   POST /api/submissions/send-results/:examId
+// @access  Private
+export const sendExamResults = asyncHandler(async (req, res) => {
+    const { examId } = req.params;
+    const { passingPercentage = 40 } = req.body;
+
+    const exam = await Exam.findById(examId);
+    if (!exam) {
+        res.status(404);
+        throw new Error('Exam not found');
+    }
+
+    const submissions = await Submission.find({ examId }).populate('candidateId');
+    if (submissions.length === 0) {
+        res.status(404);
+        throw new Error('No submissions found for this exam');
+    }
+
+    const results = { sent: 0, failed: 0, details: [] };
+
+    for (const submission of submissions) {
+        const candidate = submission.candidateId;
+        if (!candidate || !candidate.email) {
+            results.failed++;
+            results.details.push({ candidate: candidate?.name || 'Unknown', status: 'No email' });
+            continue;
+        }
+
+        try {
+            // Get violations for this candidate
+            const violations = await Violation.find({ 
+                candidateId: candidate._id.toString(),
+                examId: examId 
+            });
+
+            const totalViolations = violations.reduce((sum, v) => {
+                return sum + (v.violationCount?.faceDetection || 0) + 
+                       (v.violationCount?.soundDetection || 0) + 
+                       (v.violationCount?.fullscreenExit || 0) + 
+                       (v.violationCount?.tabSwitch || 0);
+            }, 0);
+
+            const isPassed = submission.percentage >= passingPercentage;
+
+            const resultDetails = {
+                examTitle: exam.title,
+                candidateName: candidate.name,
+                score: submission.score,
+                totalMarks: submission.totalMarks,
+                percentage: submission.percentage,
+                timeTaken: submission.timeTaken,
+                isPassed,
+                passingPercentage,
+                totalViolations,
+                violations: violations.map(v => ({
+                    type: v.violationType,
+                    count: v.violationCount,
+                    timestamp: v.timestamp
+                })),
+                submittedAt: submission.submittedAt
+            };
+
+            await sendDetailedExamResult(candidate.email, resultDetails);
+            results.sent++;
+            results.details.push({ candidate: candidate.name, status: 'Sent successfully' });
+            
+        } catch (error) {
+            console.error(`Failed to send result to ${candidate.email}:`, error.message);
+            results.failed++;
+            results.details.push({ candidate: candidate.name, status: `Failed: ${error.message}` });
+        }
+    }
+
+    res.status(200).json({
+        success: true,
+        message: `Results sent to ${results.sent} candidates, ${results.failed} failed`,
+        results
     });
 });

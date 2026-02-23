@@ -137,6 +137,155 @@ export const sendExamResult = async (to, resultDetails) => {
     return await transporter.sendMail(mailOptions);
 };
 
+// Send detailed exam result with violations
+export const sendDetailedExamResult = async (to, resultDetails) => {
+    const {
+        examTitle, candidateName, score, totalMarks, percentage, timeTaken,
+        isPassed, passingPercentage, totalViolations, violations, submittedAt
+    } = resultDetails;
+
+    const formatTime = (timeValue) => {
+        // Handle if time is in milliseconds (> 10000 suggests milliseconds)
+        const seconds = timeValue > 10000 ? Math.floor(timeValue / 1000) : timeValue;
+        
+        const hrs = Math.floor(seconds / 3600);
+        const mins = Math.floor((seconds % 3600) / 60);
+        const secs = seconds % 60;
+        
+        if (hrs > 0) {
+            return `${hrs}h ${mins}m ${secs}s`;
+        } else if (mins > 0) {
+            return `${mins}m ${secs}s`;
+        } else {
+            return `${secs}s`;
+        }
+    };
+
+    const getViolationSummary = () => {
+        if (totalViolations === 0) return '';
+        
+        const violationTypes = violations.reduce((acc, v) => {
+            const counts = v.count || {};
+            acc.face += counts.faceDetection || 0;
+            acc.sound += counts.soundDetection || 0;
+            acc.fullscreen += counts.fullscreenExit || 0;
+            acc.tab += counts.tabSwitch || 0;
+            return acc;
+        }, { face: 0, sound: 0, fullscreen: 0, tab: 0 });
+
+        const items = [];
+        if (violationTypes.face > 0) items.push(`Face Detection: ${violationTypes.face}`);
+        if (violationTypes.sound > 0) items.push(`Sound Detection: ${violationTypes.sound}`);
+        if (violationTypes.fullscreen > 0) items.push(`Fullscreen Exit: ${violationTypes.fullscreen}`);
+        if (violationTypes.tab > 0) items.push(`Tab Switch: ${violationTypes.tab}`);
+        
+        return items.length > 0 ? `
+            <div style="background: #FEF2F2; border-left: 4px solid #EF4444; padding: 16px 20px; border-radius: 8px; margin: 20px 0;">
+                <p style="margin: 0 0 10px 0; color: #991B1B; font-size: 14px; font-weight: 600;">⚠️ Violations Detected (${totalViolations} total)</p>
+                ${items.map(item => `<p style="margin: 0 0 5px 0; color: #7F1D1D; font-size: 13px;">• ${item}</p>`).join('')}
+            </div>
+        ` : '';
+    };
+
+    const mailOptions = {
+        from: process.env.EMAIL_FROM || 'FairExam <sourabhkhadav2@gmail.com>',
+        to,
+        subject: `${isPassed ? '🎉' : '📋'} Exam Results: ${examTitle}`,
+        html: `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            </head>
+            <body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: Arial, sans-serif;">
+                <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f8fafc; padding: 40px 20px;">
+                    <tr>
+                        <td align="center">
+                            <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                                <tr>
+                                    <td style="background: ${isPassed ? 'linear-gradient(135deg, #10B981, #059669)' : 'linear-gradient(135deg, #EF4444, #DC2626)'}; padding: 30px; text-align: center;">
+                                        <h1 style="margin: 0; color: #ffffff; font-size: 24px;">📝 FairExam Results</h1>
+                                        <p style="margin: 5px 0 0 0; color: rgba(255,255,255,0.8); font-size: 13px;">Online Examination Platform</p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 40px 30px;">
+                                        <p style="margin: 0 0 20px 0; color: #64748B; font-size: 15px;">Dear ${candidateName},</p>
+                                        
+                                        <div style="background: ${isPassed ? '#DCFCE7' : '#FEF2F2'}; border-left: 4px solid ${isPassed ? '#10B981' : '#EF4444'}; padding: 20px; border-radius: 8px; margin-bottom: 25px; text-align: center;">
+                                            <h2 style="margin: 0 0 10px 0; color: ${isPassed ? '#065F46' : '#991B1B'}; font-size: 24px; font-weight: 700;">
+                                                ${isPassed ? '🎉 Congratulations!' : '📋 Result Summary'}
+                                            </h2>
+                                            <p style="margin: 0; color: ${isPassed ? '#047857' : '#7F1D1D'}; font-size: 16px; font-weight: 600;">
+                                                You have ${isPassed ? 'PASSED' : 'NOT PASSED'} the examination
+                                            </p>
+                                        </div>
+                                        
+                                        <h3 style="margin: 0 0 20px 0; color: #0F172A; font-size: 20px; font-weight: 600;">${examTitle}</h3>
+                                        
+                                        <table width="100%" cellpadding="0" cellspacing="0" style="background: #F8FAFC; border-radius: 8px; margin-bottom: 20px; border: 1px solid #E2E8F0;">
+                                            <tr>
+                                                <td style="padding: 25px;">
+                                                    <p style="margin: 0 0 15px 0; color: #64748B; font-size: 14px;">Your Score: <strong style="color: #0F172A; font-size: 18px;">${score} / ${totalMarks}</strong></p>
+                                                    <p style="margin: 0 0 15px 0; color: #64748B; font-size: 14px;">Percentage: <strong style="color: ${isPassed ? '#059669' : '#DC2626'}; font-size: 18px;">${percentage}%</strong></p>
+                                                    <p style="margin: 0 0 15px 0; color: #64748B; font-size: 14px;">Passing Percentage: <strong style="color: #0F172A; font-size: 16px;">${passingPercentage}%</strong></p>
+                                                    <p style="margin: 0; color: #64748B; font-size: 14px;">Time Taken: <strong style="color: #0F172A; font-size: 16px;">${formatTime(timeTaken)}</strong></p>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                        
+                                        ${getViolationSummary()}
+                                        
+                                        ${isPassed ? `
+                                            <div style="background: #ECFDF5; border: 2px solid #10B981; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: center;">
+                                                <p style="margin: 0; color: #065F46; font-size: 15px; line-height: 1.6;">
+                                                    <strong>🌟 Excellent work!</strong><br/>
+                                                    You have successfully completed the examination with a score of ${percentage}%. 
+                                                    Your dedication and hard work have paid off. Keep up the great work!
+                                                </p>
+                                            </div>
+                                        ` : `
+                                            <div style="background: #FEF7F7; border: 2px solid #F87171; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: center;">
+                                                <p style="margin: 0; color: #7F1D1D; font-size: 15px; line-height: 1.6;">
+                                                    <strong>📚 Keep Learning!</strong><br/>
+                                                    You scored ${percentage}%, which is below the passing threshold of ${passingPercentage}%. 
+                                                    Don't be discouraged - this is an opportunity to learn and improve. 
+                                                    Review the material and you'll do better next time!
+                                                </p>
+                                            </div>
+                                        `}
+                                        
+                                        <div style="background: #F1F5F9; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                                            <p style="margin: 0; color: #475569; font-size: 13px; text-align: center;">
+                                                <strong>Submitted:</strong> ${new Date(submittedAt).toLocaleString()}
+                                            </p>
+                                        </div>
+                                        
+                                        <p style="margin: 0; color: #64748B; font-size: 14px; line-height: 1.6; text-align: center;">
+                                            Best regards,<br/>FairExam Team
+                                        </p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="background: #F8FAFC; padding: 20px 30px; text-align: center; border-top: 1px solid #E2E8F0;">
+                                        <p style="margin: 0; color: #94A3B8; font-size: 12px;">
+                                            This is an automated email. Please do not reply.
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </body>
+            </html>
+        `
+    };
+
+    return await transporter.sendMail(mailOptions);
+};
+
 // Send test email
 export const sendTestEmail = async (to) => {
     const mailOptions = {

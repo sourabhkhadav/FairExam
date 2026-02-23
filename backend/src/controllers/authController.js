@@ -132,15 +132,13 @@ export const candidateLogin = async (req, res) => {
         const now = new Date();
         const start = new Date(`${exam.startDate}T${exam.startTime}`);
         const end = new Date(`${exam.endDate}T${exam.endTime}`);
-        const graceMinutes = exam.graceTime || 15;
-        const endWithGrace = new Date(end.getTime() + graceMinutes * 60000);
 
         if (now < start) {
             return res.status(403).json({ message: 'Exam has not started yet' });
         }
 
-        if (now > endWithGrace) {
-            return res.status(403).json({ message: 'Exam has ended' });
+        if (now > end) {
+            return res.status(403).json({ message: 'Exam time has ended. You can no longer access this exam.' });
         }
 
         const token = jwt.sign(

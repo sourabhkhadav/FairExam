@@ -6,9 +6,9 @@ import { sendExamInvitation, sendExamStartEmail } from './emailService.js';
 let isRunning = false;
 
 export const startEmailScheduler = () => {
+    // Silently start scheduler without logs
     setInterval(async () => {
         if (isRunning) {
-            console.log('⏭️ Skipping - previous job still running');
             return;
         }
         
@@ -18,7 +18,6 @@ export const startEmailScheduler = () => {
             const currentDate = now.toISOString().split('T')[0];
             const currentTime = now.toTimeString().slice(0, 5);
 
-            // Send scheduled invitation emails
             const scheduledExams = await Exam.find({
                 status: 'published',
                 scheduleEmailDate: currentDate,
@@ -27,14 +26,9 @@ export const startEmailScheduler = () => {
             });
 
             for (const exam of scheduledExams) {
-                console.log(`📧 Sending scheduled emails for exam: ${exam.title}`);
-                
                 const candidates = await Candidate.find({ examId: exam._id });
                 
-                if (candidates.length === 0) {
-                    console.log(`⚠️ No candidates found for exam: ${exam.title}`);
-                    continue;
-                }
+                if (candidates.length === 0) continue;
 
                 const examDetails = {
                     title: exam.title,
@@ -43,25 +37,20 @@ export const startEmailScheduler = () => {
                     duration: exam.duration || 0
                 };
 
-                let sent = 0;
                 for (const candidate of candidates) {
                     if (candidate.email) {
                         try {
                             await sendExamInvitation(candidate.email, examDetails);
-                            sent++;
                         } catch (error) {
-                            console.error(`❌ Failed to send to ${candidate.email}:`, error.message);
+                            console.error(`Failed to send to ${candidate.email}`);
                         }
                     }
                 }
 
                 exam.emailSent = true;
                 await exam.save();
-                
-                console.log(`✅ Sent ${sent} scheduled emails for exam: ${exam.title}`);
             }
 
-            // Send exam start emails with credentials
             const startingExams = await Exam.find({
                 status: 'published',
                 startDate: currentDate,
@@ -70,14 +59,9 @@ export const startEmailScheduler = () => {
             });
 
             for (const exam of startingExams) {
-                console.log(`🚀 Sending exam start emails for: ${exam.title}`);
-                
                 const candidates = await Candidate.find({ examId: exam._id });
                 
-                if (candidates.length === 0) {
-                    console.log(`⚠️ No candidates found for exam: ${exam.title}`);
-                    continue;
-                }
+                if (candidates.length === 0) continue;
 
                 const examDetails = {
                     examId: exam._id,
@@ -87,10 +71,8 @@ export const startEmailScheduler = () => {
                     duration: exam.duration || 0
                 };
 
-                let sent = 0;
                 for (const candidate of candidates) {
                     if (candidate.email) {
-                        // Generate credentials if not exists
                         if (!candidate.candidateId || !candidate.password) {
                             const candidateId = `CAND${exam._id.toString().slice(-4)}${String(candidates.indexOf(candidate) + 1).padStart(4, '0')}`;
                             const password = Math.random().toString(36).slice(-8).toUpperCase();
@@ -106,25 +88,19 @@ export const startEmailScheduler = () => {
                                 password: candidate.password
                             };
                             await sendExamStartEmail(candidate.email, examDetails, candidateDetails);
-                            sent++;
-                            console.log(`✅ Sent to ${candidate.email}`);
                         } catch (error) {
-                            console.error(`❌ Failed to send start email to ${candidate.email}:`, error.message);
+                            console.error(`Failed to send start email to ${candidate.email}`);
                         }
                     }
                 }
 
                 exam.examStartEmailSent = true;
                 await exam.save();
-                
-                console.log(`✅ Sent ${sent} exam start emails for: ${exam.title}`);
             }
         } catch (error) {
-            console.error('Email scheduler error:', error);
+            // Silently handle errors
         } finally {
             isRunning = false;
         }
     }, 60000);
-
-    console.log('📧 Email scheduler started - checking every minute');
 };

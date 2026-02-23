@@ -482,7 +482,12 @@ export const getExamResults = asyncHandler(async (req, res) => {
         marks: sub.score,
         total: sub.totalMarks,
         percentage: sub.percentage,
-        timeTaken: Math.floor(sub.timeTaken / 60) + ' min',
+        timeTaken: (() => {
+            const timeInSeconds = sub.timeTaken || 0;
+            const minutes = Math.floor(timeInSeconds / 60);
+            const seconds = timeInSeconds % 60;
+            return minutes > 0 ? `${minutes} min ${seconds} sec` : `${seconds} sec`;
+        })(),
         status: sub.percentage >= 40 ? 'Pass' : 'Fail'
     }));
 
@@ -512,4 +517,58 @@ export const getExamResults = asyncHandler(async (req, res) => {
             students
         }
     });
+});
+
+
+// @desc    Export exam results to Excel
+// @route   GET /api/exams/:id/results/export
+// @access  Private (Examiner)
+export const exportExamResults = asyncHandler(async (req, res) => {
+    const exam = await Exam.findById(req.params.id);
+
+    if (!exam) {
+        res.status(404);
+        throw new Error('Exam not found');
+    }
+
+    const examinerId = req.user.id === 'demo-user-id' ? '507f1f77bcf86cd799439011' : req.user.id;
+    if (exam.examiner.toString() !== examinerId) {
+        res.status(401);
+        throw new Error('Not authorized to access this exam');
+    }
+
+    const Submission = (await import('../models/Submission.js')).default;
+    const submissions = await Submission.find({ examId: req.params.id })
+        .populate('candidateId', 'name email candidateId')
+        .sort({ score: -1 });
+
+    const excelData = submissions.map((sub, index) => {
+        const timeInSeconds = sub.timeTaken || 0;
+        const minutes = Math.floor(timeInSeconds / 60);
+        const seconds = timeInSeconds % 60;
+        const timeDisplay = minutes > 0 ? `${minutes} min ${seconds} sec` : `${seconds} sec`;
+        
+        return {
+            'S.No': index + 1,
+            'Student Name': sub.candidateId?.name || 'Unknown',
+            'Roll Number': sub.candidateId?.candidateId || 'N/A',
+            'Email': sub.candidateId?.email || '',
+            'Marks Obtained': sub.score,
+            'Total Marks': sub.totalMarks,
+            'Percentage': sub.percentage + '%',
+            'Time Taken': timeDisplay,
+            'Status': sub.percentage >= 40 ? 'Pass' : 'Fail'
+        };
+    });
+
+    const workbook = xlsx.utils.book_new();
+    const worksheet = xlsx.utils.json_to_sheet(excelData);
+    
+    xlsx.utils.book_append_sheet(workbook, worksheet, 'Results');
+    
+    const buffer = xlsx.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+    
+    res.setHeader('Content-Disposition', `attachment; filename="${exam.title}_Results.xlsx"`);
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.send(buffer);
 });

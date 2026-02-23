@@ -11,7 +11,8 @@ import {
     getDashboardStats,
     getExamsForResults,
     getExamResults,
-    getExamQuestions
+    getExamQuestions,
+    exportExamResults
 } from '../controllers/examController.js';
 import { protect, authorize } from '../middleware/authMiddleware.js';
 
@@ -48,5 +49,6 @@ router
     .delete(deleteExam);
 
 router.get('/:id/results', getExamResults);
+router.get('/:id/results/export', exportExamResults);
 
 export default router;

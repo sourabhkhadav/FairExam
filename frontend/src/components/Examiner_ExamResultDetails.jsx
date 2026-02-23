@@ -14,6 +14,7 @@ const Examiner_ExamResultDetails = () => {
     const [examDetails, setExamDetails] = useState(null);
     const [students, setStudents] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [exporting, setExporting] = useState(false);
 
     useEffect(() => {
         fetchExamResults();
@@ -41,6 +42,31 @@ const Examiner_ExamResultDetails = () => {
         student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         student.roll.toLowerCase().includes(searchQuery.toLowerCase())
     );
+
+    const handleExportReport = async () => {
+        setExporting(true);
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`http://localhost:5000/api/exams/${examId}/results/export`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${examDetails.name}_Results.xlsx`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        } catch (error) {
+            console.error('Error exporting report:', error);
+            alert('Failed to export report');
+        } finally {
+            setExporting(false);
+        }
+    };
 
     const handlePublishResults = () => {
         const storedStatuses = JSON.parse(localStorage.getItem('exam_statuses') || '{}');
@@ -71,11 +97,11 @@ const Examiner_ExamResultDetails = () => {
         );
     }
 
-    const StatCard = ({ icon: Icon, label, value, subtext, color }) => (
+    const StatCard = ({ icon: Icon, label, value, subtext }) => (
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between h-full">
             <div className="flex items-start justify-between mb-4">
-                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${color} bg-opacity-10`}>
-                    <Icon className={`w-6 h-6 ${color.replace('bg-', 'text-')}`} />
+                <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center">
+                    <Icon className="w-5 h-5 text-slate-600" strokeWidth={2} />
                 </div>
                 {subtext && <span className="text-xs font-medium text-slate-400 bg-slate-50 px-2 py-1 rounded-full">{subtext}</span>}
             </div>
@@ -122,9 +148,9 @@ const Examiner_ExamResultDetails = () => {
                         <span className="text-sm font-medium text-slate-400">%</span>
                     </div>
 
-                    <button className="px-5 py-2.5 bg-white border border-slate-200 text-slate-700 font-medium text-sm rounded-xl hover:bg-slate-50 transition-colors flex items-center gap-2 shadow-sm">
-                        <Download className="w-4 h-4" />
-                        Export Report
+                    <button onClick={handleExportReport} disabled={exporting} className="px-5 py-2.5 bg-white border border-slate-200 text-slate-700 font-medium text-sm rounded-xl hover:bg-slate-50 transition-colors flex items-center gap-2 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
+                        <Download className={`w-4 h-4 ${exporting ? 'animate-bounce' : ''}`} />
+                        {exporting ? 'Exporting...' : 'Export Report'}
                     </button>
                     <button
                         onClick={handlePublishResults}
@@ -142,28 +168,24 @@ const Examiner_ExamResultDetails = () => {
                     icon={User}
                     label="Total Candidates"
                     value={totalStudents}
-                    color="bg-blue-500 text-blue-600"
                 />
                 <StatCard
                     icon={CheckCircle}
                     label="Passed Students"
                     value={passedCount}
                     subtext={`${((passedCount / totalStudents) * 100).toFixed(1)}%`}
-                    color="bg-emerald-500 text-emerald-600"
                 />
                 <StatCard
                     icon={XCircle}
                     label="Failed Students"
                     value={failedCount}
                     subtext={`${((failedCount / totalStudents) * 100).toFixed(1)}%`}
-                    color="bg-rose-500 text-rose-600"
                 />
                 <StatCard
                     icon={BarChart3}
                     label="Average Score"
                     value={`${examDetails.avgScore}/${examDetails.totalCandidates > 0 ? Math.round(students.reduce((acc, s) => acc + s.total, 0) / students.length) : 100}`}
                     subtext={`Highest: ${examDetails.highestScore}`}
-                    color="bg-slate-500 text-slate-600"
                 />
             </div>
 

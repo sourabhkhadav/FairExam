@@ -104,6 +104,19 @@ export const sendExamResults = asyncHandler(async (req, res) => {
         throw new Error('Exam not found');
     }
 
+    if (exam.resultsSent) {
+        res.status(400);
+        throw new Error('Results have already been sent for this exam');
+    }
+
+    const now = new Date();
+    const examEndDateTime = new Date(`${exam.endDate}T${exam.endTime}`);
+    
+    if (now < examEndDateTime) {
+        res.status(400);
+        throw new Error('Cannot send results before exam end time');
+    }
+
     const submissions = await Submission.find({ examId }).populate('candidateId');
     if (submissions.length === 0) {
         res.status(404);
@@ -121,7 +134,6 @@ export const sendExamResults = asyncHandler(async (req, res) => {
         }
 
         try {
-            // Get violations for this candidate
             const violations = await Violation.find({ 
                 candidateId: candidate._id.toString(),
                 examId: examId 
@@ -164,6 +176,9 @@ export const sendExamResults = asyncHandler(async (req, res) => {
             results.details.push({ candidate: candidate.name, status: `Failed: ${error.message}` });
         }
     }
+
+    exam.resultsSent = true;
+    await exam.save();
 
     res.status(200).json({
         success: true,

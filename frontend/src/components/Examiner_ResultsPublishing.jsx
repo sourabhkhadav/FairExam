@@ -110,7 +110,7 @@ const Examiner_ResultsPublishing = () => {
                                                     exam.isCalculated ? 'bg-slate-50 text-slate-800 border border-slate-200' : 'bg-slate-100 text-slate-500 border border-slate-200'
                                                 }`}>
                                                     {exam.isCalculated ? <CheckCircle2 className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
-                                                    {exam.isCalculated ? 'Calculated' : 'Pending'}
+                                                    {exam.isCalculated ? 'Exam Ended' : 'In Progress'}
                                                 </span>
                                             </td>
                                             <td className="py-6 text-right whitespace-nowrap">

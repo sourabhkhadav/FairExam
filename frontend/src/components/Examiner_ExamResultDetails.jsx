@@ -16,6 +16,20 @@ const Examiner_ExamResultDetails = () => {
     const [loading, setLoading] = useState(true);
     const [exporting, setExporting] = useState(false);
     const [sending, setSending] = useState(false);
+    const [examStatus, setExamStatus] = useState('Completed');
+
+    const getExamStatus = (exam) => {
+        if (!exam.startDate || !exam.startTime || !exam.endDate || !exam.endTime) {
+            return 'Completed';
+        }
+        const now = new Date();
+        const startDateTime = new Date(`${exam.startDate}T${exam.startTime}`);
+        const endDateTime = new Date(`${exam.endDate}T${exam.endTime}`);
+        
+        if (now < startDateTime) return 'Scheduled';
+        if (now >= startDateTime && now <= endDateTime) return 'Live';
+        return 'Completed';
+    };
 
     useEffect(() => {
         fetchExamResults();
@@ -29,8 +43,10 @@ const Examiner_ExamResultDetails = () => {
             });
             const data = await response.json();
             if (data.success) {
-                setExamDetails(data.data.examDetails);
+                const details = data.data.examDetails;
+                setExamDetails(details);
                 setStudents(data.data.students);
+                setExamStatus(getExamStatus(details));
             }
         } catch (error) {
             console.error('Error fetching results:', error);
@@ -157,8 +173,11 @@ const Examiner_ExamResultDetails = () => {
                             {examDetails.date}
                         </div>
                         <div className="flex items-center gap-1.5">
-                            <span className={`w-2 h-2 rounded-full ${examDetails.status === 'Completed' ? 'bg-emerald-500' : 'bg-amber-500'}`}></span>
-                            {examDetails.status}
+                            <span className={`w-2 h-2 rounded-full ${
+                                examStatus === 'Live' ? 'bg-amber-500 animate-pulse' :
+                                examStatus === 'Completed' ? 'bg-emerald-500' : 'bg-slate-400'
+                            }`}></span>
+                            {examStatus}
                         </div>
                     </div>
                 </div>
@@ -180,17 +199,22 @@ const Examiner_ExamResultDetails = () => {
                     </button>
                     <button
                         onClick={handlePublishResults}
-                        disabled={sending}
+                        disabled={sending || examStatus === 'Live'}
                         className={`px-5 py-2.5 font-medium text-sm rounded-xl transition-colors shadow-lg shadow-slate-100 flex items-center gap-2 ${
-                            sending 
+                            sending || examStatus === 'Live'
                                 ? 'bg-slate-400 text-white cursor-not-allowed' 
-                                : 'bg-[#0F172A] text-white hover:bg-[#1E293B]'
+                                : 'bg-[#0F172A] text-white hover:bg-[#1E293B] cursor-pointer'
                         }`}
                     >
                         {sending ? (
                             <>
                                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                                 Sending Results...
+                            </>
+                        ) : examStatus === 'Live' ? (
+                            <>
+                                <AlertCircle className="w-4 h-4" />
+                                Exam is Live
                             </>
                         ) : (
                             <>

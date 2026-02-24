@@ -538,6 +538,10 @@ export const getExamResults = asyncHandler(async (req, res) => {
             examDetails: {
                 name: exam.title,
                 date: exam.startDate || new Date(exam.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+                startDate: exam.startDate,
+                startTime: exam.startTime,
+                endDate: exam.endDate,
+                endTime: exam.endTime,
                 totalCandidates,
                 passed: passedStudents,
                 failed: failedStudents,

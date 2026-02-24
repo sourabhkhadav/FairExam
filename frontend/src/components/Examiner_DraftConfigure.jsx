@@ -174,30 +174,33 @@ const Examiner_DraftConfigure = () => {
                                     />
                                 </div>
                             </div>
-                            <div className="space-y-1.5">
-                                <label className="text-[11px] font-bold text-[#64748B] uppercase tracking-widest ml-1">Exam Duration (Min)</label>
-                                <input type="number" className="w-full px-4 py-3 rounded-xl bg-white border border-[#E2E8F0] outline-none"
-                                    placeholder="e.g., 60 for 1 hour"
-                                    value={examData.duration || ''} 
-                                    onChange={e => {
-                                        const inputValue = e.target.value;
-                                        const newDuration = inputValue === '' ? 0 : Math.round(parseFloat(inputValue));
-                                        
-                                        if (examData.startDate && examData.startTime && examData.endDate && examData.endTime) {
-                                            const startDateTime = new Date(`${examData.startDate}T${examData.startTime}`);
-                                            const endDateTime = new Date(`${examData.endDate}T${examData.endTime}`);
-                                            const availableMinutes = Math.floor((endDateTime - startDateTime) / (1000 * 60));
+                                <div className="space-y-1.5">
+                                    <label className="text-[11px] font-bold text-[#64748B] uppercase tracking-widest ml-1">Exam Duration (Min)</label>
+                                    <input 
+                                        type="number" 
+                                        className="w-full px-4 py-3 rounded-xl bg-white border border-[#E2E8F0] outline-none"
+                                        placeholder="e.g., 30 for 30 minutes"
+                                        value={examData.duration || ''} 
+                                        onChange={e => {
+                                            const inputValue = e.target.value;
+                                            const newDuration = inputValue === '' ? 0 : Math.round(parseFloat(inputValue));
                                             
-                                            if (newDuration > availableMinutes) {
-                                                alert(`❌ Exam duration (${newDuration} min) cannot exceed the time between start and end (${availableMinutes} min).\n\nPlease adjust the duration or extend the end time.`);
-                                                return;
+                                            if (examData.startDate && examData.startTime && examData.endDate && examData.endTime) {
+                                                const startDateTime = new Date(`${examData.startDate}T${examData.startTime}`);
+                                                const endDateTime = new Date(`${examData.endDate}T${examData.endTime}`);
+                                                const availableMinutes = Math.floor((endDateTime - startDateTime) / (1000 * 60));
+                                                
+                                                if (newDuration > availableMinutes) {
+                                                    alert(`❌ Exam duration (${newDuration} min) cannot exceed the time between start and end (${availableMinutes} min).\n\nPlease adjust the duration or extend the end time.`);
+                                                    return;
+                                                }
                                             }
-                                        }
-                                        
-                                        updateField('duration', newDuration);
-                                    }} />
-                                <p className="text-[10px] text-[#64748B] ml-1">Time given to complete exam once started</p>
-                            </div>
+                                            
+                                            updateField('duration', newDuration);
+                                        }} 
+                                    />
+                                    <p className="text-[10px] text-[#64748B] ml-1">Time given to complete exam once started</p>
+                                </div>
                         </div>
                     </div>
                 </FormSection>

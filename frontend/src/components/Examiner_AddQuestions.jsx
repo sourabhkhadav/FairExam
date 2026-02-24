@@ -100,6 +100,10 @@ const Examiner_AddQuestions = () => {
         setIsLoading(true);
         try {
             const token = localStorage.getItem('token');
+            if (!token) {
+                throw new Error('Not authorized, please login again');
+            }
+
             const response = await fetch('http://localhost:5000/api/exams/import-questions', {
                 method: 'POST',
                 headers: {
@@ -123,7 +127,6 @@ const Examiner_AddQuestions = () => {
             alert(`Error importing file: ${error.message}`);
         } finally {
             setIsLoading(false);
-            // Reset file input
             e.target.value = null;
         }
     };

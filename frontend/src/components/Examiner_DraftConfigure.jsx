@@ -139,7 +139,8 @@ const Examiner_DraftConfigure = () => {
                                     placeholder="e.g., 60 for 1 hour"
                                     value={examData.duration || ''} 
                                     onChange={e => {
-                                        const newDuration = parseInt(e.target.value) || 0;
+                                        const inputValue = e.target.value;
+                                        const newDuration = inputValue === '' ? 0 : Math.round(parseFloat(inputValue));
                                         
                                         if (examData.startDate && examData.startTime && examData.endDate && examData.endTime) {
                                             const startDateTime = new Date(`${examData.startDate}T${examData.startTime}`);

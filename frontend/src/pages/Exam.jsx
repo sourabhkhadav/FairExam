@@ -34,6 +34,7 @@ const Exam = () => {
     const [soundViolations, setSoundViolations] = useState(0);
     const [faceViolations, setFaceViolations] = useState(0);
     const [isFullscreen, setIsFullscreen] = useState(false);
+    const [violationLimits, setViolationLimits] = useState({ faceLimit: 5, soundLimit: 5, fullscreenLimit: 5 });
 
     useEffect(() => {
         if (!examId) {
@@ -60,9 +61,14 @@ const Exam = () => {
                 setExamData(data.data);
                 setAllQuestions(data.data.questions);
                 if (data.data.duration) {
-                    setTimeLeft(data.data.duration * 60);
+                    const exactDuration = Math.round(data.data.duration);
+                    setTimeLeft(exactDuration * 60);
+                }
+                if (data.data.violationLimits) {
+                    setViolationLimits(data.data.violationLimits);
                 }
                 console.log('Loaded', data.data.questions.length, 'questions');
+                console.log('Violation Limits:', data.data.violationLimits);
             } else {
                 toast.error(data.message || 'Failed to load exam');
             }
@@ -76,7 +82,12 @@ const Exam = () => {
 
     // Handle face violations from LiveCameraMonitor
     const handleViolationUpdate = (violationsList) => {
-        setFaceViolations(violationsList.length);
+        const count = violationsList.length;
+        setFaceViolations(count);
+        if (count >= violationLimits.faceLimit) {
+            toast.error(`🚨 Face violation limit exceeded! Auto-submitting...`, { duration: 3000 });
+            setTimeout(() => handleSubmit(), 2000);
+        }
     };
 
     // Simple Audio Detection - No Meyda Required
@@ -128,11 +139,15 @@ const Exam = () => {
                         
                         setSoundViolations(prev => {
                             const newCount = prev + 1;
-                            toast.error(`🔊 Sound detected! Violation #${newCount}`, { 
+                            toast.error(`🔊 Sound detected! Violation #${newCount}/${violationLimits.soundLimit}`, { 
                                 id: 'sound-warning',
                                 duration: 500,
                             });
                             console.log('🔊 SOUND! Level:', average.toFixed(2), 'Threshold:', threshold.toFixed(2));
+                            if (newCount >= violationLimits.soundLimit) {
+                                toast.error(`🚨 Sound violation limit exceeded! Auto-submitting...`, { duration: 3000 });
+                                setTimeout(() => handleSubmit(), 2000);
+                            }
                             return newCount;
                         });
                         
@@ -205,10 +220,14 @@ const Exam = () => {
             setViolations(prev => {
                 const newCount = prev + 1;
                 playWarningSound();
-                toast.error(`⚠️ ${message} Violation #${newCount}`, { 
+                toast.error(`⚠️ ${message} Violation #${newCount}/${violationLimits.fullscreenLimit}`, { 
                     id: 'violation',
                     duration: 500,
                 });
+                if (newCount >= violationLimits.fullscreenLimit) {
+                    toast.error(`🚨 Fullscreen violation limit exceeded! Auto-submitting...`, { duration: 3000 });
+                    setTimeout(() => handleSubmit(), 2000);
+                }
                 return newCount;
             });
             

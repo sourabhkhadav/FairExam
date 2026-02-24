@@ -58,7 +58,7 @@ export const sendExamInvitation = async (to, examDetails) => {
                                                 <td style="padding: 20px;">
                                                     <p style="margin: 0 0 8px 0; color: #64748B; font-size: 13px;">Exam Date: <strong style="color: #0F172A;">${formatDate(examDetails.startDate)}</strong></p>
                                                     <p style="margin: 0 0 8px 0; color: #64748B; font-size: 13px;">Exam Time: <strong style="color: #0F172A;">${formatTime(examDetails.startTime)}</strong></p>
-                                                    <p style="margin: 0; color: #64748B; font-size: 13px;">Duration: <strong style="color: #0F172A;">${examDetails.duration} minutes</strong></p>
+                                                    <p style="margin: 0; color: #64748B; font-size: 13px;">Duration: <strong style="color: #0F172A;">${Math.round(examDetails.duration)} minutes</strong></p>
                                                 </td>
                                             </tr>
                                         </table>
@@ -442,7 +442,7 @@ export const sendExamStartEmail = async (to, examDetails, candidateDetails) => {
                                                 <td style="padding: 20px;">
                                                     <p style="margin: 0 0 8px 0; color: #64748B; font-size: 13px;">Exam Date: <strong style="color: #0F172A;">${formatDate(examDetails.startDate)}</strong></p>
                                                     <p style="margin: 0 0 8px 0; color: #64748B; font-size: 13px;">Exam Time: <strong style="color: #0F172A;">${formatTime(examDetails.startTime)}</strong></p>
-                                                    <p style="margin: 0; color: #64748B; font-size: 13px;">Duration: <strong style="color: #0F172A;">${examDetails.duration} minutes</strong></p>
+                                                    <p style="margin: 0; color: #64748B; font-size: 13px;">Duration: <strong style="color: #0F172A;">${Math.round(examDetails.duration)} minutes</strong></p>
                                                 </td>
                                             </tr>
                                         </table>

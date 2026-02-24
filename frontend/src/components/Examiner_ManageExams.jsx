@@ -64,7 +64,7 @@ const Examiner_ManageExams = () => {
                         title: e.title,
                         date: e.startDate || "TBD",
                         startTime: e.startTime || "TBD",
-                        duration: `${e.duration || 0} min`,
+                        duration: `${Math.round(e.duration) || 0} min`,
                         students: candidateCount,
                         status: status,
                         examData: e

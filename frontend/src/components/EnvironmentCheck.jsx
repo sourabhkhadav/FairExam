@@ -26,7 +26,7 @@ const EnvironmentCheck = ({ onCheckComplete }) => {
         if (modelsLoaded && isChecking) {
             interval = setInterval(() => {
                 performFaceChecks();
-            }, 2000);
+            }, 1000);
         }
         return () => clearInterval(interval);
     }, [modelsLoaded, isChecking]);
@@ -183,7 +183,8 @@ const EnvironmentCheck = ({ onCheckComplete }) => {
             // Check if all critical checks passed
             const allPassed = faceCount === 1 && 
                 checks.cameraAccess.status === 'passed' && 
-                checks.microphoneAccess.status === 'passed';
+                checks.microphoneAccess.status === 'passed' &&
+                brightness >= 60 && brightness <= 200;
             setAllChecksPassed(allPassed);
 
         } catch (error) {

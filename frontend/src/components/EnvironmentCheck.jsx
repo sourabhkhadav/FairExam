@@ -14,11 +14,22 @@ const EnvironmentCheck = ({ onCheckComplete }) => {
     });
     const [modelsLoaded, setModelsLoaded] = useState(false);
     const [allChecksPassed, setAllChecksPassed] = useState(false);
+    const [isChecking, setIsChecking] = useState(true);
 
     useEffect(() => {
         loadModels();
         performChecks();
     }, []);
+
+    useEffect(() => {
+        let interval;
+        if (modelsLoaded && isChecking) {
+            interval = setInterval(() => {
+                performFaceChecks();
+            }, 2000);
+        }
+        return () => clearInterval(interval);
+    }, [modelsLoaded, isChecking]);
 
     const loadModels = async () => {
         try {
@@ -169,8 +180,10 @@ const EnvironmentCheck = ({ onCheckComplete }) => {
                 }));
             }
 
-            // STRICT: All critical checks must pass - Face is MANDATORY
-            const allPassed = faceCount === 1;
+            // Check if all critical checks passed
+            const allPassed = faceCount === 1 && 
+                checks.cameraAccess.status === 'passed' && 
+                checks.microphoneAccess.status === 'passed';
             setAllChecksPassed(allPassed);
 
         } catch (error) {
@@ -311,34 +324,33 @@ const EnvironmentCheck = ({ onCheckComplete }) => {
 
                 {/* Footer */}
                 <div className="bg-gray-50 px-6 py-4 flex justify-between items-center border-t">
-                    <p className="text-sm text-gray-600">
-                        {allChecksPassed ? '✅ All checks passed!' : '⚠️ Please fix issues before proceeding'}
-                    </p>
-                    <div className="flex gap-3">
-                        <button
-                            onClick={performFaceChecks}
-                            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
-                        >
-                            Recheck
-                        </button>
-                        <button
-                            onClick={() => {
-                                if (checks.faceVisible.status !== 'passed') {
-                                    alert('❌ Face must be visible to start exam!');
-                                    return;
-                                }
-                                onCheckComplete(allChecksPassed);
-                            }}
-                            disabled={!allChecksPassed}
-                            className={`px-6 py-2 text-sm font-bold rounded-lg ${
-                                allChecksPassed
-                                    ? 'bg-[#0F172A] text-white hover:bg-[#1E293B]'
-                                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                            }`}
-                        >
-                            Start Exam
-                        </button>
+                    <div className="flex items-center gap-2">
+                        {allChecksPassed ? (
+                            <>
+                                <CheckCircle className="w-5 h-5 text-green-600" />
+                                <p className="text-sm font-semibold text-green-700">All checks passed! Ready to start.</p>
+                            </>
+                        ) : (
+                            <>
+                                <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                                <p className="text-sm text-gray-600">Checking environment... Please wait</p>
+                            </>
+                        )}
                     </div>
+                    <button
+                        onClick={() => {
+                            setIsChecking(false);
+                            onCheckComplete(true);
+                        }}
+                        disabled={!allChecksPassed}
+                        className={`px-6 py-2 text-sm font-bold rounded-lg transition-all ${
+                            allChecksPassed
+                                ? 'bg-[#0F172A] text-white hover:bg-[#1E293B] shadow-lg'
+                                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        }`}
+                    >
+                        Next →
+                    </button>
                 </div>
             </div>
         </div>

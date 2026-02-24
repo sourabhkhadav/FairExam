@@ -7,6 +7,17 @@ import {
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 
+const getExamStatus = (exam) => {
+    const now = new Date();
+    const startDateTime = new Date(`${exam.startDate}T${exam.startTime}`);
+    const endDateTime = new Date(`${exam.endDate}T${exam.endTime}`);
+    
+    if (now < startDateTime) return 'Scheduled';
+    if (now >= startDateTime && now <= endDateTime) return 'Live';
+    if (now > endDateTime) return 'Completed';
+    return exam.status === 'published' ? 'Scheduled' : 'Draft';
+};
+
 const StatCard = ({ icon: Icon, label, value, iconColor }) => (
     <div className="bg-white p-6 rounded-2xl border border-[#E2E8F0] shadow-sm flex items-center gap-5">
         <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${iconColor}`}>
@@ -29,8 +40,13 @@ const Examiner_Dashboard = () => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            navigate('/login');
+            return;
+        }
         fetchDashboardData();
-    }, []);
+    }, [navigate]);
 
     const fetchDashboardData = async () => {
         try {
@@ -121,31 +137,36 @@ const Examiner_Dashboard = () => {
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-[#F1F5F9]">
-                                            {recentExams.map((exam, i) => (
+                                            {recentExams.map((exam, i) => {
+                                                const status = getExamStatus(exam);
+                                                return (
                                                 <tr key={exam._id || i} className="group">
                                                     <td className="py-5 font-medium text-[#0F172A] whitespace-nowrap">{exam.name}</td>
                                                     <td className="py-5 text-[#64748B] whitespace-nowrap">{exam.date}</td>
                                                     <td className="py-5 text-[#64748B] text-center whitespace-nowrap">{exam.students}</td>
                                                     <td className="py-5 text-center whitespace-nowrap">
-                                                        <span className={`px-4 py-1.5 rounded-full text-[12px] font-semibold ${exam.status === 'Scheduled'
-                                                            ? 'bg-[#F1F5F9] text-[#334155]'
-                                                            : exam.status === 'Completed'
-                                                                ? 'bg-[#F0FDF4] text-[#22C55E]'
-                                                                : 'bg-[#F8FAFC] text-[#64748B]'
+                                                        <span className={`px-4 py-1.5 rounded-full text-[12px] font-semibold ${
+                                                            status === 'Live'
+                                                                ? 'bg-[#FEF3C7] text-[#F59E0B]'
+                                                                : status === 'Scheduled'
+                                                                    ? 'bg-[#F1F5F9] text-[#334155]'
+                                                                    : status === 'Completed'
+                                                                        ? 'bg-[#F0FDF4] text-[#22C55E]'
+                                                                        : 'bg-[#F8FAFC] text-[#64748B]'
                                                             }`}>
-                                                            {exam.status}
+                                                            {status}
                                                         </span>
                                                     </td>
                                                     <td className="py-5 text-right whitespace-nowrap">
                                                         <button 
-                                                            onClick={() => navigate(`/exam-details/${exam._id}`)}
+                                                            onClick={() => navigate(`/exam-results/${exam._id}`)}
                                                             className="text-[#0F172A] font-semibold text-[14px] hover:underline cursor-pointer"
                                                         >
                                                             View Details
                                                         </button>
                                                     </td>
                                                 </tr>
-                                            ))}
+                                            )})}
                                         </tbody>
                                     </table>
                                 </div>

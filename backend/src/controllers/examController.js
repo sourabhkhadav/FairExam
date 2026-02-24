@@ -17,7 +17,7 @@ export const getDashboardStats = asyncHandler(async (req, res) => {
     const recentExams = await Exam.find({ examiner: examinerId })
         .sort({ createdAt: -1 })
         .limit(10)
-        .select('title startDate startTime status createdAt');
+        .select('title startDate startTime endDate endTime status createdAt');
     
     // Get student count for each exam
     const examsWithStudents = await Promise.all(
@@ -28,7 +28,11 @@ export const getDashboardStats = asyncHandler(async (req, res) => {
                 name: exam.title,
                 date: exam.startDate || new Date(exam.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
                 students: studentCount,
-                status: exam.status === 'published' ? 'Scheduled' : 'Draft'
+                startDate: exam.startDate,
+                startTime: exam.startTime,
+                endDate: exam.endDate,
+                endTime: exam.endTime,
+                status: exam.status
             };
         })
     );

@@ -12,7 +12,19 @@ export const protect = asyncHandler(async (req, res, next) => {
     ) {
         try {
             token = req.headers.authorization.split(' ')[1];
-            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            
+            if (!token || token === 'null' || token === 'undefined') {
+                res.status(401);
+                throw new Error('Invalid token');
+            }
+            
+            let decoded;
+            try {
+                decoded = jwt.verify(token, process.env.JWT_SECRET);
+            } catch (jwtError) {
+                res.status(401);
+                throw new Error('Invalid or malformed token');
+            }
             
             if (decoded.id === 'demo-user-id') {
                 req.user = {

@@ -8,6 +8,25 @@ const Examiner_ResultsPublishing = () => {
     const [loading, setLoading] = useState(true);
     const [sendingExamId, setSendingExamId] = useState(null);
 
+    const formatDateTime = (date, time) => {
+        if (!date || !time) return null;
+        
+        const dateObj = new Date(date);
+        const formattedDate = dateObj.toLocaleDateString('en-US', { 
+            month: 'short', 
+            day: 'numeric', 
+            year: 'numeric' 
+        });
+        
+        const [hours, minutes] = time.split(':');
+        const hour = parseInt(hours);
+        const ampm = hour >= 12 ? 'PM' : 'AM';
+        const hour12 = hour % 12 || 12;
+        const formattedTime = `${hour12}:${minutes} ${ampm}`;
+        
+        return `${formattedDate}, ${formattedTime}`;
+    };
+
     useEffect(() => {
         fetchExams();
     }, []);
@@ -85,6 +104,7 @@ const Examiner_ResultsPublishing = () => {
                                     <tr className="text-left text-[#0F172A] text-[13px] font-medium uppercase tracking-wider border-b border-[#F1F5F9]">
                                         <th className="pb-6">Exam Name</th>
                                         <th className="pb-6">Date Conducted</th>
+                                        <th className="pb-6">End Date & Time</th>
                                         <th className="pb-6 text-center">Participants</th>
                                         <th className="pb-6 text-center">Result Status</th>
                                         <th className="pb-6 text-right">Actions</th>
@@ -104,6 +124,13 @@ const Examiner_ResultsPublishing = () => {
                                                 </div>
                                             </td>
                                             <td className="py-6 text-[#0F172A]/70 font-medium whitespace-nowrap">{exam.date}</td>
+                                            <td className="py-6 text-[#0F172A]/70 font-medium whitespace-nowrap">
+                                                {exam.hasEndTime ? (
+                                                    <span>{formatDateTime(exam.endDate, exam.endTime)}</span>
+                                                ) : (
+                                                    <span className="text-amber-600 font-semibold">Not Set</span>
+                                                )}
+                                            </td>
                                             <td className="py-6 text-center text-[#0F172A]/70 font-medium whitespace-nowrap">{exam.participants}</td>
                                             <td className="py-6 text-center whitespace-nowrap">
                                                 <span className={`px-4 py-1.5 rounded-full text-[11px] sm:text-[12px] font-bold flex items-center gap-1.5 justify-center w-fit mx-auto ${

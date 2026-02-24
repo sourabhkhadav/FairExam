@@ -393,18 +393,32 @@ export const getExamsForResults = asyncHandler(async (req, res) => {
     const examsWithStats = await Promise.all(
         exams.map(async (exam) => {
             const studentCount = await Candidate.countDocuments({ examId: exam._id });
-            const examEndDateTime = new Date(`${exam.endDate}T${exam.endTime}`);
-            const isExamEnded = now >= examEndDateTime;
+            
+            // Check if exam has ended
+            let isExamEnded = false;
+            if (exam.endDate && exam.endTime) {
+                const examEndDateTime = new Date(`${exam.endDate}T${exam.endTime}`);
+                isExamEnded = now >= examEndDateTime;
+            }
+            // If no end time set, check if exam has any submissions
+            else {
+                const Submission = (await import('../models/Submission.js')).default;
+                const submissionCount = await Submission.countDocuments({ examId: exam._id });
+                isExamEnded = submissionCount > 0;
+            }
             
             return {
                 id: exam._id,
                 name: exam.title,
                 date: exam.startDate || new Date(exam.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+                endDate: exam.endDate,
+                endTime: exam.endTime,
                 participants: studentCount,
                 avgScore: '75%',
                 status: exam.resultsSent ? 'Results Sent' : 'Draft',
                 isCalculated: isExamEnded,
-                isExamEnded
+                isExamEnded,
+                hasEndTime: !!(exam.endDate && exam.endTime)
             };
         })
     );

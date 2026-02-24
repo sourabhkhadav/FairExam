@@ -31,6 +31,16 @@ const EnvironmentCheck = ({ onCheckComplete }) => {
         return () => clearInterval(interval);
     }, [modelsLoaded, isChecking]);
 
+    useEffect(() => {
+        const allPassed = 
+            checks.cameraAccess.status === 'passed' && 
+            checks.microphoneAccess.status === 'passed' &&
+            checks.faceVisible.status === 'passed' &&
+            checks.singlePerson.status === 'passed' &&
+            (checks.lighting.status === 'passed' || checks.lighting.status === 'warning');
+        setAllChecksPassed(allPassed);
+    }, [checks]);
+
     const loadModels = async () => {
         try {
             const MODEL_URL = '/models';
@@ -180,12 +190,7 @@ const EnvironmentCheck = ({ onCheckComplete }) => {
                 }));
             }
 
-            // Check if all critical checks passed
-            const allPassed = faceCount === 1 && 
-                checks.cameraAccess.status === 'passed' && 
-                checks.microphoneAccess.status === 'passed' &&
-                brightness >= 60 && brightness <= 200;
-            setAllChecksPassed(allPassed);
+
 
         } catch (error) {
             console.error('Face check error:', error);

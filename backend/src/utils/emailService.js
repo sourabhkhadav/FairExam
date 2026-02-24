@@ -17,6 +17,15 @@ export const sendExamInvitation = async (to, examDetails) => {
         return `${displayHour}:${minutes} ${ampm}`;
     };
 
+    const getEndDateTime = () => {
+        if (!examDetails.startDate || !examDetails.startTime || !examDetails.duration) {
+            return 'To Be Decided';
+        }
+        const startDateTime = new Date(`${examDetails.startDate}T${examDetails.startTime}`);
+        const endDateTime = new Date(startDateTime.getTime() + examDetails.duration * 60000);
+        return `${formatDate(endDateTime.toISOString().split('T')[0])} at ${formatTime(endDateTime.toTimeString().slice(0, 5))}`;
+    };
+
     const mailOptions = {
         from: process.env.EMAIL_FROM || 'FairExam <sourabhkhadav2@gmail.com>',
         to,
@@ -47,21 +56,28 @@ export const sendExamInvitation = async (to, examDetails) => {
                                         <p style="margin: 0 0 20px 0; color: #64748B; font-size: 15px;">Dear Student,</p>
                                         
                                         <p style="margin: 0 0 25px 0; color: #0F172A; font-size: 15px; line-height: 1.6;">
-                                            You have been invited to take the following exam:
+                                            You have been invited to take the following exam. Please ensure you are available during the scheduled time window.
                                         </p>
                                         
                                         <h2 style="margin: 0 0 25px 0; color: #0F172A; font-size: 20px; font-weight: 600;">${examDetails.title}</h2>
                                         
                                         <!-- Exam Details -->
-                                        <table width="100%" cellpadding="0" cellspacing="0" style="background: #F8FAFC; border-radius: 8px; margin-bottom: 25px;">
+                                        <table width="100%" cellpadding="0" cellspacing="0" style="background: #F8FAFC; border-radius: 8px; margin-bottom: 20px;">
                                             <tr>
                                                 <td style="padding: 20px;">
-                                                    <p style="margin: 0 0 8px 0; color: #64748B; font-size: 13px;">Exam Date: <strong style="color: #0F172A;">${formatDate(examDetails.startDate)}</strong></p>
-                                                    <p style="margin: 0 0 8px 0; color: #64748B; font-size: 13px;">Exam Time: <strong style="color: #0F172A;">${formatTime(examDetails.startTime)}</strong></p>
-                                                    <p style="margin: 0; color: #64748B; font-size: 13px;">Duration: <strong style="color: #0F172A;">${Math.round(examDetails.duration)} minutes</strong></p>
+                                                    <p style="margin: 0 0 12px 0; color: #64748B; font-size: 13px;">Start Date: <strong style="color: #0F172A;">${formatDate(examDetails.startDate)}</strong></p>
+                                                    <p style="margin: 0 0 12px 0; color: #64748B; font-size: 13px;">Start Time: <strong style="color: #0F172A;">${formatTime(examDetails.startTime)}</strong></p>
+                                                    <p style="margin: 0 0 12px 0; color: #64748B; font-size: 13px;">Duration: <strong style="color: #0F172A;">${examDetails.duration} minutes</strong></p>
+                                                    <p style="margin: 0; color: #64748B; font-size: 13px;">End Time: <strong style="color: #0F172A;">${getEndDateTime()}</strong></p>
                                                 </td>
                                             </tr>
                                         </table>
+                                        
+                                        <div style="background: #FEF3C7; border-left: 4px solid #F59E0B; padding: 16px 20px; border-radius: 8px; margin-bottom: 25px;">
+                                            <p style="margin: 0; color: #92400E; font-size: 14px; line-height: 1.6;">
+                                                <strong>Important:</strong> You must complete the exam within the ${examDetails.duration}-minute time window starting from ${formatTime(examDetails.startTime)}.
+                                            </p>
+                                        </div>
                                         
                                         <p style="margin: 0; color: #64748B; font-size: 14px; line-height: 1.6; text-align: center;">
                                             Best regards,<br/>FairExam Team
@@ -399,6 +415,15 @@ export const sendExamStartEmail = async (to, examDetails, candidateDetails) => {
         return `${displayHour}:${minutes} ${ampm}`;
     };
 
+    const getEndDateTime = () => {
+        if (!examDetails.startDate || !examDetails.startTime || !examDetails.duration) {
+            return 'To Be Decided';
+        }
+        const startDateTime = new Date(`${examDetails.startDate}T${examDetails.startTime}`);
+        const endDateTime = new Date(startDateTime.getTime() + examDetails.duration * 60000);
+        return `${formatDate(endDateTime.toISOString().split('T')[0])} at ${formatTime(endDateTime.toTimeString().slice(0, 5))}`;
+    };
+
     const examUrl = `http://localhost:5173/candidate-login?examId=${examDetails.examId}&candidateId=${candidateDetails.candidateId}`;
 
     const mailOptions = {
@@ -440,21 +465,46 @@ export const sendExamStartEmail = async (to, examDetails, candidateDetails) => {
                                         <table width="100%" cellpadding="0" cellspacing="0" style="background: #F8FAFC; border-radius: 8px; margin-bottom: 20px;">
                                             <tr>
                                                 <td style="padding: 20px;">
-                                                    <p style="margin: 0 0 8px 0; color: #64748B; font-size: 13px;">Exam Date: <strong style="color: #0F172A;">${formatDate(examDetails.startDate)}</strong></p>
-                                                    <p style="margin: 0 0 8px 0; color: #64748B; font-size: 13px;">Exam Time: <strong style="color: #0F172A;">${formatTime(examDetails.startTime)}</strong></p>
-                                                    <p style="margin: 0; color: #64748B; font-size: 13px;">Duration: <strong style="color: #0F172A;">${Math.round(examDetails.duration)} minutes</strong></p>
+                                                    <p style="margin: 0 0 12px 0; color: #64748B; font-size: 13px;">Start Date: <strong style="color: #0F172A;">${formatDate(examDetails.startDate)}</strong></p>
+                                                    <p style="margin: 0 0 12px 0; color: #64748B; font-size: 13px;">Start Time: <strong style="color: #0F172A;">${formatTime(examDetails.startTime)}</strong></p>
+                                                    <p style="margin: 0 0 12px 0; color: #64748B; font-size: 13px;">Duration: <strong style="color: #0F172A;">${examDetails.duration} minutes</strong></p>
+                                                    <p style="margin: 0; color: #64748B; font-size: 13px;">End Time: <strong style="color: #0F172A;">${getEndDateTime()}</strong></p>
                                                 </td>
                                             </tr>
                                         </table>
                                         
-                                        <div style="background: #EFF6FF; border: 2px solid #3B82F6; border-radius: 8px; padding: 20px; margin-bottom: 25px;">
-                                            <p style="margin: 0 0 15px 0; color: #1E40AF; font-size: 14px; font-weight: 600;">🔐 Your Login Credentials</p>
-                                            <p style="margin: 0 0 8px 0; color: #1E3A8A; font-size: 14px;">Candidate ID: <strong style="font-size: 16px;">${candidateDetails.candidateId}</strong></p>
-                                            <p style="margin: 0; color: #1E3A8A; font-size: 14px;">Password: <strong style="font-size: 16px;">${candidateDetails.password}</strong></p>
+                                        <div style="background: #FEF3C7; border-left: 4px solid #F59E0B; padding: 16px 20px; border-radius: 8px; margin-bottom: 20px;">
+                                            <p style="margin: 0; color: #92400E; font-size: 14px; line-height: 1.6;">
+                                                <strong>Time Window:</strong> You must login and complete the exam between ${formatTime(examDetails.startTime)} and the end time. The exam will auto-submit after ${examDetails.duration} minutes.
+                                            </p>
                                         </div>
                                         
-                                        <p style="margin: 0 0 15px 0; color: #64748B; font-size: 13px; text-align: center;">Use the credentials above to login at:</p>
-                                        <p style="margin: 0 0 20px 0; color: #3B82F6; font-size: 13px; text-align: center; word-break: break-all;">${examUrl}</p>
+                                        <div style="background: #DBEAFE; border: 2px dashed #3B82F6; border-radius: 12px; padding: 24px; margin-bottom: 20px;">
+                                            <p style="margin: 0 0 16px 0; color: #1E40AF; font-size: 15px; font-weight: 700; text-align: center;">Your Login Credentials</p>
+                                            <table width="100%" cellpadding="0" cellspacing="0" style="background: #ffffff; border-radius: 8px; overflow: hidden;">
+                                                <tr>
+                                                    <td style="padding: 16px; border-bottom: 1px solid #E0E7FF;">
+                                                        <p style="margin: 0 0 4px 0; color: #64748B; font-size: 12px;">Candidate ID</p>
+                                                        <p style="margin: 0; color: #0F172A; font-size: 18px; font-weight: 700; font-family: 'Courier New', monospace;">${candidateDetails.candidateId}</p>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td style="padding: 16px;">
+                                                        <p style="margin: 0 0 4px 0; color: #64748B; font-size: 12px;">Password</p>
+                                                        <p style="margin: 0; color: #0F172A; font-size: 18px; font-weight: 700; font-family: 'Courier New', monospace;">${candidateDetails.password}</p>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                        
+                                        <div style="text-align: center; margin-bottom: 20px;">
+                                            <a href="${examUrl}" style="display: inline-block; background: #0F172A; color: #ffffff; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px;">
+                                                Login to Exam Portal
+                                            </a>
+                                        </div>
+                                        
+                                        <p style="margin: 0 0 8px 0; color: #64748B; font-size: 12px; text-align: center;">Or copy this link:</p>
+                                        <p style="margin: 0 0 20px 0; color: #3B82F6; font-size: 12px; text-align: center; word-break: break-all; background: #F1F5F9; padding: 8px; border-radius: 6px;">${examUrl}</p>
                                         
                                         <p style="margin: 0; color: #64748B; font-size: 14px; line-height: 1.6; text-align: center;">
                                             Best regards,<br/>FairExam Team

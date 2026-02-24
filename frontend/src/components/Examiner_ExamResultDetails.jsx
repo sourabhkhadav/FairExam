@@ -268,9 +268,6 @@ const Examiner_ExamResultDetails = () => {
                                 className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-[#0F172A] focus:ring-1 focus:ring-[#0F172A] transition-all placeholder:text-slate-400"
                             />
                         </div>
-                        <button className="p-2.5 bg-white border border-slate-200 rounded-xl text-slate-500 hover:text-[#0F172A] hover:bg-slate-50 transition-colors">
-                            <Filter className="w-4 h-4" />
-                        </button>
                     </div>
                 </div>
 

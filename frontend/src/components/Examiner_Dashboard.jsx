@@ -57,6 +57,12 @@ const Examiner_Dashboard = () => {
                 }
             });
             
+            if (response.status === 401) {
+                localStorage.clear();
+                navigate('/login');
+                return;
+            }
+            
             const data = await response.json();
             
             if (data.success) {
@@ -68,6 +74,8 @@ const Examiner_Dashboard = () => {
             }
         } catch (error) {
             console.error('Error fetching dashboard data:', error);
+            localStorage.clear();
+            navigate('/login');
         } finally {
             setLoading(false);
         }

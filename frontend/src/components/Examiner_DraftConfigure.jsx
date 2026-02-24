@@ -97,13 +97,33 @@ const Examiner_DraftConfigure = () => {
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-1.5">
                                     <label className="text-[11px] font-bold text-[#64748B] uppercase tracking-widest ml-1">Exam Date</label>
-                                    <input type="date" className="w-full px-4 py-3 rounded-xl bg-white border border-[#E2E8F0] outline-none"
-                                        value={examData.startDate} onChange={e => updateField('startDate', e.target.value)} />
+                                    <input 
+                                        type="date" 
+                                        min={new Date().toISOString().split('T')[0]}
+                                        className="w-full px-4 py-3 rounded-xl bg-white border border-[#E2E8F0] outline-none"
+                                        value={examData.startDate} 
+                                        onChange={e => updateField('startDate', e.target.value)} 
+                                    />
                                 </div>
                                 <div className="space-y-1.5">
                                     <label className="text-[11px] font-bold text-[#64748B] uppercase tracking-widest ml-1">Exam Time</label>
-                                    <input type="time" className="w-full px-4 py-3 rounded-xl bg-white border border-[#E2E8F0] outline-none"
-                                        value={examData.startTime} onChange={e => updateField('startTime', e.target.value)} />
+                                    <input 
+                                        type="time" 
+                                        className="w-full px-4 py-3 rounded-xl bg-white border border-[#E2E8F0] outline-none"
+                                        value={examData.startTime} 
+                                        onChange={e => {
+                                            const selectedDate = examData.startDate;
+                                            const selectedTime = e.target.value;
+                                            const now = new Date();
+                                            const selectedDateTime = new Date(`${selectedDate}T${selectedTime}`);
+                                            
+                                            if (selectedDate === now.toISOString().split('T')[0] && selectedDateTime <= now) {
+                                                alert('⚠️ Start time cannot be in the past. Please select a future time.');
+                                                return;
+                                            }
+                                            updateField('startTime', selectedTime);
+                                        }} 
+                                    />
                                 </div>
                             </div>
                             <div className="space-y-1.5">
@@ -124,13 +144,34 @@ const Examiner_DraftConfigure = () => {
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-1.5">
                                     <label className="text-[11px] font-bold text-[#64748B] uppercase tracking-widest ml-1">End Date</label>
-                                    <input type="date" className="w-full px-4 py-3 rounded-xl bg-white border border-[#E2E8F0] outline-none"
-                                        value={examData.endDate} onChange={e => updateField('endDate', e.target.value)} />
+                                    <input 
+                                        type="date" 
+                                        min={examData.startDate || new Date().toISOString().split('T')[0]}
+                                        className="w-full px-4 py-3 rounded-xl bg-white border border-[#E2E8F0] outline-none"
+                                        value={examData.endDate} 
+                                        onChange={e => updateField('endDate', e.target.value)} 
+                                    />
                                 </div>
                                 <div className="space-y-1.5">
                                     <label className="text-[11px] font-bold text-[#64748B] uppercase tracking-widest ml-1">End Time</label>
-                                    <input type="time" className="w-full px-4 py-3 rounded-xl bg-white border border-[#E2E8F0] outline-none"
-                                        value={examData.endTime} onChange={e => updateField('endTime', e.target.value)} />
+                                    <input 
+                                        type="time" 
+                                        className="w-full px-4 py-3 rounded-xl bg-white border border-[#E2E8F0] outline-none"
+                                        value={examData.endTime} 
+                                        onChange={e => {
+                                            const selectedEndTime = e.target.value;
+                                            if (examData.startDate && examData.startTime && examData.endDate) {
+                                                const startDateTime = new Date(`${examData.startDate}T${examData.startTime}`);
+                                                const endDateTime = new Date(`${examData.endDate}T${selectedEndTime}`);
+                                                
+                                                if (endDateTime <= startDateTime) {
+                                                    alert('⚠️ End time must be after start time.');
+                                                    return;
+                                                }
+                                            }
+                                            updateField('endTime', selectedEndTime);
+                                        }} 
+                                    />
                                 </div>
                             </div>
                             <div className="space-y-1.5">

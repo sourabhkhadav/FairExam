@@ -38,6 +38,13 @@ const Login = () => {
             const data = await response.json();
 
             if (!response.ok) {
+                if (response.status === 403) {
+                    setError(data.message);
+                    setTimeout(() => {
+                        navigate('/');
+                    }, 3000);
+                    return;
+                }
                 throw new Error(data.message || 'Authentication failed');
             }
 

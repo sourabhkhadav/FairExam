@@ -14,6 +14,7 @@ const Examiner_AddQuestions = () => {
     const [focusedIndex, setFocusedIndex] = useState(0);
     const [isNavOpen, setIsNavOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [activeSectionId, setActiveSectionId] = useState(0);
     const [sections, setSections] = useState([
         { id: 0, name: 'Section 1' }
     ]);
@@ -40,6 +41,7 @@ const Examiner_AddQuestions = () => {
             name: `Section ${sections.length + 1}`
         };
         setSections([...sections, newSection]);
+        setActiveSectionId(newSectionId);
     };
 
     const removeSection = (sectionId) => {
@@ -119,8 +121,32 @@ const Examiner_AddQuestions = () => {
             }
 
             if (data.data && Array.isArray(data.data)) {
-                setQuestions(data.data);
-                alert(`Successfully imported ${data.count} questions.`);
+                const importedQuestions = data.data.map(q => ({
+                    ...q,
+                    sectionId: activeSectionId
+                }));
+
+                const sectionQuestions = questions.filter(q => q.sectionId === activeSectionId);
+                let insertIdx;
+                if (sectionQuestions.length > 0) {
+                    const lastOfSection = sectionQuestions[sectionQuestions.length - 1];
+                    insertIdx = questions.findIndex(q => q.id === lastOfSection.id) + 1;
+                } else {
+                    const sectionIdx = sections.findIndex(s => s.id === activeSectionId);
+                    if (sectionIdx === 0) {
+                        insertIdx = 0;
+                    } else {
+                        const prevSectionsIds = sections.slice(0, sectionIdx).map(s => s.id);
+                        const prevQuestions = questions.filter(q => prevSectionsIds.includes(q.sectionId));
+                        insertIdx = prevQuestions.length;
+                    }
+                }
+
+                const nextQs = [...questions];
+                nextQs.splice(insertIdx, 0, ...importedQuestions);
+                setQuestions(nextQs);
+                setFocusedIndex(insertIdx);
+                alert(`Successfully imported ${data.count} questions to ${sections.find(s => s.id === activeSectionId)?.name || 'Section'}.`);
             }
         } catch (error) {
             console.error('Import error:', error);
@@ -352,19 +378,34 @@ const Examiner_AddQuestions = () => {
                     <div className="flex-1 overflow-y-auto p-5 space-y-8 custom-scrollbar">
                         {sections.map((section, sIdx) => (
                             <div key={section.id} className="space-y-4">
-                                <div className="flex items-center justify-between px-1 group/section">
+                                <div 
+                                    className={`flex items-center justify-between px-3 py-2 rounded-xl group/section cursor-pointer transition-all ${
+                                        activeSectionId === section.id 
+                                            ? 'bg-slate-100 border border-[#0F172A]/20' 
+                                            : 'hover:bg-slate-50'
+                                    }`}
+                                    onClick={() => setActiveSectionId(section.id)}
+                                >
                                     <div className="flex items-center gap-2.5 flex-1 min-w-0">
-                                        <div className="w-1.5 h-1.5 bg-[#0F172A] rounded-full shrink-0" />
+                                        <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                                            activeSectionId === section.id ? 'bg-[#0F172A]' : 'bg-[#94A3B8]'
+                                        }`} />
                                         <input
                                             id={`section-input-${section.id}`}
                                             value={section.name}
                                             onChange={(e) => updateSectionName(section.id, e.target.value)}
-                                            className="text-[10px] font-bold text-[#0F172A] uppercase tracking-[0.15em] bg-transparent border-none outline-none focus:text-[#0F172A] w-full"
+                                            onClick={(e) => e.stopPropagation()}
+                                            className={`text-[10px] font-bold uppercase tracking-[0.15em] bg-transparent border-none outline-none w-full ${
+                                                activeSectionId === section.id ? 'text-[#0F172A]' : 'text-[#64748B]'
+                                            }`}
                                         />
                                     </div>
-                                    <div className="flex items-center gap-1.5">
+                                    <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
                                         <button
-                                            onClick={() => addQuestion(section.id)}
+                                            onClick={() => {
+                                                setActiveSectionId(section.id);
+                                                addQuestion(section.id);
+                                            }}
                                             className="p-1 px-2.5 bg-slate-50 text-[#0F172A] hover:bg-[#0F172A] hover:text-white rounded-lg transition-all flex items-center gap-1"
                                             title="Add Question"
                                         >

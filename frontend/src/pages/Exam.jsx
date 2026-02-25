@@ -23,6 +23,7 @@ const Exam = () => {
     // State Management
     const [examData, setExamData] = useState(null);
     const [allQuestions, setAllQuestions] = useState([]);
+    const [sections, setSections] = useState([]);
     const [loading, setLoading] = useState(true);
     const [timeLeft, setTimeLeft] = useState(5400);
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -60,6 +61,7 @@ const Exam = () => {
             if (data.success) {
                 setExamData(data.data);
                 setAllQuestions(data.data.questions);
+                setSections(data.data.sections || [{ id: 0, name: 'Section 1' }]);
                 if (data.data.duration) {
                     setTimeLeft(data.data.duration * 60);
                 }
@@ -67,6 +69,7 @@ const Exam = () => {
                     setViolationLimits(data.data.violationLimits);
                 }
                 console.log('Loaded', data.data.questions.length, 'questions');
+                console.log('Sections:', data.data.sections);
                 console.log('Violation Limits:', data.data.violationLimits);
             } else {
                 toast.error(data.message || 'Failed to load exam');
@@ -565,6 +568,11 @@ const Exam = () => {
                                         <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">
                                             Multiple Choice
                                         </span>
+                                        {sections.length > 1 && (
+                                            <span className="px-2 py-0.5 rounded text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                                                {sections.find(s => s.id === currentQuestion.sectionId)?.name || 'Section 1'}
+                                            </span>
+                                        )}
                                     </div>
                                     <div className="flex items-center gap-2">
                                         {questionStatus[currentQuestion.id] === 'marked' && (
@@ -679,26 +687,35 @@ const Exam = () => {
 
                     <div className="flex-1 overflow-y-auto p-4 custom-scrollbar bg-slate-50/30">
                         <div className="space-y-6">
-                            <div>
-                                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 border-b border-slate-200 pb-1">
-                                    Questions
-                                </h4>
-                                <div className="grid grid-cols-5 gap-2">
-                                    {allQuestions.map((q, idx) => (
-                                        <button
-                                            key={idx}
-                                            onClick={() => handleJumpToQuestion(idx)}
-                                            className={`
-                                                    h-9 w-9 rounded flex items-center justify-center text-sm font-medium border transition-all
-                                                    ${getStatusColor(q.id)}
-                                                `}
-                                        >
-                                            {idx + 1}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-
+                            {sections.map((section) => {
+                                const sectionQuestions = allQuestions.filter(q => q.sectionId === section.id);
+                                if (sectionQuestions.length === 0) return null;
+                                
+                                return (
+                                    <div key={section.id}>
+                                        <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 border-b border-slate-200 pb-1">
+                                            {section.name}
+                                        </h4>
+                                        <div className="grid grid-cols-5 gap-2">
+                                            {sectionQuestions.map((q) => {
+                                                const globalIdx = allQuestions.findIndex(item => item.id === q.id);
+                                                return (
+                                                    <button
+                                                        key={q.id}
+                                                        onClick={() => handleJumpToQuestion(globalIdx)}
+                                                        className={`
+                                                            h-9 w-9 rounded flex items-center justify-center text-sm font-medium border transition-all
+                                                            ${getStatusColor(q.id)}
+                                                        `}
+                                                    >
+                                                        {globalIdx + 1}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                );
+                            })}
                         </div>
                     </div>
                 </aside>

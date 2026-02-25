@@ -61,8 +61,7 @@ const Exam = () => {
                 setExamData(data.data);
                 setAllQuestions(data.data.questions);
                 if (data.data.duration) {
-                    const exactDuration = Math.round(data.data.duration);
-                    setTimeLeft(exactDuration * 60);
+                    setTimeLeft(data.data.duration * 60);
                 }
                 if (data.data.violationLimits) {
                     setViolationLimits(data.data.violationLimits);

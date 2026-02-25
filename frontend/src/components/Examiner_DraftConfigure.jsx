@@ -181,12 +181,12 @@ const Examiner_DraftConfigure = () => {
                                     value={examData.duration || ''} 
                                     onChange={e => {
                                         const inputValue = e.target.value;
-                                        const newDuration = inputValue === '' ? 0 : Math.round(parseFloat(inputValue));
+                                        const newDuration = inputValue === '' ? 0 : parseInt(inputValue);
                                         
                                         if (examData.startDate && examData.startTime && examData.endDate && examData.endTime) {
                                             const startDateTime = new Date(`${examData.startDate}T${examData.startTime}`);
                                             const endDateTime = new Date(`${examData.endDate}T${examData.endTime}`);
-                                            const availableMinutes = Math.floor((endDateTime - startDateTime) / (1000 * 60));
+                                            const availableMinutes = Math.round((endDateTime - startDateTime) / (1000 * 60));
                                             
                                             if (newDuration > availableMinutes) {
                                                 alert(`❌ Exam duration (${newDuration} min) cannot exceed the time between start and end (${availableMinutes} min).\n\nPlease adjust the duration or extend the end time.`);

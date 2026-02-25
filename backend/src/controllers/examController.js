@@ -57,6 +57,15 @@ export const createExam = asyncHandler(async (req, res) => {
         req.body.examiner = req.user.id;
     }
 
+    // Ensure violationLimits are properly formatted
+    if (req.body.violationLimits) {
+        req.body.violationLimits = {
+            faceLimit: parseInt(req.body.violationLimits.faceLimit, 10) || 5,
+            soundLimit: parseInt(req.body.violationLimits.soundLimit, 10) || 5,
+            fullscreenLimit: parseInt(req.body.violationLimits.fullscreenLimit, 10) || 5
+        };
+    }
+
     const exam = await Exam.create(req.body);
 
     res.status(201).json({
@@ -145,6 +154,15 @@ export const updateExam = asyncHandler(async (req, res) => {
 
     // Check if exam is being published
     const isPublishing = req.body.status === 'published' && exam.status !== 'published';
+
+    // Ensure violationLimits are preserved and properly formatted
+    if (req.body.violationLimits) {
+        req.body.violationLimits = {
+            faceLimit: parseInt(req.body.violationLimits.faceLimit, 10) || 5,
+            soundLimit: parseInt(req.body.violationLimits.soundLimit, 10) || 5,
+            fullscreenLimit: parseInt(req.body.violationLimits.fullscreenLimit, 10) || 5
+        };
+    }
 
     exam = await Exam.findByIdAndUpdate(req.params.id, req.body, {
         new: true,

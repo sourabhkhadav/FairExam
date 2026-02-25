@@ -217,7 +217,7 @@ const Examiner_DraftConfigure = () => {
                                     max="20"
                                     className="w-full px-4 py-3 rounded-xl bg-white border border-[#E2E8F0] outline-none focus:border-[#0F172A] transition-colors"
                                     value={examData.violationLimits?.faceLimit || 5}
-                                    onChange={e => updateField('violationLimits', { ...examData.violationLimits, faceLimit: parseInt(e.target.value) })}
+                                    onChange={e => updateField('violationLimits', { ...examData.violationLimits, faceLimit: parseInt(e.target.value, 10) || 5 })}
                                 />
                                 <p className="text-[10px] text-[#64748B] ml-1">Max face violations before action</p>
                             </div>
@@ -229,7 +229,7 @@ const Examiner_DraftConfigure = () => {
                                     max="20"
                                     className="w-full px-4 py-3 rounded-xl bg-white border border-[#E2E8F0] outline-none focus:border-[#0F172A] transition-colors"
                                     value={examData.violationLimits?.soundLimit || 5}
-                                    onChange={e => updateField('violationLimits', { ...examData.violationLimits, soundLimit: parseInt(e.target.value) })}
+                                    onChange={e => updateField('violationLimits', { ...examData.violationLimits, soundLimit: parseInt(e.target.value, 10) || 5 })}
                                 />
                                 <p className="text-[10px] text-[#64748B] ml-1">Max sound violations before action</p>
                             </div>
@@ -241,7 +241,7 @@ const Examiner_DraftConfigure = () => {
                                     max="20"
                                     className="w-full px-4 py-3 rounded-xl bg-white border border-[#E2E8F0] outline-none focus:border-[#0F172A] transition-colors"
                                     value={examData.violationLimits?.fullscreenLimit || 5}
-                                    onChange={e => updateField('violationLimits', { ...examData.violationLimits, fullscreenLimit: parseInt(e.target.value) })}
+                                    onChange={e => updateField('violationLimits', { ...examData.violationLimits, fullscreenLimit: parseInt(e.target.value, 10) || 5 })}
                                 />
                                 <p className="text-[10px] text-[#64748B] ml-1">Max fullscreen exits before action</p>
                             </div>

@@ -92,12 +92,31 @@ export const getExams = asyncHandler(async (req, res) => {
 // @route   GET /api/exams/public/:id
 // @access  Public
 export const getPublicExam = asyncHandler(async (req, res) => {
-    const exam = await Exam.findById(req.params.id).select('title description duration violationLimits questions');
+    const exam = await Exam.findById(req.params.id).select('title description duration violationLimits questions sections');
 
     if (!exam) {
         res.status(404);
         throw new Error('Exam not found');
     }
+
+    // Build per-section question counts
+    const sections = exam.sections || [];
+    const sectionBreakdown = sections.map(section => {
+        const sectionQuestions = exam.questions.filter(q => q.sectionId === section.id);
+        const totalMarks = sectionQuestions.reduce((acc, q) => acc + (q.marks || 0), 0);
+        return {
+            id: section.id,
+            name: section.name,
+            questionCount: sectionQuestions.length,
+            totalMarks
+        };
+    });
+
+    // Questions not assigned to any named section (sectionId = 0 or no match)
+    const namedSectionIds = sections.map(s => s.id);
+    const unsectionedQuestions = exam.questions.filter(
+        q => !namedSectionIds.includes(q.sectionId) || q.sectionId === 0
+    );
 
     res.status(200).json({
         success: true,
@@ -107,7 +126,9 @@ export const getPublicExam = asyncHandler(async (req, res) => {
             description: exam.description,
             duration: exam.duration,
             violationLimits: exam.violationLimits,
-            totalQuestions: exam.questions?.length || 0
+            totalQuestions: exam.questions?.length || 0,
+            sections: sectionBreakdown,
+            unsectionedCount: unsectionedQuestions.length
         }
     });
 });

@@ -10,11 +10,11 @@ const Exam = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const { examId: urlExamId } = useParams();
-    
+
     // Get real candidate and exam data from localStorage
     const candidateData = JSON.parse(localStorage.getItem('candidate') || '{}');
     const storedExamData = JSON.parse(localStorage.getItem('examData') || '{}');
-    
+
     const userName = candidateData.name || location.state?.name || 'Candidate';
     const candidateId = candidateData.id || candidateData._id || 'UNKNOWN';
     const examId = candidateData.examId || storedExamData.examId || storedExamData._id || urlExamId || 'UNKNOWN';
@@ -43,7 +43,23 @@ const Exam = () => {
             navigate('/candidate-login');
             return;
         }
-        fetchExamQuestions();
+        // One-attempt gate: abort if already submitted
+        const guard = async () => {
+            try {
+                const cid = candidateData.id || candidateData._id;
+                if (examId && cid) {
+                    const r = await fetch(`${API_BASE_URL}/submissions/check/${examId}/${cid}`);
+                    const d = await r.json();
+                    if (d.success && d.hasSubmitted) {
+                        toast.error('You have already submitted this exam.');
+                        navigate('/candidate-login');
+                        return;
+                    }
+                }
+            } catch (_) { /* ignore network errors on guard */ }
+            fetchExamQuestions();
+        };
+        guard();
     }, [examId]);
 
     const fetchExamQuestions = async () => {
@@ -51,13 +67,13 @@ const Exam = () => {
             console.log('Fetching exam with ID:', examId);
             const url = `${API_BASE_URL}/exams/public/${examId}/questions`;
             console.log('API URL:', url);
-            
+
             const response = await fetch(url);
             console.log('Response status:', response.status);
-            
+
             const data = await response.json();
             console.log('Response data:', data);
-            
+
             if (data.success) {
                 setExamData(data.data);
                 setAllQuestions(data.data.questions);
@@ -95,10 +111,10 @@ const Exam = () => {
     // Simple Audio Detection - No Meyda Required
     useEffect(() => {
         let animationFrameId = null;
-        
+
         const startAudioDetection = async () => {
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({ 
+                const stream = await navigator.mediaDevices.getUserMedia({
                     audio: {
                         echoCancellation: true,
                         noiseSuppression: true,
@@ -106,21 +122,21 @@ const Exam = () => {
                     }
                 });
                 micStreamRef.current = stream;
-                
+
                 audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
                 const microphone = audioContextRef.current.createMediaStreamSource(stream);
                 analyserRef.current = audioContextRef.current.createAnalyser();
                 analyserRef.current.fftSize = 512;
                 microphone.connect(analyserRef.current);
-                
+
                 const dataArray = new Uint8Array(analyserRef.current.frequencyBinCount);
                 let calibrationSamples = [];
                 let baselineVolume = 0;
-                
+
                 const detectSound = () => {
                     analyserRef.current.getByteFrequencyData(dataArray);
                     const average = dataArray.reduce((a, b) => a + b) / dataArray.length;
-                    
+
                     // Calibration - first 60 frames
                     if (calibrationSamples.length < 60) {
                         calibrationSamples.push(average);
@@ -133,15 +149,15 @@ const Exam = () => {
                         animationFrameId = requestAnimationFrame(detectSound);
                         return;
                     }
-                    
+
                     const threshold = baselineVolume + 15;
-                    
+
                     if (average > threshold && !soundLockRef.current) {
                         soundLockRef.current = true;
-                        
+
                         setSoundViolations(prev => {
                             const newCount = prev + 1;
-                            toast.error(`🔊 Sound detected! Violation #${newCount}/${violationLimits.soundLimit}`, { 
+                            toast.error(`🔊 Sound detected! Violation #${newCount}/${violationLimits.soundLimit}`, {
                                 id: 'sound-warning',
                                 duration: 500,
                             });
@@ -152,18 +168,18 @@ const Exam = () => {
                             }
                             return newCount;
                         });
-                        
+
                         setTimeout(() => {
                             soundLockRef.current = false;
                         }, 2000);
                     }
-                    
+
                     animationFrameId = requestAnimationFrame(detectSound);
                 };
-                
+
                 detectSound();
                 console.log('✅ Microphone access granted');
-                
+
             } catch (err) {
                 console.error('❌ Microphone error:', err);
                 if (err.name === 'NotAllowedError') {
@@ -179,9 +195,9 @@ const Exam = () => {
                 }
             }
         };
-        
+
         startAudioDetection();
-        
+
         return () => {
             if (animationFrameId) {
                 cancelAnimationFrame(animationFrameId);
@@ -198,7 +214,7 @@ const Exam = () => {
     // Fullscreen & Tab Switch Prevention
     useEffect(() => {
         let violationTimeout = null;
-        
+
         const playWarningSound = () => {
             try {
                 const audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -215,14 +231,14 @@ const Exam = () => {
                 console.error('Audio error:', err);
             }
         };
-        
+
         const addViolation = (message) => {
             if (violationTimeout) return;
-            
+
             setViolations(prev => {
                 const newCount = prev + 1;
                 playWarningSound();
-                toast.error(`⚠️ ${message} Violation #${newCount}/${violationLimits.fullscreenLimit}`, { 
+                toast.error(`⚠️ ${message} Violation #${newCount}/${violationLimits.fullscreenLimit}`, {
                     id: 'violation',
                     duration: 500,
                 });
@@ -232,12 +248,12 @@ const Exam = () => {
                 }
                 return newCount;
             });
-            
+
             violationTimeout = setTimeout(() => {
                 violationTimeout = null;
             }, 2000);
         };
-        
+
         const enterFullscreen = async () => {
             try {
                 await document.documentElement.requestFullscreen();
@@ -247,7 +263,7 @@ const Exam = () => {
                 console.error('Fullscreen error:', err);
             }
         };
-        
+
         // Auto enter fullscreen on mount
         setTimeout(enterFullscreen, 500);
 
@@ -274,7 +290,7 @@ const Exam = () => {
             document.removeEventListener('keydown', preventEscape, true);
             if (violationTimeout) clearTimeout(violationTimeout);
             if (document.fullscreenElement) {
-                document.exitFullscreen().catch(() => {});
+                document.exitFullscreen().catch(() => { });
             }
         };
     }, []);
@@ -441,10 +457,10 @@ const Exam = () => {
 
     return (
         <div className="flex flex-col h-screen bg-white font-sans text-slate-900 overflow-hidden">
-            
-            <Toaster 
-                position="top-center" 
-                toastOptions={{ 
+
+            <Toaster
+                position="top-center"
+                toastOptions={{
                     duration: 1500,
                     style: {
                         background: '#fee2e2',
@@ -478,13 +494,13 @@ const Exam = () => {
                             secondary: '#fff',
                         },
                     },
-                }} 
-                containerStyle={{ top: 70 }} 
+                }}
+                containerStyle={{ top: 70 }}
             />
-            
+
             {/* Live Camera Monitor - Always Visible */}
-            <LiveCameraMonitor 
-                onViolationUpdate={handleViolationUpdate} 
+            <LiveCameraMonitor
+                onViolationUpdate={handleViolationUpdate}
                 candidateId={candidateId}
                 candidateName={userName}
                 examId={examId}
@@ -690,7 +706,7 @@ const Exam = () => {
                             {sections.map((section) => {
                                 const sectionQuestions = allQuestions.filter(q => q.sectionId === section.id);
                                 if (sectionQuestions.length === 0) return null;
-                                
+
                                 return (
                                     <div key={section.id}>
                                         <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 border-b border-slate-200 pb-1">
@@ -762,11 +778,10 @@ const Exam = () => {
             {/* Fullscreen Warning Modal */}
             {showFullscreenWarning && (
                 <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 animate-in fade-in slide-in-from-top duration-300">
-                    <div className={`rounded-lg shadow-2xl px-6 py-4 border-2 ${
-                        violations >= 3 
-                            ? 'bg-red-600 border-red-800 text-white' 
+                    <div className={`rounded-lg shadow-2xl px-6 py-4 border-2 ${violations >= 3
+                            ? 'bg-red-600 border-red-800 text-white'
                             : 'bg-amber-500 border-amber-700 text-white'
-                    }`}>
+                        }`}>
                         <div className="flex items-center gap-3">
                             <AlertTriangle className="h-6 w-6 animate-pulse" />
                             <div>

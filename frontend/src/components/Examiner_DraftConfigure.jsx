@@ -24,6 +24,7 @@ const Examiner_DraftConfigure = () => {
     const [showManualAddModal, setShowManualAddModal] = useState(false);
     const [isPublishing, setIsPublishing] = useState(false);
     const [isAddingCandidate, setIsAddingCandidate] = useState(false);
+    const [candidateCount, setCandidateCount] = useState(0);
 
     const [examData, setExamData] = useState({
         title: '',
@@ -81,6 +82,7 @@ const Examiner_DraftConfigure = () => {
 
         if (id) {
             fetchExamDetails();
+            fetchCandidateCount();
         }
     }, [id]);
 
@@ -99,6 +101,22 @@ const Examiner_DraftConfigure = () => {
             localStorage.setItem(`examDraft_${id}`, JSON.stringify(examData));
         }
     }, [examData, id]);
+
+    // Fetch real candidate count from the Candidate collection
+    const fetchCandidateCount = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch(`http://localhost:5000/api/candidates/exam/${id}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await res.json();
+            if (data.success) {
+                setCandidateCount(data.count);
+            }
+        } catch (err) {
+            console.error('Failed to fetch candidate count:', err);
+        }
+    };
 
     const handleManualAdd = async () => {
         if (!manualCandidate.name || !manualCandidate.email || !manualCandidate.phone) {
@@ -124,8 +142,8 @@ const Examiner_DraftConfigure = () => {
                 alert('Candidate added successfully');
                 setShowManualAddModal(false);
                 setManualCandidate({ name: '', email: '', phone: '' });
-                // Update student count
-                updateField('students', (examData.students || 0) + 1);
+                // Refresh real count from server
+                fetchCandidateCount();
             } else {
                 alert(data.message);
             }
@@ -314,7 +332,7 @@ const Examiner_DraftConfigure = () => {
                             {/* Total Candidates Status Card */}
                             <div className="bg-[#EFF6FF] border border-[#DBEAFE] rounded-2xl p-4">
                                 <p className="text-[#1E40AF] font-bold text-[15px]">
-                                    Total Candidates: {examData.students || 0}
+                                    Total Candidates: {candidateCount}
                                 </p>
                             </div>
 
@@ -350,7 +368,8 @@ const Examiner_DraftConfigure = () => {
 
                                                 if (data.success) {
                                                     updateField('candidateFile', file.name);
-                                                    updateField('students', data.count);
+                                                    // Refresh real count from server
+                                                    fetchCandidateCount();
                                                     alert(`✅ Successfully uploaded ${data.count} candidates!`);
                                                 } else {
                                                     alert(`❌ Error: ${data.message}`);

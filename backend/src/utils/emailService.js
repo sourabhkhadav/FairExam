@@ -28,69 +28,51 @@ export const sendExamNotification = async (to, examDetails) => {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-<body style="margin:0;padding:0;background:#f5f5f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Helvetica Neue',Arial,sans-serif">
-    <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f5;padding:40px 20px">
+<body style="margin:0;padding:0;background:#f0f4f8;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0f4f8;padding:30px 15px">
         <tr>
             <td align="center">
-                <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.1)">
+                <table width="600" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.08)">
                     <tr>
-                        <td style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);padding:40px 30px;text-align:center">
-                            <table width="100%" cellpadding="0" cellspacing="0">
-                                <tr>
-                                    <td style="text-align:center">
-                                        <div style="display:inline-block;background:#ffffff;width:56px;height:56px;border-radius:12px;line-height:56px;text-align:center;margin-bottom:16px">
-                                            <span style="font-size:28px">📝</span>
-                                        </div>
-                                        <h1 style="margin:0;color:#ffffff;font-size:28px;font-weight:600;letter-spacing:-0.5px">FairExam</h1>
-                                        <p style="margin:8px 0 0 0;color:rgba(255,255,255,0.9);font-size:14px;font-weight:500">Online Examination Platform</p>
-                                    </td>
-                                </tr>
-                            </table>
+                        <td style="background:linear-gradient(135deg,#6366f1 0%,#8b5cf6 100%);padding:35px 30px;text-align:center">
+                            <div style="background:#fff;width:64px;height:64px;border-radius:16px;margin:0 auto 16px;display:flex;align-items:center;justify-content:center">
+                                <span style="font-size:32px">📝</span>
+                            </div>
+                            <h1 style="margin:0;color:#fff;font-size:26px;font-weight:700">FairExam</h1>
+                            <p style="margin:6px 0 0;color:rgba(255,255,255,0.95);font-size:13px">Online Examination Platform</p>
                         </td>
                     </tr>
                     <tr>
-                        <td style="padding:40px 30px">
-                            <p style="margin:0 0 8px 0;color:#6c757d;font-size:14px">Dear Student,</p>
-                            <p style="margin:0 0 32px 0;color:#212529;font-size:15px;line-height:1.6">
+                        <td style="padding:35px 30px">
+                            <p style="margin:0 0 6px;color:#64748b;font-size:14px">Dear Student,</p>
+                            <p style="margin:0 0 28px;color:#1e293b;font-size:15px;line-height:1.7">
                                 You have been scheduled for an upcoming exam. Please mark your calendar and ensure you are available during the exam window.
                             </p>
                             
-                            <h2 style="margin:0 0 24px 0;color:#212529;font-size:20px;font-weight:600">${examDetails.title}</h2>
+                            <h2 style="margin:0 0 20px;color:#1e293b;font-size:19px;font-weight:700">${examDetails.title}</h2>
                             
-                            <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8f9fa;border:1px solid #dee2e6;border-radius:8px;margin-bottom:24px">
+                            <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;margin-bottom:22px">
                                 <tr>
-                                    <td style="padding:24px">
+                                    <td style="padding:22px">
                                         <table width="100%" cellpadding="0" cellspacing="0">
                                             <tr>
-                                                <td style="padding:0 0 16px 0;border-bottom:1px solid #dee2e6">
-                                                    <table width="100%" cellpadding="0" cellspacing="0">
-                                                        <tr>
-                                                            <td width="50%" style="padding:0 12px 0 0">
-                                                                <p style="margin:0 0 4px 0;color:#6c757d;font-size:12px;text-transform:uppercase;letter-spacing:0.5px">Exam Date</p>
-                                                                <p style="margin:0;color:#212529;font-size:15px;font-weight:600">${formatDate(examDetails.startDate)}</p>
-                                                            </td>
-                                                            <td width="50%" style="padding:0 0 0 12px">
-                                                                <p style="margin:0 0 4px 0;color:#6c757d;font-size:12px;text-transform:uppercase;letter-spacing:0.5px">Start Time</p>
-                                                                <p style="margin:0;color:#212529;font-size:15px;font-weight:600">${formatTime(examDetails.startTime)}</p>
-                                                            </td>
-                                                        </tr>
-                                                    </table>
+                                                <td width="50%" style="padding:0 10px 18px 0;border-bottom:1px solid #e2e8f0">
+                                                    <p style="margin:0 0 6px;color:#64748b;font-size:11px;text-transform:uppercase;letter-spacing:0.8px;font-weight:600">📅 Exam Date</p>
+                                                    <p style="margin:0;color:#1e293b;font-size:16px;font-weight:700">${formatDate(examDetails.startDate)}</p>
+                                                </td>
+                                                <td width="50%" style="padding:0 0 18px 10px;border-bottom:1px solid #e2e8f0">
+                                                    <p style="margin:0 0 6px;color:#64748b;font-size:11px;text-transform:uppercase;letter-spacing:0.8px;font-weight:600">🕐 Start Time</p>
+                                                    <p style="margin:0;color:#1e293b;font-size:16px;font-weight:700">${formatTime(examDetails.startTime)}</p>
                                                 </td>
                                             </tr>
                                             <tr>
-                                                <td style="padding:16px 0 0 0">
-                                                    <table width="100%" cellpadding="0" cellspacing="0">
-                                                        <tr>
-                                                            <td width="50%" style="padding:0 12px 0 0">
-                                                                <p style="margin:0 0 4px 0;color:#6c757d;font-size:12px;text-transform:uppercase;letter-spacing:0.5px">End Time</p>
-                                                                <p style="margin:0;color:#212529;font-size:15px;font-weight:600">${formatTime(examDetails.endTime)}</p>
-                                                            </td>
-                                                            <td width="50%" style="padding:0 0 0 12px">
-                                                                <p style="margin:0 0 4px 0;color:#6c757d;font-size:12px;text-transform:uppercase;letter-spacing:0.5px">Duration</p>
-                                                                <p style="margin:0;color:#212529;font-size:15px;font-weight:600">${examDetails.duration} minutes</p>
-                                                            </td>
-                                                        </tr>
-                                                    </table>
+                                                <td width="50%" style="padding:18px 10px 0 0">
+                                                    <p style="margin:0 0 6px;color:#64748b;font-size:11px;text-transform:uppercase;letter-spacing:0.8px;font-weight:600">🕒 End Time</p>
+                                                    <p style="margin:0;color:#1e293b;font-size:16px;font-weight:700">${formatTime(examDetails.endTime)}</p>
+                                                </td>
+                                                <td width="50%" style="padding:18px 0 0 10px">
+                                                    <p style="margin:0 0 6px;color:#64748b;font-size:11px;text-transform:uppercase;letter-spacing:0.8px;font-weight:600">⏱️ Duration</p>
+                                                    <p style="margin:0;color:#1e293b;font-size:16px;font-weight:700">${examDetails.duration} minutes</p>
                                                 </td>
                                             </tr>
                                         </table>
@@ -98,11 +80,11 @@ export const sendExamNotification = async (to, examDetails) => {
                                 </tr>
                             </table>
                             
-                            <table width="100%" cellpadding="0" cellspacing="0" style="background:#e7f3ff;border-left:4px solid #0066cc;border-radius:4px;margin-bottom:32px">
+                            <table width="100%" cellpadding="0" cellspacing="0" style="background:#dbeafe;border-left:4px solid #3b82f6;border-radius:8px;margin-bottom:28px">
                                 <tr>
-                                    <td style="padding:16px 20px">
-                                        <p style="margin:0;color:#004085;font-size:14px;line-height:1.6">
-                                            <strong>📧 Login Credentials:</strong> You will receive your login credentials (Candidate ID and Password) via email at the exam start time.
+                                    <td style="padding:16px 18px">
+                                        <p style="margin:0;color:#1e40af;font-size:14px;line-height:1.7">
+                                            <strong>🔐 Login Credentials:</strong> You will receive your login credentials (Candidate ID and Password) via email at the exam start time.
                                         </p>
                                     </td>
                                 </tr>
@@ -110,16 +92,10 @@ export const sendExamNotification = async (to, examDetails) => {
                         </td>
                     </tr>
                     <tr>
-                        <td style="background:#f8f9fa;padding:24px 30px;border-top:1px solid #dee2e6">
-                            <table width="100%" cellpadding="0" cellspacing="0">
-                                <tr>
-                                    <td style="text-align:center">
-                                        <p style="margin:0 0 8px 0;color:#212529;font-size:14px;font-weight:500">Best regards,</p>
-                                        <p style="margin:0 0 16px 0;color:#6c757d;font-size:14px">FairExam Team</p>
-                                        <p style="margin:0;color:#adb5bd;font-size:11px">This is an automated email. Please do not reply.</p>
-                                    </td>
-                                </tr>
-                            </table>
+                        <td style="background:#f8fafc;padding:22px 30px;border-top:1px solid #e2e8f0;text-align:center">
+                            <p style="margin:0 0 6px;color:#1e293b;font-size:14px;font-weight:600">Best regards,</p>
+                            <p style="margin:0 0 14px;color:#64748b;font-size:13px">FairExam Team</p>
+                            <p style="margin:0;color:#94a3b8;font-size:11px">This is an automated email. Please do not reply.</p>
                         </td>
                     </tr>
                 </table>
@@ -284,17 +260,88 @@ export const sendViolationAlert = async (to, violationDetails) => {
         to,
         subject: `Violation Alert: ${violationDetails.examName}`,
         html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                <h2 style="color: #EF4444;">⚠️ Violation Alert</h2>
-                <p>A violation has been detected during the exam:</p>
-                <div style="background: #FEF2F2; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #EF4444;">
-                    <p><strong>Candidate:</strong> ${violationDetails.candidateName}</p>
-                    <p><strong>Exam:</strong> ${violationDetails.examName}</p>
-                    <p><strong>Violation Count:</strong> ${violationDetails.violationCount}</p>
-                    <p><strong>Time:</strong> ${new Date(violationDetails.timestamp).toLocaleString()}</p>
-                </div>
-                <p>Please review the violation report in the FairExam dashboard.</p>
-            </div>
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin:0;padding:0;background:#f0f4f8;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0f4f8;padding:30px 15px">
+        <tr>
+            <td align="center">
+                <table width="600" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.08)">
+                    <tr>
+                        <td style="background:#dc2626;padding:35px 30px;text-align:center">
+                            <div style="background:#fff;width:64px;height:64px;border-radius:16px;margin:0 auto 16px;display:flex;align-items:center;justify-content:center">
+                                <span style="font-size:32px">⚠️</span>
+                            </div>
+                            <h1 style="margin:0;color:#fff;font-size:26px;font-weight:700">Violation Alert</h1>
+                            <p style="margin:6px 0 0;color:rgba(255,255,255,0.95);font-size:13px">FairExam Proctoring System</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding:35px 30px">
+                            <p style="margin:0 0 28px;color:#1e293b;font-size:15px;line-height:1.7">
+                                A violation has been detected during the exam:
+                            </p>
+                            
+                            <table width="100%" cellpadding="0" cellspacing="0" style="background:#fef2f2;border:2px solid #ef4444;border-radius:10px;margin-bottom:22px">
+                                <tr>
+                                    <td style="padding:22px">
+                                        <table width="100%" cellpadding="0" cellspacing="0">
+                                            <tr>
+                                                <td style="padding:0 0 14px;border-bottom:1px solid #fecaca">
+                                                    <p style="margin:0 0 4px;color:#991b1b;font-size:11px;text-transform:uppercase;letter-spacing:0.8px;font-weight:600">Candidate</p>
+                                                    <p style="margin:0;color:#7f1d1d;font-size:16px;font-weight:700">${violationDetails.candidateName}</p>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding:14px 0;border-bottom:1px solid #fecaca">
+                                                    <p style="margin:0 0 4px;color:#991b1b;font-size:11px;text-transform:uppercase;letter-spacing:0.8px;font-weight:600">Exam</p>
+                                                    <p style="margin:0;color:#7f1d1d;font-size:16px;font-weight:700">${violationDetails.examName}</p>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding:14px 0;border-bottom:1px solid #fecaca">
+                                                    <p style="margin:0 0 4px;color:#991b1b;font-size:11px;text-transform:uppercase;letter-spacing:0.8px;font-weight:600">Violation Count</p>
+                                                    <p style="margin:0;color:#7f1d1d;font-size:16px;font-weight:700">${violationDetails.violationCount}</p>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding:14px 0 0">
+                                                    <p style="margin:0 0 4px;color:#991b1b;font-size:11px;text-transform:uppercase;letter-spacing:0.8px;font-weight:600">Time</p>
+                                                    <p style="margin:0;color:#7f1d1d;font-size:16px;font-weight:700">${new Date(violationDetails.timestamp).toLocaleString()}</p>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <table width="100%" cellpadding="0" cellspacing="0" style="background:#fef3c7;border-left:4px solid #f59e0b;border-radius:8px;margin-bottom:28px">
+                                <tr>
+                                    <td style="padding:16px 18px">
+                                        <p style="margin:0;color:#92400e;font-size:14px;line-height:1.7">
+                                            <strong>Action Required:</strong> Please review the violation report in the FairExam dashboard.
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="background:#f8fafc;padding:22px 30px;border-top:1px solid #e2e8f0;text-align:center">
+                            <p style="margin:0 0 6px;color:#1e293b;font-size:14px;font-weight:600">FairExam Team</p>
+                            <p style="margin:0;color:#94a3b8;font-size:11px">This is an automated alert. Please do not reply.</p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
         `
     };
 
@@ -308,17 +355,83 @@ export const sendExamResult = async (to, resultDetails) => {
         to,
         subject: `Exam Results: ${resultDetails.examTitle}`,
         html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                <h2 style="color: #0F172A;">Exam Results</h2>
-                <p>Your exam results are now available:</p>
-                <div style="background: #F0FDF4; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                    <h3 style="margin: 0 0 10px 0;">${resultDetails.examTitle}</h3>
-                    <p><strong>Score:</strong> ${resultDetails.score}/${resultDetails.totalMarks}</p>
-                    <p><strong>Percentage:</strong> ${resultDetails.percentage}%</p>
-                    <p><strong>Status:</strong> ${resultDetails.status}</p>
-                </div>
-                <p>Login to FairExam to view detailed results.</p>
-            </div>
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin:0;padding:0;background:#f0f4f8;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0f4f8;padding:30px 15px">
+        <tr>
+            <td align="center">
+                <table width="600" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.08)">
+                    <tr>
+                        <td style="background:linear-gradient(135deg,#10b981 0%,#059669 100%);padding:35px 30px;text-align:center">
+                            <div style="background:#fff;width:64px;height:64px;border-radius:16px;margin:0 auto 16px;display:flex;align-items:center;justify-content:center">
+                                <span style="font-size:32px">🎓</span>
+                            </div>
+                            <h1 style="margin:0;color:#fff;font-size:26px;font-weight:700">Exam Results</h1>
+                            <p style="margin:6px 0 0;color:rgba(255,255,255,0.95);font-size:13px">FairExam Platform</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding:35px 30px">
+                            <p style="margin:0 0 28px;color:#1e293b;font-size:15px;line-height:1.7">
+                                Your exam results are now available:
+                            </p>
+                            
+                            <h2 style="margin:0 0 20px;color:#1e293b;font-size:19px;font-weight:700">${resultDetails.examTitle}</h2>
+                            
+                            <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0fdf4;border:2px solid #10b981;border-radius:10px;margin-bottom:22px">
+                                <tr>
+                                    <td style="padding:22px">
+                                        <table width="100%" cellpadding="0" cellspacing="0">
+                                            <tr>
+                                                <td width="50%" style="padding:0 10px 18px 0;border-bottom:1px solid #bbf7d0">
+                                                    <p style="margin:0 0 6px;color:#065f46;font-size:11px;text-transform:uppercase;letter-spacing:0.8px;font-weight:600">🎯 Score</p>
+                                                    <p style="margin:0;color:#064e3b;font-size:20px;font-weight:700">${resultDetails.score}/${resultDetails.totalMarks}</p>
+                                                </td>
+                                                <td width="50%" style="padding:0 0 18px 10px;border-bottom:1px solid #bbf7d0">
+                                                    <p style="margin:0 0 6px;color:#065f46;font-size:11px;text-transform:uppercase;letter-spacing:0.8px;font-weight:600">📊 Percentage</p>
+                                                    <p style="margin:0;color:#064e3b;font-size:20px;font-weight:700">${resultDetails.percentage}%</p>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td colspan="2" style="padding:18px 0 0">
+                                                    <p style="margin:0 0 6px;color:#065f46;font-size:11px;text-transform:uppercase;letter-spacing:0.8px;font-weight:600">✅ Status</p>
+                                                    <p style="margin:0;color:#064e3b;font-size:18px;font-weight:700">${resultDetails.status}</p>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <table width="100%" cellpadding="0" cellspacing="0" style="background:#dbeafe;border-left:4px solid #3b82f6;border-radius:8px;margin-bottom:28px">
+                                <tr>
+                                    <td style="padding:16px 18px">
+                                        <p style="margin:0;color:#1e40af;font-size:14px;line-height:1.7">
+                                            Login to FairExam to view detailed results and analysis.
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="background:#f8fafc;padding:22px 30px;border-top:1px solid #e2e8f0;text-align:center">
+                            <p style="margin:0 0 6px;color:#1e293b;font-size:14px;font-weight:600">Best regards,</p>
+                            <p style="margin:0 0 14px;color:#64748b;font-size:13px">FairExam Team</p>
+                            <p style="margin:0;color:#94a3b8;font-size:11px">This is an automated email. Please do not reply.</p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
         `
     };
 
@@ -468,12 +581,62 @@ export const sendTestEmail = async (to) => {
         to,
         subject: 'FairExam - Email Configuration Test',
         html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                <h2 style="color: #0F172A;">✅ Email Configuration Successful!</h2>
-                <p>This is a test email from FairExam.</p>
-                <p>Your Nodemailer configuration is working correctly.</p>
-                <p style="color: #64748B; font-size: 12px; margin-top: 20px;">Sent at: ${new Date().toLocaleString()}</p>
-            </div>
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin:0;padding:0;background:#f0f4f8;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0f4f8;padding:30px 15px">
+        <tr>
+            <td align="center">
+                <table width="600" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.08)">
+                    <tr>
+                        <td style="background:linear-gradient(135deg,#10b981 0%,#059669 100%);padding:35px 30px;text-align:center">
+                            <div style="background:#fff;width:64px;height:64px;border-radius:16px;margin:0 auto 16px;display:flex;align-items:center;justify-content:center">
+                                <span style="font-size:32px">✅</span>
+                            </div>
+                            <h1 style="margin:0;color:#fff;font-size:26px;font-weight:700">Email Test Successful</h1>
+                            <p style="margin:6px 0 0;color:rgba(255,255,255,0.95);font-size:13px">FairExam Configuration</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding:35px 30px">
+                            <p style="margin:0 0 28px;color:#1e293b;font-size:15px;line-height:1.7">
+                                This is a test email from FairExam. Your Nodemailer configuration is working correctly.
+                            </p>
+                            
+                            <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0fdf4;border:2px solid #10b981;border-radius:10px;margin-bottom:22px">
+                                <tr>
+                                    <td style="padding:22px;text-align:center">
+                                        <p style="margin:0 0 8px;color:#065f46;font-size:13px;font-weight:600">Configuration Status</p>
+                                        <p style="margin:0;color:#064e3b;font-size:20px;font-weight:700">✅ Working Perfectly</p>
+                                    </td>
+                                </tr>
+                            </table>
+                            
+                            <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;border-radius:8px">
+                                <tr>
+                                    <td style="padding:18px;text-align:center">
+                                        <p style="margin:0;color:#64748b;font-size:12px">Sent at: ${new Date().toLocaleString()}</p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="background:#f8fafc;padding:22px 30px;border-top:1px solid #e2e8f0;text-align:center">
+                            <p style="margin:0 0 6px;color:#1e293b;font-size:14px;font-weight:600">FairExam Team</p>
+                            <p style="margin:0;color:#94a3b8;font-size:11px">This is an automated test email.</p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
         `
     };
 
@@ -502,68 +665,73 @@ export const sendExamCancellation = async (to, examDetails) => {
         to,
         subject: `Exam Cancelled: ${examDetails.title}`,
         html: `
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            </head>
-            <body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: Arial, sans-serif;">
-                <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f8fafc; padding: 40px 20px;">
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin:0;padding:0;background:#f0f4f8;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0f4f8;padding:30px 15px">
+        <tr>
+            <td align="center">
+                <table width="600" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.08)">
                     <tr>
-                        <td align="center">
-                            <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 12px; overflow: hidden;">
+                        <td style="background:#1e293b;padding:35px 30px;text-align:center">
+                            <div style="background:#fff;width:64px;height:64px;border-radius:16px;margin:0 auto 16px;display:flex;align-items:center;justify-content:center">
+                                <span style="font-size:32px">📝</span>
+                            </div>
+                            <h1 style="margin:0;color:#fff;font-size:26px;font-weight:700">FairExam</h1>
+                            <p style="margin:6px 0 0;color:#94a3b8;font-size:13px">Online Examination Platform</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="background:#fee;border-left:4px solid #ef4444;padding:18px 30px">
+                            <p style="margin:0;color:#991b1b;font-size:16px;font-weight:700">⚠️ Exam Cancelled</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding:35px 30px">
+                            <p style="margin:0 0 6px;color:#64748b;font-size:14px">Dear Student,</p>
+                            <p style="margin:0 0 28px;color:#1e293b;font-size:15px;line-height:1.7">
+                                The following exam has been cancelled:
+                            </p>
+                            
+                            <h2 style="margin:0 0 20px;color:#1e293b;font-size:19px;font-weight:700">${examDetails.title}</h2>
+                            
+                            <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;margin-bottom:22px">
                                 <tr>
-                                    <td style="background: #0F172A; padding: 30px; text-align: center;">
-                                        <h1 style="margin: 0; color: #ffffff; font-size: 24px;">📝 FairExam</h1>
-                                        <p style="margin: 5px 0 0 0; color: #94A3B8; font-size: 13px;">Online Examination Platform</p>
+                                    <td style="padding:22px">
+                                        <p style="margin:0 0 8px;color:#64748b;font-size:12px;font-weight:600">Originally Scheduled:</p>
+                                        <p style="margin:0;color:#1e293b;font-size:16px;font-weight:700">${formatDate(examDetails.startDate)} at ${formatTime(examDetails.startTime)}</p>
                                     </td>
                                 </tr>
+                            </table>
+                            
+                            <table width="100%" cellpadding="0" cellspacing="0" style="background:#fef3c7;border-left:4px solid #f59e0b;border-radius:8px;margin-bottom:28px">
                                 <tr>
-                                    <td style="padding: 40px 30px;">
-                                        <p style="margin: 0 0 20px 0; color: #64748B; font-size: 15px;">Dear Student,</p>
-                                        
-                                        <div style="background: #FEF2F2; border-left: 4px solid #EF4444; padding: 16px 20px; border-radius: 8px; margin-bottom: 25px;">
-                                            <p style="margin: 0; color: #991B1B; font-size: 15px; font-weight: 600;">⚠️ Exam Cancelled</p>
-                                        </div>
-                                        
-                                        <p style="margin: 0 0 20px 0; color: #0F172A; font-size: 15px; line-height: 1.6;">
-                                            The following exam has been cancelled:
-                                        </p>
-                                        
-                                        <h2 style="margin: 0 0 25px 0; color: #0F172A; font-size: 20px; font-weight: 600;">${examDetails.title}</h2>
-                                        
-                                        <table width="100%" cellpadding="0" cellspacing="0" style="background: #F8FAFC; border-radius: 8px; margin-bottom: 25px;">
-                                            <tr>
-                                                <td style="padding: 20px;">
-                                                    <p style="margin: 0 0 10px 0; color: #64748B; font-size: 13px;"><strong>Originally Scheduled:</strong></p>
-                                                    <p style="margin: 0; color: #0F172A; font-size: 15px;">${formatDate(examDetails.startDate)} at ${formatTime(examDetails.startTime)}</p>
-                                                </td>
-                                            </tr>
-                                        </table>
-                                        
-                                        <p style="margin: 0 0 20px 0; color: #0F172A; font-size: 15px; line-height: 1.6;">
+                                    <td style="padding:16px 18px">
+                                        <p style="margin:0;color:#92400e;font-size:14px;line-height:1.7">
                                             You will receive further communication regarding any rescheduling.
-                                        </p>
-                                        
-                                        <p style="margin: 0; color: #64748B; font-size: 14px; line-height: 1.6; text-align: center;">
-                                            Best regards,<br/>FairExam Team
-                                        </p>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td style="background: #F8FAFC; padding: 20px 30px; text-align: center; border-top: 1px solid #E2E8F0;">
-                                        <p style="margin: 0; color: #94A3B8; font-size: 12px;">
-                                            This is an automated email. Please do not reply.
                                         </p>
                                     </td>
                                 </tr>
                             </table>
                         </td>
                     </tr>
+                    <tr>
+                        <td style="background:#f8fafc;padding:22px 30px;border-top:1px solid #e2e8f0;text-align:center">
+                            <p style="margin:0 0 6px;color:#1e293b;font-size:14px;font-weight:600">Best regards,</p>
+                            <p style="margin:0 0 14px;color:#64748b;font-size:13px">FairExam Team</p>
+                            <p style="margin:0;color:#94a3b8;font-size:11px">This is an automated email. Please do not reply.</p>
+                        </td>
+                    </tr>
                 </table>
-            </body>
-            </html>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
         `
     };
 
@@ -787,54 +955,73 @@ export const sendOtpEmail = async (to, otp, name) => {
         to,
         subject: 'Password Reset OTP - FairExam',
         html: `
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            </head>
-            <body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: Arial, sans-serif;">
-                <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f8fafc; padding: 40px 20px;">
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin:0;padding:0;background:#f0f4f8;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0f4f8;padding:30px 15px">
+        <tr>
+            <td align="center">
+                <table width="600" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.08)">
                     <tr>
-                        <td align="center">
-                            <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 12px; overflow: hidden;">
+                        <td style="background:#1e293b;padding:35px 30px;text-align:center">
+                            <div style="background:#fff;width:64px;height:64px;border-radius:16px;margin:0 auto 16px;display:flex;align-items:center;justify-content:center">
+                                <span style="font-size:32px">🔐</span>
+                            </div>
+                            <h1 style="margin:0;color:#fff;font-size:26px;font-weight:700">Password Reset</h1>
+                            <p style="margin:6px 0 0;color:#94a3b8;font-size:13px">FairExam Security</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding:35px 30px">
+                            <p style="margin:0 0 6px;color:#64748b;font-size:14px">Dear ${name},</p>
+                            <p style="margin:0 0 28px;color:#1e293b;font-size:15px;line-height:1.7">
+                                We received a request to reset your password. Use the OTP below to proceed:
+                            </p>
+                            
+                            <table width="100%" cellpadding="0" cellspacing="0" style="background:#dbeafe;border:2px solid #3b82f6;border-radius:10px;margin-bottom:22px">
                                 <tr>
-                                    <td style="background: #0F172A; padding: 30px; text-align: center;">
-                                        <h1 style="margin: 0; color: #ffffff; font-size: 24px;">📝 FairExam</h1>
-                                        <p style="margin: 5px 0 0 0; color: #94A3B8; font-size: 13px;">Password Reset Request</p>
+                                    <td style="padding:28px;text-align:center">
+                                        <p style="margin:0 0 12px;color:#1e40af;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:1px">Your OTP Code</p>
+                                        <p style="margin:0;color:#1e3a8a;font-size:36px;font-weight:700;letter-spacing:10px;font-family:'Courier New',monospace">${otp}</p>
                                     </td>
                                 </tr>
+                            </table>
+                            
+                            <table width="100%" cellpadding="0" cellspacing="0" style="background:#fee;border-left:4px solid #ef4444;border-radius:8px;margin-bottom:22px">
                                 <tr>
-                                    <td style="padding: 40px 30px;">
-                                        <p style="margin: 0 0 20px 0; color: #64748B; font-size: 15px;">Dear ${name},</p>
-                                        <p style="margin: 0 0 25px 0; color: #0F172A; font-size: 15px; line-height: 1.6;">
-                                            We received a request to reset your password. Use the OTP below to proceed:
-                                        </p>
-                                        <div style="background: #EFF6FF; border: 2px solid #3B82F6; border-radius: 8px; padding: 20px; margin-bottom: 25px; text-align: center;">
-                                            <p style="margin: 0 0 10px 0; color: #1E40AF; font-size: 14px; font-weight: 600;">Your OTP Code</p>
-                                            <p style="margin: 0; color: #1E3A8A; font-size: 32px; font-weight: bold; letter-spacing: 8px;">${otp}</p>
-                                        </div>
-                                        <p style="margin: 0 0 15px 0; color: #EF4444; font-size: 13px; text-align: center;">
-                                            This OTP will expire in 10 minutes.
-                                        </p>
-                                        <p style="margin: 0; color: #64748B; font-size: 14px; line-height: 1.6;">
-                                            If you didn't request this, please ignore this email.
-                                        </p>
+                                    <td style="padding:16px 18px;text-align:center">
+                                        <p style="margin:0;color:#991b1b;font-size:13px;font-weight:600">⏰ This OTP will expire in 10 minutes</p>
                                     </td>
                                 </tr>
+                            </table>
+                            
+                            <table width="100%" cellpadding="0" cellspacing="0" style="background:#fef3c7;border-left:4px solid #f59e0b;border-radius:8px;margin-bottom:28px">
                                 <tr>
-                                    <td style="background: #F8FAFC; padding: 20px 30px; text-align: center; border-top: 1px solid #E2E8F0;">
-                                        <p style="margin: 0; color: #94A3B8; font-size: 12px;">
-                                            This is an automated email. Please do not reply.
+                                    <td style="padding:16px 18px">
+                                        <p style="margin:0;color:#92400e;font-size:14px;line-height:1.7">
+                                            If you didn't request this, please ignore this email and your password will remain unchanged.
                                         </p>
                                     </td>
                                 </tr>
                             </table>
                         </td>
                     </tr>
+                    <tr>
+                        <td style="background:#f8fafc;padding:22px 30px;border-top:1px solid #e2e8f0;text-align:center">
+                            <p style="margin:0 0 6px;color:#1e293b;font-size:14px;font-weight:600">FairExam Security Team</p>
+                            <p style="margin:0;color:#94a3b8;font-size:11px">This is an automated email. Please do not reply.</p>
+                        </td>
+                    </tr>
                 </table>
-            </body>
-            </html>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
         `
     };
 

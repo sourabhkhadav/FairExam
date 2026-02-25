@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Link, Navigate } from 'react-router-dom'
 import Landing_Home from './components/Landing_Home'
 import AuthForm from './components/AuthForm'
+import ProtectedRoute from './components/ProtectedRoute'
 import Examiner_Layout from './components/Examiner_Layout'
 import Examiner_Dashboard from './components/Examiner_Dashboard'
 import Examiner_CreateExam from './components/Examiner_CreateExam'
@@ -33,7 +34,7 @@ function App() {
         <Route path="/exam" element={<Exam />} />
 
         {/* Examiner Routes */}
-        <Route element={<Examiner_Layout />}>
+        <Route element={<ProtectedRoute><Examiner_Layout /></ProtectedRoute>}>
           <Route path="/dashboard" element={<Examiner_Dashboard />} />
           <Route path="/create-exam" element={<Examiner_CreateExam />} />
           <Route path="/add-questions" element={<Examiner_AddQuestions />} />

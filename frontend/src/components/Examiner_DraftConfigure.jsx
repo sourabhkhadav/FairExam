@@ -52,9 +52,27 @@ const Examiner_DraftConfigure = () => {
                 const response = await fetch(`http://localhost:5000/api/exams/${id}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                const data = await response.json();
-                if (data) {
-                    setExamData(prev => ({ ...prev, ...data }));
+                const responseData = await response.json();
+                if (responseData.success && responseData.data) {
+                    const dbData = responseData.data;
+
+                    // Merge with localStorage draft if it exists for this ID
+                    const draft = localStorage.getItem(`examDraft_${id}`);
+                    let draftData = {};
+                    if (draft) {
+                        const parsedDraft = JSON.parse(draft);
+                        if (parsedDraft.id === id) {
+                            draftData = parsedDraft;
+                        }
+                    }
+
+                    setExamData(prev => ({
+                        ...prev,
+                        ...dbData,
+                        ...draftData,
+                        // Ensure we prioritize DB title if draft title is empty
+                        title: dbData.title || draftData.title || prev.title
+                    }));
                 }
             } catch (error) {
                 console.error('Fetch error:', error);
@@ -64,19 +82,23 @@ const Examiner_DraftConfigure = () => {
         if (id) {
             fetchExamDetails();
         }
-
-        const draft = localStorage.getItem('examDraft');
-        if (draft) {
-            const draftData = JSON.parse(draft);
-            if (draftData.id === id) {
-                setExamData(prev => ({ ...prev, ...draftData }));
-            }
-        }
     }, [id]);
 
     const updateField = (field, value) => {
-        setExamData(prev => ({ ...prev, [field]: value }));
+        setExamData(prev => {
+            const newData = { ...prev, [field]: value };
+            // Save to draft specifically for this exam ID
+            localStorage.setItem(`examDraft_${id}`, JSON.stringify(newData));
+            return newData;
+        });
     };
+
+    // Auto-save useEffect as a secondary backup
+    useEffect(() => {
+        if (id && examData.title) {
+            localStorage.setItem(`examDraft_${id}`, JSON.stringify(examData));
+        }
+    }, [examData, id]);
 
     const handleManualAdd = async () => {
         if (!manualCandidate.name || !manualCandidate.email || !manualCandidate.phone) {
@@ -118,6 +140,7 @@ const Examiner_DraftConfigure = () => {
         <div className="max-w-5xl mx-auto px-4 sm:px-0 py-10">
             <div className="flex items-center gap-4 sm:gap-6 mb-8 sm:mb-10">
                 <button
+                    type="button"
                     onClick={() => navigate('/manage-exams')}
                     className="p-2.5 bg-white border border-[#E2E8F0] rounded-xl shadow-sm cursor-pointer hover:bg-[#F8FAFC] transition-colors group"
                 >
@@ -130,6 +153,23 @@ const Examiner_DraftConfigure = () => {
             </div>
 
             <div className="space-y-8">
+                {/* Basic Details */}
+                <FormSection title="Basic Details" icon={Info}>
+                    <div className="bg-[#F8FAFC]/50 p-6 rounded-2xl border border-[#E2E8F0] space-y-6">
+                        <div className="space-y-1.5">
+                            <label className="text-[11px] font-bold text-[#64748B] uppercase tracking-widest ml-1">Exam Title</label>
+                            <input
+                                type="text"
+                                placeholder="Enter exam title"
+                                className="w-full px-4 py-3 rounded-xl bg-white border border-[#E2E8F0] outline-none focus:border-[#0F172A] transition-colors font-medium"
+                                value={examData.title || ''}
+                                onChange={e => updateField('title', e.target.value)}
+                            />
+                            <p className="text-[10px] text-[#64748B] ml-1">This title will be visible to candidates during the exam.</p>
+                        </div>
+                    </div>
+                </FormSection>
+
                 {/* Schedule */}
                 <FormSection title="Exam Date and Time" icon={Calendar}>
                     <div className="bg-[#F8FAFC]/50 p-6 rounded-2xl border border-[#E2E8F0] space-y-6">
@@ -280,6 +320,7 @@ const Examiner_DraftConfigure = () => {
 
                             {/* Add Candidate Manually Button */}
                             <button
+                                type="button"
                                 onClick={() => setShowManualAddModal(true)}
                                 className="w-full py-4 bg-white border border-[#E2E8F0] border-dashed rounded-2xl flex items-center justify-start px-5 gap-3 hover:bg-slate-50 transition-all"
                             >
@@ -321,7 +362,7 @@ const Examiner_DraftConfigure = () => {
                                     }}
                                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                                 />
-                                <button className="w-full py-4 bg-white border border-[#E2E8F0] border-dashed rounded-2xl flex items-center justify-start px-5 gap-3 hover:bg-slate-50 transition-all">
+                                <button type="button" className="w-full py-4 bg-white border border-[#E2E8F0] border-dashed rounded-2xl flex items-center justify-start px-5 gap-3 hover:bg-slate-50 transition-all">
                                     <Database className="w-5 h-5 text-[#64748B]" />
                                     <span className="text-[15px] font-medium text-[#0F172A]">
                                         {examData.candidateFile?.endsWith('.csv') || examData.candidateFile?.endsWith('.xlsx') ? examData.candidateFile : 'Excel / CSV'}
@@ -331,6 +372,7 @@ const Examiner_DraftConfigure = () => {
 
                             {/* Manage Candidates (Replacing PDF List) */}
                             <button
+                                type="button"
                                 onClick={() => navigate(`/manage-candidates/${id}`)}
                                 className="w-full py-4 bg-white border border-[#E2E8F0] border-dashed rounded-2xl flex items-center justify-start px-5 gap-3 hover:bg-slate-50 transition-all"
                             >
@@ -343,6 +385,7 @@ const Examiner_DraftConfigure = () => {
 
                 <div className="flex justify-end gap-4 pt-10 border-t border-[#E2E8F0]">
                     <button
+                        type="button"
                         onClick={async () => {
                             if (!examData.startDate || !examData.startTime || !examData.endTime || !examData.duration) {
                                 alert('❌ Please fill in exam date, start time, and end time');
@@ -368,6 +411,9 @@ const Examiner_DraftConfigure = () => {
                                 });
 
                                 if (response.ok) {
+                                    // Clear specific draft upon success
+                                    localStorage.removeItem(`examDraft_${id}`);
+
                                     const emailResponse = await fetch(`http://localhost:5000/api/email/bulk-invitation/${id}`, {
                                         method: 'POST',
                                         headers: {
@@ -407,6 +453,7 @@ const Examiner_DraftConfigure = () => {
                         ) : 'Publish Exam'}
                     </button>
                     <button
+                        type="button"
                         onClick={() => {
                             if (!examData.startDate || !examData.startTime || !examData.endTime || !examData.duration) {
                                 alert('❌ Please fill in exam date, start time, and end time');

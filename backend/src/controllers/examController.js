@@ -11,14 +11,14 @@ import pdfParse from 'pdf-parse-fork';
 // @access  Private (Examiner)
 export const getDashboardStats = asyncHandler(async (req, res) => {
     const examinerId = req.user.id === 'demo-user-id' ? '507f1f77bcf86cd799439011' : req.user.id;
-    
+
     const totalExams = await Exam.countDocuments({ examiner: examinerId });
     const activeExams = await Exam.countDocuments({ examiner: examinerId, status: 'published' });
     const recentExams = await Exam.find({ examiner: examinerId })
         .sort({ createdAt: -1 })
         .limit(10)
         .select('title startDate startTime endDate endTime status createdAt');
-    
+
     // Get student count for each exam
     const examsWithStudents = await Promise.all(
         recentExams.map(async (exam) => {
@@ -175,7 +175,7 @@ export const updateExam = asyncHandler(async (req, res) => {
             console.log(`📧 Publishing exam ${req.params.id}, checking for candidates...`);
             const candidates = await Candidate.find({ examId: req.params.id });
             console.log(`Found ${candidates.length} candidates`);
-            
+
             if (candidates.length > 0) {
                 const examDetails = {
                     title: exam.title,
@@ -186,7 +186,7 @@ export const updateExam = asyncHandler(async (req, res) => {
 
                 const candidatesWithEmail = candidates.filter(candidate => candidate.email);
                 console.log(`Sending emails to ${candidatesWithEmail.length} candidates`);
-                
+
                 for (const candidate of candidatesWithEmail) {
                     try {
                         await sendExamInvitation(candidate.email, examDetails);
@@ -250,50 +250,50 @@ export const importQuestions = asyncHandler(async (req, res) => {
         try {
             const pdfData = await pdfParse(req.file.buffer, { max: 0 });
             const text = pdfData.text;
-            
+
             console.log('PDF Text:', text);
-            
+
             // Try multiple patterns to split questions
             let questionBlocks = text.split(/(?=Q\d+\.)/).filter(block => block.trim() && block.match(/^Q\d+\./));
-            
+
             // If no matches, try alternative patterns
             if (questionBlocks.length === 0) {
                 questionBlocks = text.split(/(?=\d+\.)/).filter(block => block.trim() && block.match(/^\d+\./));
             }
-            
+
             if (questionBlocks.length === 0) {
                 questionBlocks = text.split(/(?=Question\s*\d+)/i).filter(block => block.trim() && block.match(/Question\s*\d+/i));
             }
-            
+
             console.log('Question blocks found:', questionBlocks.length);
-            
+
             questions = questionBlocks.map((block, index) => {
                 const lines = block.split('\n').filter(l => l.trim());
                 const firstLine = lines[0] || '';
                 const questionText = firstLine.replace(/^(Q\d+\.|\d+\.|Question\s*\d+:?)\s*/i, '').trim() || lines[1]?.trim() || 'Question';
-                
+
                 const options = [];
                 let correctAnswer = 1;
                 let marks = 2;
-                
+
                 lines.forEach(line => {
                     const optionMatch = line.match(/^([1-4]|[A-D])[\).\)]\s*(.+)/);
                     if (optionMatch) {
                         options.push(optionMatch[2]?.trim());
                     }
-                    
+
                     const answerMatch = line.match(/Answer:\s*([1-4A-D])/i);
                     if (answerMatch) {
                         const ans = answerMatch[1];
                         correctAnswer = isNaN(ans) ? ans.charCodeAt(0) - 64 : parseInt(ans);
                     }
-                    
+
                     const marksMatch = line.match(/Marks:\s*(\d+)/i);
                     if (marksMatch) {
                         marks = parseInt(marksMatch[1]);
                     }
                 });
-                
+
                 return {
                     id: Date.now() + index,
                     sectionId: 0,
@@ -323,7 +323,7 @@ export const importQuestions = asyncHandler(async (req, res) => {
                 console.warn(`Row ${index + 1}: Skipping empty question`);
                 return null;
             }
-            
+
             const options = [
                 row['Option 1'] || row['1'] || '',
                 row['Option 2'] || row['2'] || '',
@@ -338,23 +338,23 @@ export const importQuestions = asyncHandler(async (req, res) => {
 
             let correctIdx = 0;
             const correctVal = row['Answer'] || row['Correct'];
-            
+
             // Parse correct answer (1-based from Excel → 0-based for storage)
             if (typeof correctVal === 'number') {
                 correctIdx = correctVal - 1; // Convert 1,2,3,4 → 0,1,2,3
             } else if (typeof correctVal === 'string') {
                 const trimmed = correctVal.trim();
                 const num = parseInt(trimmed);
-                
+
                 // Check if it's a number (1-4)
                 if (!isNaN(num) && num >= 1 && num <= 4) {
                     correctIdx = num - 1; // Convert 1,2,3,4 → 0,1,2,3
                 } else {
                     // It's text - match against options
-                    const matchIndex = options.findIndex(opt => 
+                    const matchIndex = options.findIndex(opt =>
                         opt && opt.trim().toLowerCase() === trimmed.toLowerCase()
                     );
-                    
+
                     if (matchIndex !== -1) {
                         correctIdx = matchIndex;
                         console.log(`Row ${index + 1}: Matched answer text '${trimmed}' to option ${matchIndex + 1}`);
@@ -401,17 +401,17 @@ export const importQuestions = asyncHandler(async (req, res) => {
 // @access  Private (Examiner)
 export const getExamsForResults = asyncHandler(async (req, res) => {
     const examinerId = req.user.id === 'demo-user-id' ? '507f1f77bcf86cd799439011' : req.user.id;
-    
+
     const exams = await Exam.find({ examiner: examinerId, status: 'published' })
         .sort({ createdAt: -1 })
         .select('title startDate endDate endTime status createdAt totalMarks resultsSent');
-    
+
     const now = new Date();
-    
+
     const examsWithStats = await Promise.all(
         exams.map(async (exam) => {
             const studentCount = await Candidate.countDocuments({ examId: exam._id });
-            
+
             // Check if exam has ended
             let isExamEnded = false;
             if (exam.endDate && exam.endTime) {
@@ -424,7 +424,7 @@ export const getExamsForResults = asyncHandler(async (req, res) => {
                 const submissionCount = await Submission.countDocuments({ examId: exam._id });
                 isExamEnded = submissionCount > 0;
             }
-            
+
             return {
                 id: exam._id,
                 name: exam.title,
@@ -452,8 +452,8 @@ export const getExamsForResults = asyncHandler(async (req, res) => {
 // @access  Public
 export const getExamQuestions = asyncHandler(async (req, res) => {
     console.log('Fetching questions for exam ID:', req.params.id);
-    
-    const exam = await Exam.findById(req.params.id).select('title duration questions sections');
+
+    const exam = await Exam.findById(req.params.id).select('title duration questions sections violationLimits');
 
     if (!exam) {
         console.log('Exam not found with ID:', req.params.id);
@@ -496,7 +496,8 @@ export const getExamQuestions = asyncHandler(async (req, res) => {
             title: exam.title,
             duration: exam.duration,
             questions: formattedQuestions,
-            sections: exam.sections || []
+            sections: exam.sections || [],
+            violationLimits: exam.violationLimits
         }
     });
 });
@@ -543,10 +544,10 @@ export const getExamResults = asyncHandler(async (req, res) => {
     const totalCandidates = students.length;
     const passedStudents = students.filter(s => s.percentage >= 40).length;
     const failedStudents = totalCandidates - passedStudents;
-    const avgScore = totalCandidates > 0 
+    const avgScore = totalCandidates > 0
         ? Math.round(students.reduce((acc, s) => acc + s.marks, 0) / totalCandidates)
         : 0;
-    const highestScore = totalCandidates > 0 
+    const highestScore = totalCandidates > 0
         ? Math.max(...students.map(s => s.marks))
         : 0;
 
@@ -600,7 +601,7 @@ export const exportExamResults = asyncHandler(async (req, res) => {
         const minutes = Math.floor(timeInSeconds / 60);
         const seconds = timeInSeconds % 60;
         const timeDisplay = minutes > 0 ? `${minutes} min ${seconds} sec` : `${seconds} sec`;
-        
+
         return {
             'S.No': index + 1,
             'Student Name': sub.candidateId?.name || 'Unknown',
@@ -616,11 +617,11 @@ export const exportExamResults = asyncHandler(async (req, res) => {
 
     const workbook = xlsx.utils.book_new();
     const worksheet = xlsx.utils.json_to_sheet(excelData);
-    
+
     xlsx.utils.book_append_sheet(workbook, worksheet, 'Results');
-    
+
     const buffer = xlsx.write(workbook, { type: 'buffer', bookType: 'xlsx' });
-    
+
     res.setHeader('Content-Disposition', `attachment; filename="${exam.title}_Results.xlsx"`);
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res.send(buffer);

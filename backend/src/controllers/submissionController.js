@@ -30,6 +30,21 @@ export const submitExam = asyncHandler(async (req, res) => {
         throw new Error('Candidate not found');
     }
 
+    // Check if a submission already exists for this candidate and exam
+    const existingSubmission = await Submission.findOne({ examId, candidateId });
+    if (existingSubmission) {
+        console.log(`Duplicate submission prevented for candidate ${candidateId} on exam ${examId}`);
+        return res.status(200).json({
+            success: true,
+            data: {
+                submissionId: existingSubmission._id,
+                score: existingSubmission.score,
+                totalMarks: existingSubmission.totalMarks,
+                percentage: existingSubmission.percentage
+            }
+        });
+    }
+
     console.log(`Exam: ${exam.title}, Total Marks: ${exam.totalMarks}, Questions: ${exam.questions.length}`);
 
     // Auto-grade the exam
@@ -38,15 +53,15 @@ export const submitExam = asyncHandler(async (req, res) => {
         // Frontend sends questionId as 1-based (1, 2, 3...)
         // We need to find the actual question in the array
         const questionId = parseInt(answer.questionId);
-        
+
         // Find question by its ID property, not array index
         const question = exam.questions.find(q => q.id === questionId || parseInt(q.id) === questionId);
-        
+
         if (!question) {
             // Fallback: try array index (questionId - 1)
             const questionIndex = questionId - 1;
             const questionByIndex = exam.questions[questionIndex];
-            
+
             if (questionByIndex) {
                 console.warn(`Q${questionId}: Found by index ${questionIndex} instead of ID`);
                 const isCorrect = answer.selectedOption === questionByIndex.correct;
@@ -54,16 +69,16 @@ export const submitExam = asyncHandler(async (req, res) => {
                 console.log(`Q${questionId}: Selected=${answer.selectedOption}, Correct=${questionByIndex.correct}, IsCorrect=${isCorrect}, Marks=${questionByIndex.marks}`);
                 return { questionId: answer.questionId, selectedOption: answer.selectedOption, isCorrect };
             }
-            
+
             console.error(`Q${questionId}: NOT FOUND in exam (Total questions: ${exam.questions.length})`);
             return { questionId: answer.questionId, selectedOption: answer.selectedOption, isCorrect: false };
         }
 
         const isCorrect = answer.selectedOption === question.correct;
         if (isCorrect) score += question.marks || 0;
-        
+
         console.log(`Q${questionId}: Selected=${answer.selectedOption}, Correct=${question.correct}, IsCorrect=${isCorrect}, Marks=${question.marks}`);
-        
+
         return { questionId: answer.questionId, selectedOption: answer.selectedOption, isCorrect };
     });
 
@@ -125,7 +140,7 @@ export const sendExamResults = asyncHandler(async (req, res) => {
 
     const now = new Date();
     const examEndDateTime = new Date(`${exam.endDate}T${exam.endTime}`);
-    
+
     if (now < examEndDateTime) {
         res.status(400);
         throw new Error('Cannot send results before exam end time');
@@ -148,16 +163,16 @@ export const sendExamResults = asyncHandler(async (req, res) => {
         }
 
         try {
-            const violations = await Violation.find({ 
+            const violations = await Violation.find({
                 candidateId: candidate._id.toString(),
-                examId: examId 
+                examId: examId
             });
 
             const totalViolations = violations.reduce((sum, v) => {
-                return sum + (v.violationCount?.faceDetection || 0) + 
-                       (v.violationCount?.soundDetection || 0) + 
-                       (v.violationCount?.fullscreenExit || 0) + 
-                       (v.violationCount?.tabSwitch || 0);
+                return sum + (v.violationCount?.faceDetection || 0) +
+                    (v.violationCount?.soundDetection || 0) +
+                    (v.violationCount?.fullscreenExit || 0) +
+                    (v.violationCount?.tabSwitch || 0);
             }, 0);
 
             const isPassed = submission.percentage >= passingPercentage;
@@ -183,7 +198,7 @@ export const sendExamResults = asyncHandler(async (req, res) => {
             await sendDetailedExamResult(candidate.email, resultDetails);
             results.sent++;
             results.details.push({ candidate: candidate.name, status: 'Sent successfully' });
-            
+
         } catch (error) {
             console.error(`Failed to send result to ${candidate.email}:`, error.message);
             results.failed++;

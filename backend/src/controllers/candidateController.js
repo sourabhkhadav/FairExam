@@ -24,18 +24,18 @@ export const uploadExcelFile = async (req, res) => {
 
         if (!req.file) {
             console.log('ERROR: No file uploaded');
-            return res.status(400).json({ 
-                success: false, 
-                message: 'Please upload an Excel file' 
+            return res.status(400).json({
+                success: false,
+                message: 'Please upload an Excel file'
             });
         }
 
         const { examId } = req.body;
         if (!examId) {
             console.log('ERROR: No examId provided');
-            return res.status(400).json({ 
-                success: false, 
-                message: 'Please provide examId' 
+            return res.status(400).json({
+                success: false,
+                message: 'Please provide examId'
             });
         }
 
@@ -58,11 +58,11 @@ export const uploadExcelFile = async (req, res) => {
 
         const candidates = data.map((row, index) => {
             console.log(`Row ${index + 1}:`, row);
-            
+
             // Generate unique candidate ID and password
             const candidateId = `CAND${examId.slice(-4)}${String(index + 1).padStart(4, '0')}`;
             const password = Math.random().toString(36).slice(-8).toUpperCase();
-            
+
             const candidate = {
                 name: row.name || row.Name || row.NAME,
                 mobileNumber: String(row.mobileNumber || row.MobileNumber || row.mobile || row.Mobile || row.MOBILE || row['Mobile Number'] || row['mobile number'] || ''),
@@ -70,13 +70,13 @@ export const uploadExcelFile = async (req, res) => {
                 password,
                 examId
             };
-            
+
             // Only add email if it exists
             const email = row.email || row.Email || row.EMAIL || row.gmail || row.Gmail;
             if (email) {
                 candidate.email = email;
             }
-            
+
             return candidate;
         });
 
@@ -101,7 +101,7 @@ export const uploadExcelFile = async (req, res) => {
             });
         } catch (insertError) {
             console.error('❌ Insert error:', insertError);
-            
+
             // Check if it's a validation error
             if (insertError.name === 'ValidationError') {
                 return res.status(400).json({
@@ -110,7 +110,7 @@ export const uploadExcelFile = async (req, res) => {
                     errors: insertError.errors
                 });
             }
-            
+
             // If some documents were inserted despite errors
             if (insertError.insertedDocs && insertError.insertedDocs.length > 0) {
                 return res.status(201).json({
@@ -120,7 +120,7 @@ export const uploadExcelFile = async (req, res) => {
                     data: insertError.insertedDocs
                 });
             }
-            
+
             throw insertError;
         }
     } catch (error) {
@@ -146,9 +146,9 @@ export const bulkUploadCandidates = async (req, res) => {
         const { examId, candidates } = req.body;
 
         if (!examId || !candidates || !Array.isArray(candidates)) {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'Please provide examId and candidates array' 
+            return res.status(400).json({
+                success: false,
+                message: 'Please provide examId and candidates array'
             });
         }
 
@@ -190,11 +190,111 @@ export const bulkUploadCandidates = async (req, res) => {
 export const getCandidatesByExam = async (req, res) => {
     try {
         const candidates = await Candidate.find({ examId: req.params.examId });
-        
+
         res.status(200).json({
             success: true,
             count: candidates.length,
             data: candidates
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
+// @desc    Add candidate manually
+// @route   POST /api/candidates/manual
+// @access  Private (Examiner only)
+export const addManualCandidate = async (req, res) => {
+    try {
+        const { name, email, phone, candidateId, examId } = req.body;
+
+        if (!name || !email || !examId) {
+            return res.status(400).json({
+                success: false,
+                message: 'Name, email, and examId are required'
+            });
+        }
+
+        const generatedId = candidateId || `CAND${examId.slice(-4)}${Date.now().toString().slice(-4)}`;
+        const password = Math.random().toString(36).slice(-8).toUpperCase();
+
+        const candidate = await Candidate.create({
+            name,
+            email,
+            mobileNumber: phone || '',
+            candidateId: generatedId,
+            password,
+            examId
+        });
+
+        res.status(201).json({
+            success: true,
+            data: candidate
+        });
+    } catch (error) {
+        if (error.code === 11000) {
+            return res.status(400).json({
+                success: false,
+                message: 'Candidate with this email or ID already exists for this exam'
+            });
+        }
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+// @desc    Update candidate
+// @route   PUT /api/candidates/:id
+// @access  Private (Examiner only)
+export const updateCandidate = async (req, res) => {
+    try {
+        const { name, email, mobileNumber } = req.body;
+        const candidate = await Candidate.findByIdAndUpdate(
+            req.params.id,
+            { name, email, mobileNumber },
+            { new: true, runValidators: true }
+        );
+
+        if (!candidate) {
+            return res.status(404).json({
+                success: false,
+                message: 'Candidate not found'
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            data: candidate
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
+// @desc    Delete candidate
+// @route   DELETE /api/candidates/:id
+// @access  Private (Examiner only)
+export const deleteCandidate = async (req, res) => {
+    try {
+        const candidate = await Candidate.findByIdAndDelete(req.params.id);
+
+        if (!candidate) {
+            return res.status(404).json({
+                success: false,
+                message: 'Candidate not found'
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: 'Candidate deleted successfully'
         });
     } catch (error) {
         res.status(500).json({

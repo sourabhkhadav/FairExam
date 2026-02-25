@@ -14,6 +14,7 @@ import Examiner_EditExam from './components/Examiner_EditExam'
 import Examiner_StudentViolations from './components/Examiner_StudentViolations'
 import Profile from './components/Profile'
 import Examiner_ExamResultDetails from './components/Examiner_ExamResultDetails'
+import Examiner_ManageCandidates from './components/Examiner_ManageCandidates'
 
 // Candidate Pages
 import CandidateLogin from './pages/Login'
@@ -46,6 +47,7 @@ function App() {
           <Route path="/student-violations/:id" element={<Examiner_StudentViolations />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/exam-results/:id" element={<Examiner_ExamResultDetails />} />
+          <Route path="/manage-candidates/:id" element={<Examiner_ManageCandidates />} />
         </Route>
 
         {/* 404 Route */}

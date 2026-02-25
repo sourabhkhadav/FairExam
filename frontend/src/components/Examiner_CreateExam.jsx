@@ -29,7 +29,7 @@ const Examiner_CreateExam = () => {
     // Form State
     const [examData, setExamData] = useState({
         title: '',
-        category: 'Database Management',
+        category: '',
         status: 'Draft'
     });
 

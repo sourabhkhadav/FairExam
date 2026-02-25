@@ -91,13 +91,7 @@ const AuthForm = ({ initialMode = 'login' }) => {
         }
     };
 
-    React.useEffect(() => {
-        const token = localStorage.getItem('token');
-        const user = localStorage.getItem('user');
-        if (token && user) {
-            navigate('/dashboard', { replace: true });
-        }
-    }, [navigate]);
+
 
     const handleBackClick = () => {
         navigate('/');

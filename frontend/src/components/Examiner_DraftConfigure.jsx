@@ -373,7 +373,22 @@ const Examiner_DraftConfigure = () => {
                             {/* Manage Candidates (Replacing PDF List) */}
                             <button
                                 type="button"
-                                onClick={() => navigate(`/manage-candidates/${id}`)}
+                                onClick={async () => {
+                                    try {
+                                        const token = localStorage.getItem('token');
+                                        await fetch(`http://localhost:5000/api/exams/${id}`, {
+                                            method: 'PUT',
+                                            headers: {
+                                                'Content-Type': 'application/json',
+                                                'Authorization': `Bearer ${token}`
+                                            },
+                                            body: JSON.stringify(examData)
+                                        });
+                                    } catch (error) {
+                                        console.error('Save error:', error);
+                                    }
+                                    navigate(`/manage-candidates/${id}`);
+                                }}
                                 className="w-full py-4 bg-white border border-[#E2E8F0] border-dashed rounded-2xl flex items-center justify-start px-5 gap-3 hover:bg-slate-50 transition-all"
                             >
                                 <Users className="w-5 h-5 text-[#64748B]" />

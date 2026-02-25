@@ -21,7 +21,9 @@ const Examiner_DraftConfigure = () => {
     const navigate = useNavigate();
     const { id } = useParams();
     const [showScheduleModal, setShowScheduleModal] = useState(false);
+    const [showManualAddModal, setShowManualAddModal] = useState(false);
     const [isPublishing, setIsPublishing] = useState(false);
+    const [isAddingCandidate, setIsAddingCandidate] = useState(false);
 
     const [examData, setExamData] = useState({
         title: '',
@@ -29,6 +31,7 @@ const Examiner_DraftConfigure = () => {
         startTime: '',
         endTime: '',
         duration: 0,
+        students: 0,
         violationLimits: {
             faceLimit: 5,
             soundLimit: 5,
@@ -36,15 +39,79 @@ const Examiner_DraftConfigure = () => {
         }
     });
 
+    const [manualCandidate, setManualCandidate] = useState({
+        name: '',
+        email: '',
+        phone: ''
+    });
+
     useEffect(() => {
+        const fetchExamDetails = async () => {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`http://localhost:5000/api/exams/${id}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+                if (data) {
+                    setExamData(prev => ({ ...prev, ...data }));
+                }
+            } catch (error) {
+                console.error('Fetch error:', error);
+            }
+        };
+
+        if (id) {
+            fetchExamDetails();
+        }
+
         const draft = localStorage.getItem('examDraft');
         if (draft) {
-            setExamData(prev => ({ ...prev, ...JSON.parse(draft) }));
+            const draftData = JSON.parse(draft);
+            if (draftData.id === id) {
+                setExamData(prev => ({ ...prev, ...draftData }));
+            }
         }
     }, [id]);
 
     const updateField = (field, value) => {
         setExamData(prev => ({ ...prev, [field]: value }));
+    };
+
+    const handleManualAdd = async () => {
+        if (!manualCandidate.name || !manualCandidate.email || !manualCandidate.phone) {
+            alert('Please fill all fields');
+            return;
+        }
+        setIsAddingCandidate(true);
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch('http://localhost:5000/api/candidates/manual', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    ...manualCandidate,
+                    examId: id
+                })
+            });
+            const data = await response.json();
+            if (data.success) {
+                alert('Candidate added successfully');
+                setShowManualAddModal(false);
+                setManualCandidate({ name: '', email: '', phone: '' });
+                // Update student count
+                updateField('students', (examData.students || 0) + 1);
+            } else {
+                alert(data.message);
+            }
+        } catch (error) {
+            alert('Failed to add candidate');
+        } finally {
+            setIsAddingCandidate(false);
+        }
     };
 
     return (
@@ -69,35 +136,35 @@ const Examiner_DraftConfigure = () => {
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div className="space-y-1.5">
                                 <label className="text-[11px] font-bold text-[#64748B] uppercase tracking-widest ml-1">Exam Date</label>
-                                <input 
-                                    type="date" 
+                                <input
+                                    type="date"
                                     min={new Date().toISOString().split('T')[0]}
                                     className="w-full px-4 py-3 rounded-xl bg-white border border-[#E2E8F0] outline-none focus:border-[#0F172A] transition-colors"
-                                    value={examData.startDate} 
+                                    value={examData.startDate}
                                     onChange={e => {
                                         updateField('startDate', e.target.value);
                                         updateField('endDate', e.target.value);
-                                    }} 
+                                    }}
                                 />
                             </div>
                             <div className="space-y-1.5">
                                 <label className="text-[11px] font-bold text-[#64748B] uppercase tracking-widest ml-1">Start Time</label>
-                                <input 
-                                    type="time" 
+                                <input
+                                    type="time"
                                     className="w-full px-4 py-3 rounded-xl bg-white border border-[#E2E8F0] outline-none focus:border-[#0F172A] transition-colors"
-                                    value={examData.startTime} 
+                                    value={examData.startTime}
                                     onChange={e => {
                                         const selectedDate = examData.startDate;
                                         const selectedTime = e.target.value;
                                         const now = new Date();
                                         const selectedDateTime = new Date(`${selectedDate}T${selectedTime}`);
-                                        
+
                                         if (selectedDate === now.toISOString().split('T')[0] && selectedDateTime <= now) {
                                             alert('⚠️ Start time cannot be in the past.');
                                             return;
                                         }
                                         updateField('startTime', selectedTime);
-                                        
+
                                         // Auto-calculate duration
                                         if (examData.endTime) {
                                             const start = new Date(`2000-01-01T${selectedTime}`);
@@ -107,36 +174,36 @@ const Examiner_DraftConfigure = () => {
                                                 updateField('duration', durationMin);
                                             }
                                         }
-                                    }} 
+                                    }}
                                 />
                             </div>
                             <div className="space-y-1.5">
                                 <label className="text-[11px] font-bold text-[#64748B] uppercase tracking-widest ml-1">End Time</label>
-                                <input 
-                                    type="time" 
+                                <input
+                                    type="time"
                                     className="w-full px-4 py-3 rounded-xl bg-white border border-[#E2E8F0] outline-none focus:border-[#0F172A] transition-colors"
-                                    value={examData.endTime} 
+                                    value={examData.endTime}
                                     onChange={e => {
                                         const selectedEndTime = e.target.value;
                                         if (examData.startTime) {
                                             const start = new Date(`2000-01-01T${examData.startTime}`);
                                             const end = new Date(`2000-01-01T${selectedEndTime}`);
-                                            
+
                                             if (end <= start) {
                                                 alert('⚠️ End time must be after start time.');
                                                 return;
                                             }
-                                            
+
                                             // Auto-calculate duration
                                             const durationMin = Math.floor((end - start) / (1000 * 60));
                                             updateField('duration', durationMin);
                                         }
                                         updateField('endTime', selectedEndTime);
-                                    }} 
+                                    }}
                                 />
                             </div>
                         </div>
-                        
+
                         {examData.duration > 0 && (
                             <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
                                 <p className="text-sm font-semibold text-blue-900">⏱️ Exam Duration: {examData.duration} minutes</p>
@@ -152,8 +219,8 @@ const Examiner_DraftConfigure = () => {
                         <div className="space-y-5">
                             <div className="space-y-2">
                                 <label className="text-[11px] font-bold text-[#64748B] uppercase tracking-widest ml-1">Face Detection Limit</label>
-                                <input 
-                                    type="text" 
+                                <input
+                                    type="text"
                                     inputMode="numeric"
                                     pattern="[0-9]*"
                                     className="w-full px-4 py-3 rounded-xl bg-white border border-[#E2E8F0] outline-none focus:border-[#0F172A] transition-colors"
@@ -168,8 +235,8 @@ const Examiner_DraftConfigure = () => {
                             </div>
                             <div className="space-y-2">
                                 <label className="text-[11px] font-bold text-[#64748B] uppercase tracking-widest ml-1">Sound Detection Limit</label>
-                                <input 
-                                    type="text" 
+                                <input
+                                    type="text"
                                     inputMode="numeric"
                                     pattern="[0-9]*"
                                     className="w-full px-4 py-3 rounded-xl bg-white border border-[#E2E8F0] outline-none focus:border-[#0F172A] transition-colors"
@@ -184,8 +251,8 @@ const Examiner_DraftConfigure = () => {
                             </div>
                             <div className="space-y-2">
                                 <label className="text-[11px] font-bold text-[#64748B] uppercase tracking-widest ml-1">Fullscreen Exit Limit</label>
-                                <input 
-                                    type="text" 
+                                <input
+                                    type="text"
                                     inputMode="numeric"
                                     pattern="[0-9]*"
                                     className="w-full px-4 py-3 rounded-xl bg-white border border-[#E2E8F0] outline-none focus:border-[#0F172A] transition-colors"
@@ -204,6 +271,23 @@ const Examiner_DraftConfigure = () => {
                     {/* Candidates */}
                     <FormSection title="Candidates" icon={Users}>
                         <div className="space-y-3">
+                            {/* Total Candidates Status Card */}
+                            <div className="bg-[#EFF6FF] border border-[#DBEAFE] rounded-2xl p-4">
+                                <p className="text-[#1E40AF] font-bold text-[15px]">
+                                    Total Candidates: {examData.students || 0}
+                                </p>
+                            </div>
+
+                            {/* Add Candidate Manually Button */}
+                            <button
+                                onClick={() => setShowManualAddModal(true)}
+                                className="w-full py-4 bg-white border border-[#E2E8F0] border-dashed rounded-2xl flex items-center justify-start px-5 gap-3 hover:bg-slate-50 transition-all"
+                            >
+                                <PlusCircle className="w-5 h-5 text-[#64748B]" />
+                                <span className="text-[15px] font-medium text-[#0F172A]">Add Candidate Manually</span>
+                            </button>
+
+                            {/* Excel / CSV Import */}
                             <div className="relative group">
                                 <input
                                     type="file"
@@ -220,9 +304,9 @@ const Examiner_DraftConfigure = () => {
                                                     method: 'POST',
                                                     body: formData
                                                 });
-                                                
+
                                                 const data = await response.json();
-                                                
+
                                                 if (data.success) {
                                                     updateField('candidateFile', file.name);
                                                     updateField('students', data.count);
@@ -237,16 +321,22 @@ const Examiner_DraftConfigure = () => {
                                     }}
                                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                                 />
-                                <button className={`w-full px-4 py-3 bg-[#F8FAFC] border-2 border-dashed rounded-xl flex items-center justify-between group-hover:bg-white transition-all ${examData.candidateFile?.endsWith('.csv') || examData.candidateFile?.endsWith('.xlsx') ? 'border-[#0F172A] bg-slate-50' : 'border-[#E2E8F0]'}`}>
-                                    <div className="flex items-center gap-3">
-                                        <Database className={`w-4 h-4 ${examData.candidateFile?.endsWith('.csv') || examData.candidateFile?.endsWith('.xlsx') ? 'text-[#0F172A]' : 'text-[#64748B]'}`} />
-                                        <span className="text-[13px] font-medium text-[#0F172A]">
-                                            {examData.candidateFile?.endsWith('.csv') || examData.candidateFile?.endsWith('.xlsx') ? examData.candidateFile : 'Excel / CSV'}
-                                        </span>
-                                    </div>
-                                    {examData.candidateFile && (examData.candidateFile.endsWith('.csv') || examData.candidateFile.endsWith('.xlsx')) && <div className="w-2 h-2 rounded-full bg-[#0F172A]" />}
+                                <button className="w-full py-4 bg-white border border-[#E2E8F0] border-dashed rounded-2xl flex items-center justify-start px-5 gap-3 hover:bg-slate-50 transition-all">
+                                    <Database className="w-5 h-5 text-[#64748B]" />
+                                    <span className="text-[15px] font-medium text-[#0F172A]">
+                                        {examData.candidateFile?.endsWith('.csv') || examData.candidateFile?.endsWith('.xlsx') ? examData.candidateFile : 'Excel / CSV'}
+                                    </span>
                                 </button>
                             </div>
+
+                            {/* Manage Candidates (Replacing PDF List) */}
+                            <button
+                                onClick={() => navigate(`/manage-candidates/${id}`)}
+                                className="w-full py-4 bg-white border border-[#E2E8F0] border-dashed rounded-2xl flex items-center justify-start px-5 gap-3 hover:bg-slate-50 transition-all"
+                            >
+                                <Users className="w-5 h-5 text-[#64748B]" />
+                                <span className="text-[15px] font-medium text-[#0F172A]">Manage Candidates</span>
+                            </button>
                         </div>
                     </FormSection>
                 </div>
@@ -261,13 +351,13 @@ const Examiner_DraftConfigure = () => {
                             setIsPublishing(true);
                             try {
                                 const token = localStorage.getItem('token');
-                                const updatedData = { 
+                                const updatedData = {
                                     ...examData,
                                     endDate: examData.startDate,
                                     status: 'published',
                                     violationLimits: examData.violationLimits
                                 };
-                                
+
                                 const response = await fetch(`http://localhost:5000/api/exams/${id}`, {
                                     method: 'PUT',
                                     headers: {
@@ -276,7 +366,7 @@ const Examiner_DraftConfigure = () => {
                                     },
                                     body: JSON.stringify(updatedData)
                                 });
-                                
+
                                 if (response.ok) {
                                     const emailResponse = await fetch(`http://localhost:5000/api/email/bulk-invitation/${id}`, {
                                         method: 'POST',
@@ -284,7 +374,7 @@ const Examiner_DraftConfigure = () => {
                                             'Authorization': `Bearer ${token}`
                                         }
                                     });
-                                    
+
                                     const emailData = await emailResponse.json();
                                     if (emailData.success) {
                                         alert(`✅ Exam Published Successfully!\n\nEmail notifications sent to ${emailData.results.sent} candidates.\n\nExam Details:\n📅 Date: ${examData.startDate}\n⏰ Time: ${examData.startTime} - ${examData.endTime}\n⏱️ Duration: ${examData.duration} minutes`);
@@ -329,112 +419,184 @@ const Examiner_DraftConfigure = () => {
                         Schedule Exam
                     </button>
                 </div>
+
+                {/* Schedule Modal */}
+                {
+                    showScheduleModal && (
+                        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                            <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl">
+                                <div className="flex items-center gap-3 mb-6">
+                                    <div className="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center">
+                                        <Calendar className="w-6 h-6 text-[#0F172A]" />
+                                    </div>
+                                    <div>
+                                        <h2 className="text-xl font-medium text-[#0F172A]">Schedule Email Notification</h2>
+                                        <p className="text-sm text-[#64748B]">When should we send notifications?</p>
+                                    </div>
+                                </div>
+
+                                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
+                                    <p className="text-sm text-blue-900 font-medium">📧 Email will be sent on the selected date</p>
+                                    <p className="text-xs text-blue-700 mt-1">Exam: {examData.startDate} at {examData.startTime}</p>
+                                </div>
+
+                                <div className="space-y-5">
+                                    <div>
+                                        <label className="text-[11px] font-bold text-[#64748B] uppercase tracking-widest ml-1 block mb-2">Send Email On</label>
+                                        <input
+                                            type="date"
+                                            className="w-full px-4 py-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] outline-none focus:border-[#0F172A] transition-colors"
+                                            value={examData.scheduleEmailDate || ''}
+                                            onChange={e => updateField('scheduleEmailDate', e.target.value)}
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="text-[11px] font-bold text-[#64748B] uppercase tracking-widest ml-1 block mb-2">Send Email At</label>
+                                        <input
+                                            type="time"
+                                            className="w-full px-4 py-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] outline-none focus:border-[#0F172A] transition-colors"
+                                            value={examData.scheduleEmailTime || ''}
+                                            onChange={e => updateField('scheduleEmailTime', e.target.value)}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="flex gap-3 mt-8">
+                                    <button
+                                        onClick={() => setShowScheduleModal(false)}
+                                        className="flex-1 px-6 py-3 bg-white border border-[#E2E8F0] text-[#0F172A] font-medium rounded-xl hover:bg-[#F8FAFC] transition-all"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={async () => {
+                                            if (!examData.scheduleEmailDate || !examData.scheduleEmailTime) {
+                                                alert('❌ Please select date and time for sending email notifications');
+                                                return;
+                                            }
+
+                                            const scheduleDateTime = new Date(`${examData.scheduleEmailDate}T${examData.scheduleEmailTime}`);
+                                            const now = new Date();
+
+                                            if (scheduleDateTime <= now) {
+                                                alert('❌ Schedule date/time must be in the future');
+                                                return;
+                                            }
+
+                                            try {
+                                                const token = localStorage.getItem('token');
+                                                const updatedData = {
+                                                    ...examData,
+                                                    endDate: examData.startDate,
+                                                    status: 'published',
+                                                    violationLimits: examData.violationLimits,
+                                                    scheduleEmailDate: examData.scheduleEmailDate,
+                                                    scheduleEmailTime: examData.scheduleEmailTime
+                                                };
+
+                                                const response = await fetch(`http://localhost:5000/api/exams/${id}`, {
+                                                    method: 'PUT',
+                                                    headers: {
+                                                        'Content-Type': 'application/json',
+                                                        'Authorization': `Bearer ${token}`
+                                                    },
+                                                    body: JSON.stringify(updatedData)
+                                                });
+
+                                                if (response.ok) {
+                                                    setShowScheduleModal(false);
+                                                    alert(`✅ Exam Scheduled Successfully!\n\nEmail notifications will be sent on:\n📅 ${examData.scheduleEmailDate}\n⏰ ${examData.scheduleEmailTime}\n\nExam Details:\n📅 Date: ${examData.startDate}\n⏰ Time: ${examData.startTime}`);
+                                                    navigate('/manage-exams');
+                                                } else {
+                                                    const error = await response.json();
+                                                    alert(`Failed to schedule exam: ${error.message || 'Unknown error'}`);
+                                                }
+                                            } catch (error) {
+                                                console.error('Schedule error:', error);
+                                                alert('Failed to schedule exam');
+                                            }
+                                        }}
+                                        className="flex-1 px-6 py-3 bg-[#0F172A] text-white font-medium rounded-xl hover:bg-[#1E293B] transition-all"
+                                    >
+                                        Schedule
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )
+                }
+
+                {/* Manual Add Candidate Modal */}
+                {
+                    showManualAddModal && (
+                        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] p-4">
+                            <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl">
+                                <div className="flex items-center gap-3 mb-6">
+                                    <div className="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center">
+                                        <PlusCircle className="w-6 h-6 text-[#0F172A]" />
+                                    </div>
+                                    <div>
+                                        <h2 className="text-xl font-medium text-[#0F172A]">Add Candidate Manually</h2>
+                                        <p className="text-sm text-[#64748B]">Enter details to add a new candidate</p>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-5">
+                                    <div>
+                                        <label className="text-[11px] font-bold text-[#64748B] uppercase tracking-widest ml-1 block mb-2">Full Name</label>
+                                        <input
+                                            type="text"
+                                            placeholder="Enter full name"
+                                            className="w-full px-4 py-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] outline-none focus:border-[#0F172A] transition-colors"
+                                            value={manualCandidate.name}
+                                            onChange={e => setManualCandidate({ ...manualCandidate, name: e.target.value })}
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="text-[11px] font-bold text-[#64748B] uppercase tracking-widest ml-1 block mb-2">Email Address</label>
+                                        <input
+                                            type="email"
+                                            placeholder="candidate@example.com"
+                                            className="w-full px-4 py-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] outline-none focus:border-[#0F172A] transition-colors"
+                                            value={manualCandidate.email}
+                                            onChange={e => setManualCandidate({ ...manualCandidate, email: e.target.value })}
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="text-[11px] font-bold text-[#64748B] uppercase tracking-widest ml-1 block mb-2">Phone Number</label>
+                                        <input
+                                            type="text"
+                                            placeholder="Enter phone number"
+                                            className="w-full px-4 py-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] outline-none focus:border-[#0F172A] transition-colors"
+                                            value={manualCandidate.phone}
+                                            onChange={e => setManualCandidate({ ...manualCandidate, phone: e.target.value })}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="flex gap-3 mt-8">
+                                    <button
+                                        onClick={() => setShowManualAddModal(false)}
+                                        className="flex-1 px-6 py-3 bg-white border border-[#E2E8F0] text-[#0F172A] font-medium rounded-xl hover:bg-[#F8FAFC] transition-all"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={handleManualAdd}
+                                        disabled={isAddingCandidate}
+                                        className="flex-1 px-6 py-3 bg-[#0F172A] text-white font-medium rounded-xl hover:bg-[#1E293B] transition-all disabled:opacity-50"
+                                    >
+                                        {isAddingCandidate ? 'Adding...' : 'Add Candidate'}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )
+                }
             </div>
-
-            {/* Schedule Modal */}
-            {showScheduleModal && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl">
-                        <div className="flex items-center gap-3 mb-6">
-                            <div className="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center">
-                                <Calendar className="w-6 h-6 text-[#0F172A]" />
-                            </div>
-                            <div>
-                                <h2 className="text-xl font-medium text-[#0F172A]">Schedule Email Notification</h2>
-                                <p className="text-sm text-[#64748B]">When should we send notifications?</p>
-                            </div>
-                        </div>
-
-                        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
-                            <p className="text-sm text-blue-900 font-medium">📧 Email will be sent on the selected date</p>
-                            <p className="text-xs text-blue-700 mt-1">Exam: {examData.startDate} at {examData.startTime}</p>
-                        </div>
-
-                        <div className="space-y-5">
-                            <div>
-                                <label className="text-[11px] font-bold text-[#64748B] uppercase tracking-widest ml-1 block mb-2">Send Email On</label>
-                                <input 
-                                    type="date" 
-                                    className="w-full px-4 py-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] outline-none focus:border-[#0F172A] transition-colors"
-                                    value={examData.scheduleEmailDate || ''} 
-                                    onChange={e => updateField('scheduleEmailDate', e.target.value)} 
-                                />
-                            </div>
-
-                            <div>
-                                <label className="text-[11px] font-bold text-[#64748B] uppercase tracking-widest ml-1 block mb-2">Send Email At</label>
-                                <input 
-                                    type="time" 
-                                    className="w-full px-4 py-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] outline-none focus:border-[#0F172A] transition-colors"
-                                    value={examData.scheduleEmailTime || ''} 
-                                    onChange={e => updateField('scheduleEmailTime', e.target.value)} 
-                                />
-                            </div>
-                        </div>
-
-                        <div className="flex gap-3 mt-8">
-                            <button
-                                onClick={() => setShowScheduleModal(false)}
-                                className="flex-1 px-6 py-3 bg-white border border-[#E2E8F0] text-[#0F172A] font-medium rounded-xl hover:bg-[#F8FAFC] transition-all"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={async () => {
-                                    if (!examData.scheduleEmailDate || !examData.scheduleEmailTime) {
-                                        alert('❌ Please select date and time for sending email notifications');
-                                        return;
-                                    }
-                                    
-                                    const scheduleDateTime = new Date(`${examData.scheduleEmailDate}T${examData.scheduleEmailTime}`);
-                                    const now = new Date();
-                                    
-                                    if (scheduleDateTime <= now) {
-                                        alert('❌ Schedule date/time must be in the future');
-                                        return;
-                                    }
-                                    
-                                    try {
-                                        const token = localStorage.getItem('token');
-                                        const updatedData = { 
-                                            ...examData,
-                                            endDate: examData.startDate,
-                                            status: 'published',
-                                            violationLimits: examData.violationLimits,
-                                            scheduleEmailDate: examData.scheduleEmailDate,
-                                            scheduleEmailTime: examData.scheduleEmailTime
-                                        };
-                                        
-                                        const response = await fetch(`http://localhost:5000/api/exams/${id}`, {
-                                            method: 'PUT',
-                                            headers: {
-                                                'Content-Type': 'application/json',
-                                                'Authorization': `Bearer ${token}`
-                                            },
-                                            body: JSON.stringify(updatedData)
-                                        });
-                                        
-                                        if (response.ok) {
-                                            setShowScheduleModal(false);
-                                            alert(`✅ Exam Scheduled Successfully!\n\nEmail notifications will be sent on:\n📅 ${examData.scheduleEmailDate}\n⏰ ${examData.scheduleEmailTime}\n\nExam Details:\n📅 Date: ${examData.startDate}\n⏰ Time: ${examData.startTime}`);
-                                            navigate('/manage-exams');
-                                        } else {
-                                            const error = await response.json();
-                                            alert(`Failed to schedule exam: ${error.message || 'Unknown error'}`);
-                                        }
-                                    } catch (error) {
-                                        console.error('Schedule error:', error);
-                                        alert('Failed to schedule exam');
-                                    }
-                                }}
-                                className="flex-1 px-6 py-3 bg-[#0F172A] text-white font-medium rounded-xl hover:bg-[#1E293B] transition-all"
-                            >
-                                Schedule
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
     );
 };

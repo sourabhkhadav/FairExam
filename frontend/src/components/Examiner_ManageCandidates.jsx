@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Edit2, Trash2, Save, X } from 'lucide-react';
+import { ArrowLeft, Edit2, Trash2, Save, X, PlusCircle } from 'lucide-react';
 
 const Examiner_ManageCandidates = () => {
     const navigate = useNavigate();
@@ -9,6 +9,13 @@ const Examiner_ManageCandidates = () => {
     const [loading, setLoading] = useState(true);
     const [editingId, setEditingId] = useState(null);
     const [editForm, setEditForm] = useState({ name: '', email: '', mobileNumber: '' });
+    const [showManualAddModal, setShowManualAddModal] = useState(false);
+    const [isAddingCandidate, setIsAddingCandidate] = useState(false);
+    const [manualCandidate, setManualCandidate] = useState({
+        name: '',
+        email: '',
+        phone: ''
+    });
 
     useEffect(() => {
         fetchCandidates();
@@ -28,6 +35,41 @@ const Examiner_ManageCandidates = () => {
             console.error('Failed to fetch candidates:', error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleManualAdd = async () => {
+        if (!manualCandidate.name || !manualCandidate.email || !manualCandidate.phone) {
+            alert('Please fill all fields');
+            return;
+        }
+        setIsAddingCandidate(true);
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch('http://localhost:5000/api/candidates/manual', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    ...manualCandidate,
+                    examId: id
+                })
+            });
+            const data = await response.json();
+            if (data.success) {
+                alert('Candidate added successfully');
+                setShowManualAddModal(false);
+                setManualCandidate({ name: '', email: '', phone: '' });
+                fetchCandidates(); // Refresh the list
+            } else {
+                alert(data.message);
+            }
+        } catch (error) {
+            alert('Failed to add candidate');
+        } finally {
+            setIsAddingCandidate(false);
         }
     };
 
@@ -100,7 +142,16 @@ const Examiner_ManageCandidates = () => {
                 >
                     <ArrowLeft className="w-5 h-5 text-[#64748B]" />
                 </button>
-                <h1 className="text-2xl font-semibold text-[#0F172A]">Manage Candidates</h1>
+                <div className="flex-1">
+                    <h1 className="text-2xl font-semibold text-[#0F172A]">Manage Candidates</h1>
+                </div>
+                <button
+                    onClick={() => setShowManualAddModal(true)}
+                    className="px-4 py-2 bg-[#0F172A] text-white rounded-xl flex items-center gap-2 text-sm font-medium hover:bg-[#1E293B] transition-all"
+                >
+                    <PlusCircle className="w-4 h-4" />
+                    Add Candidate
+                </button>
             </div>
 
             <div className="space-y-4">
@@ -179,6 +230,74 @@ const Examiner_ManageCandidates = () => {
                     ))
                 )}
             </div>
+
+            {/* Manual Add Candidate Modal */}
+            {showManualAddModal && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl p-6 sm:p-8 max-w-md w-full shadow-2xl">
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center">
+                                <PlusCircle className="w-5 h-5 text-[#0F172A]" />
+                            </div>
+                            <div>
+                                <h2 className="text-lg font-semibold text-[#0F172A]">Add Candidate Manually</h2>
+                                <p className="text-xs text-[#64748B]">Enter details to add a new candidate</p>
+                            </div>
+                        </div>
+
+                        <div className="space-y-4">
+                            <div>
+                                <label className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider ml-1 block mb-1.5">Full Name</label>
+                                <input
+                                    type="text"
+                                    placeholder="Enter full name"
+                                    className="w-full px-4 py-2.5 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0] outline-none focus:border-[#0F172A] transition-colors text-sm"
+                                    value={manualCandidate.name}
+                                    onChange={e => setManualCandidate({ ...manualCandidate, name: e.target.value })}
+                                />
+                            </div>
+
+                            <div>
+                                <label className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider ml-1 block mb-1.5">Email Address</label>
+                                <input
+                                    type="email"
+                                    placeholder="candidate@example.com"
+                                    className="w-full px-4 py-2.5 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0] outline-none focus:border-[#0F172A] transition-colors text-sm"
+                                    value={manualCandidate.email}
+                                    onChange={e => setManualCandidate({ ...manualCandidate, email: e.target.value })}
+                                />
+                            </div>
+
+                            <div>
+                                <label className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider ml-1 block mb-1.5">Phone Number</label>
+                                <input
+                                    type="text"
+                                    placeholder="Enter phone number"
+                                    className="w-full px-4 py-2.5 rounded-lg bg-[#F8FAFC] border border-[#E2E8F0] outline-none focus:border-[#0F172A] transition-colors text-sm"
+                                    value={manualCandidate.phone}
+                                    onChange={e => setManualCandidate({ ...manualCandidate, phone: e.target.value })}
+                                />
+                            </div>
+                        </div>
+
+                        <div className="flex gap-3 mt-8">
+                            <button
+                                onClick={() => setShowManualAddModal(false)}
+                                className="flex-1 px-4 py-2.5 border border-[#E2E8F0] text-[#0F172A] font-medium rounded-lg hover:bg-[#F8FAFC] transition-all text-sm"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleManualAdd}
+                                disabled={isAddingCandidate}
+                                className="flex-1 px-4 py-2.5 bg-[#0F172A] text-white font-medium rounded-lg hover:bg-[#1E293B] transition-all disabled:opacity-50 text-sm"
+                            >
+                                {isAddingCandidate ? 'Adding...' : 'Add Candidate'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

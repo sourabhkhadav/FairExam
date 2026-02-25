@@ -209,7 +209,7 @@ export const getCandidatesByExam = async (req, res) => {
 // @access  Private (Examiner only)
 export const addManualCandidate = async (req, res) => {
     try {
-        const { name, email, phone, candidateId, examId } = req.body;
+        const { name, email, phone, candidateId, examId, password: customPassword } = req.body;
 
         if (!name || !email || !examId) {
             return res.status(400).json({
@@ -219,7 +219,7 @@ export const addManualCandidate = async (req, res) => {
         }
 
         const generatedId = candidateId || `CAND${examId.slice(-4)}${Date.now().toString().slice(-4)}`;
-        const password = Math.random().toString(36).slice(-8).toUpperCase();
+        const password = customPassword || Math.random().toString(36).slice(-8).toUpperCase();
 
         const candidate = await Candidate.create({
             name,

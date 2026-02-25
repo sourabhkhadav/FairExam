@@ -1,5 +1,5 @@
 import asyncHandler from '../middleware/asyncHandler.js';
-import { sendTestEmail, sendExamInvitation, sendViolationAlert, sendExamResult, sendExamCancellation } from '../utils/emailService.js';
+import { sendTestEmail, sendExamNotification, sendViolationAlert, sendExamResult, sendExamCancellation } from '../utils/emailService.js';
 import Exam from '../models/Exam.js';
 import Candidate from '../models/Candidate.js';
 
@@ -22,10 +22,10 @@ export const sendTest = asyncHandler(async (req, res) => {
     });
 });
 
-// @desc    Send exam invitation
-// @route   POST /api/email/invitation
+// @desc    Send exam notification
+// @route   POST /api/email/notification
 // @access  Private
-export const sendInvitation = asyncHandler(async (req, res) => {
+export const sendNotification = asyncHandler(async (req, res) => {
     const { email, examDetails } = req.body;
 
     if (!email || !examDetails) {
@@ -33,11 +33,11 @@ export const sendInvitation = asyncHandler(async (req, res) => {
         throw new Error('Email and exam details are required');
     }
 
-    await sendExamInvitation(email, examDetails);
+    await sendExamNotification(email, examDetails);
 
     res.status(200).json({
         success: true,
-        message: `Invitation sent to ${email}`
+        message: `Notification sent to ${email}`
     });
 });
 
@@ -79,7 +79,7 @@ export const sendResult = asyncHandler(async (req, res) => {
     });
 });
 
-// @desc    Send bulk invitations to all candidates
+// @desc    Send bulk notifications to all candidates
 // @route   POST /api/email/bulk-invitation/:examId
 // @access  Private
 export const sendBulkInvitation = asyncHandler(async (req, res) => {
@@ -101,10 +101,8 @@ export const sendBulkInvitation = asyncHandler(async (req, res) => {
         title: exam.title,
         startDate: exam.startDate || 'TBD',
         startTime: exam.startTime || 'TBD',
-        endDate: exam.endDate,
-        endTime: exam.endTime,
-        duration: exam.duration || 0,
-        totalMarks: exam.totalMarks || 0
+        endTime: exam.endTime || 'TBD',
+        duration: exam.duration || 0
     };
 
     const results = { sent: 0, failed: 0, emails: [] };
@@ -112,7 +110,7 @@ export const sendBulkInvitation = asyncHandler(async (req, res) => {
     for (const candidate of candidates) {
         if (candidate.email) {
             try {
-                await sendExamInvitation(candidate.email, examDetails);
+                await sendExamNotification(candidate.email, examDetails);
                 results.sent++;
                 results.emails.push(candidate.email);
                 console.log(`✅ Sent to ${candidate.email}`);
@@ -127,7 +125,7 @@ export const sendBulkInvitation = asyncHandler(async (req, res) => {
 
     res.status(200).json({
         success: true,
-        message: `Invitations sent to ${results.sent} candidates`,
+        message: `Notifications sent to ${results.sent} candidates`,
         results
     });
 });

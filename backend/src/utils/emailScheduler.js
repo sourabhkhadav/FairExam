@@ -1,6 +1,6 @@
 import Exam from '../models/Exam.js';
 import Candidate from '../models/Candidate.js';
-import { sendExamInvitation, sendExamStartEmail } from './emailService.js';
+import { sendExamNotification, sendExamStartEmail } from './emailService.js';
 
 // Check and send scheduled emails every minute
 let isRunning = false;
@@ -34,13 +34,14 @@ export const startEmailScheduler = () => {
                     title: exam.title,
                     startDate: exam.startDate || 'TBD',
                     startTime: exam.startTime || 'TBD',
+                    endTime: exam.endTime || 'TBD',
                     duration: exam.duration || 0
                 };
 
                 for (const candidate of candidates) {
                     if (candidate.email) {
                         try {
-                            await sendExamInvitation(candidate.email, examDetails);
+                            await sendExamNotification(candidate.email, examDetails);
                         } catch (error) {
                             console.error(`Failed to send to ${candidate.email}`);
                         }

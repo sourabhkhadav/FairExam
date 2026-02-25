@@ -88,120 +88,84 @@ const Examiner_DraftConfigure = () => {
             <div className="space-y-8">
                 {/* Schedule */}
                 <FormSection title="Exam Date and Time" icon={Calendar}>
-                    <div className="flex flex-col lg:flex-row gap-8">
-                        <div className="flex-1 bg-[#F8FAFC]/50 p-6 rounded-2xl border border-[#E2E8F0] space-y-6">
-                            <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 rounded-lg w-fit">
-                                <Play className="w-3.5 h-3.5 text-[#0F172A]" />
-                                <span className="text-[11px] font-bold text-[#0F172A] uppercase tracking-wider">Start Configuration</span>
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-1.5">
-                                    <label className="text-[11px] font-bold text-[#64748B] uppercase tracking-widest ml-1">Exam Date</label>
-                                    <input 
-                                        type="date" 
-                                        min={new Date().toISOString().split('T')[0]}
-                                        className="w-full px-4 py-3 rounded-xl bg-white border border-[#E2E8F0] outline-none"
-                                        value={examData.startDate} 
-                                        onChange={e => updateField('startDate', e.target.value)} 
-                                    />
-                                </div>
-                                <div className="space-y-1.5">
-                                    <label className="text-[11px] font-bold text-[#64748B] uppercase tracking-widest ml-1">Exam Time</label>
-                                    <input 
-                                        type="time" 
-                                        className="w-full px-4 py-3 rounded-xl bg-white border border-[#E2E8F0] outline-none"
-                                        value={examData.startTime} 
-                                        onChange={e => {
-                                            const selectedDate = examData.startDate;
-                                            const selectedTime = e.target.value;
-                                            const now = new Date();
-                                            const selectedDateTime = new Date(`${selectedDate}T${selectedTime}`);
-                                            
-                                            if (selectedDate === now.toISOString().split('T')[0] && selectedDateTime <= now) {
-                                                alert('⚠️ Start time cannot be in the past. Please select a future time.');
-                                                return;
-                                            }
-                                            updateField('startTime', selectedTime);
-                                        }} 
-                                    />
-                                </div>
+                    <div className="bg-[#F8FAFC]/50 p-6 rounded-2xl border border-[#E2E8F0] space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="space-y-1.5">
+                                <label className="text-[11px] font-bold text-[#64748B] uppercase tracking-widest ml-1">Exam Date</label>
+                                <input 
+                                    type="date" 
+                                    min={new Date().toISOString().split('T')[0]}
+                                    className="w-full px-4 py-3 rounded-xl bg-white border border-[#E2E8F0] outline-none focus:border-[#0F172A] transition-colors"
+                                    value={examData.startDate} 
+                                    onChange={e => {
+                                        updateField('startDate', e.target.value);
+                                        updateField('endDate', e.target.value);
+                                    }} 
+                                />
                             </div>
                             <div className="space-y-1.5">
-                                <label className="text-[11px] font-bold text-[#64748B] uppercase tracking-widest ml-1">Time Zone</label>
-                                <select className="w-full px-4 py-3 rounded-xl bg-white border border-[#E2E8F0] outline-none"
-                                    value={examData.timezone} onChange={e => updateField('timezone', e.target.value)}>
-                                    <option>(UTC+05:30) Mumbai, Kolkata, New Delhi</option>
-                                    <option>(UTC+00:00) London</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div className="flex-1 bg-[#F8FAFC]/50 p-6 rounded-2xl border border-[#E2E8F0] space-y-6">
-                            <div className="flex items-center gap-2 px-3 py-1.5 bg-rose-50 rounded-lg w-fit">
-                                <Save className="w-3.5 h-3.5 text-[#EF4444]" />
-                                <span className="text-[11px] font-bold text-[#EF4444] uppercase tracking-wider">End Configuration</span>
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-1.5">
-                                    <label className="text-[11px] font-bold text-[#64748B] uppercase tracking-widest ml-1">End Date</label>
-                                    <input 
-                                        type="date" 
-                                        min={examData.startDate || new Date().toISOString().split('T')[0]}
-                                        className="w-full px-4 py-3 rounded-xl bg-white border border-[#E2E8F0] outline-none"
-                                        value={examData.endDate} 
-                                        onChange={e => updateField('endDate', e.target.value)} 
-                                    />
-                                </div>
-                                <div className="space-y-1.5">
-                                    <label className="text-[11px] font-bold text-[#64748B] uppercase tracking-widest ml-1">End Time</label>
-                                    <input 
-                                        type="time" 
-                                        className="w-full px-4 py-3 rounded-xl bg-white border border-[#E2E8F0] outline-none"
-                                        value={examData.endTime} 
-                                        onChange={e => {
-                                            const selectedEndTime = e.target.value;
-                                            if (examData.startDate && examData.startTime && examData.endDate) {
-                                                const startDateTime = new Date(`${examData.startDate}T${examData.startTime}`);
-                                                const endDateTime = new Date(`${examData.endDate}T${selectedEndTime}`);
-                                                
-                                                if (endDateTime <= startDateTime) {
-                                                    alert('⚠️ End time must be after start time.');
-                                                    return;
-                                                }
+                                <label className="text-[11px] font-bold text-[#64748B] uppercase tracking-widest ml-1">Start Time</label>
+                                <input 
+                                    type="time" 
+                                    className="w-full px-4 py-3 rounded-xl bg-white border border-[#E2E8F0] outline-none focus:border-[#0F172A] transition-colors"
+                                    value={examData.startTime} 
+                                    onChange={e => {
+                                        const selectedDate = examData.startDate;
+                                        const selectedTime = e.target.value;
+                                        const now = new Date();
+                                        const selectedDateTime = new Date(`${selectedDate}T${selectedTime}`);
+                                        
+                                        if (selectedDate === now.toISOString().split('T')[0] && selectedDateTime <= now) {
+                                            alert('⚠️ Start time cannot be in the past.');
+                                            return;
+                                        }
+                                        updateField('startTime', selectedTime);
+                                        
+                                        // Auto-calculate duration
+                                        if (examData.endTime) {
+                                            const start = new Date(`2000-01-01T${selectedTime}`);
+                                            const end = new Date(`2000-01-01T${examData.endTime}`);
+                                            const durationMin = Math.floor((end - start) / (1000 * 60));
+                                            if (durationMin > 0) {
+                                                updateField('duration', durationMin);
                                             }
-                                            updateField('endTime', selectedEndTime);
-                                        }} 
-                                    />
-                                </div>
+                                        }
+                                    }} 
+                                />
                             </div>
-                                <div className="space-y-1.5">
-                                    <label className="text-[11px] font-bold text-[#64748B] uppercase tracking-widest ml-1">Exam Duration (Min)</label>
-                                    <input 
-                                        type="number" 
-                                        className="w-full px-4 py-3 rounded-xl bg-white border border-[#E2E8F0] outline-none"
-                                        placeholder="e.g., 30 for 30 minutes"
-                                        value={examData.duration || ''} 
-                                        onChange={e => {
-                                            const inputValue = e.target.value;
-                                            const newDuration = inputValue === '' ? 0 : Math.round(parseFloat(inputValue));
+                            <div className="space-y-1.5">
+                                <label className="text-[11px] font-bold text-[#64748B] uppercase tracking-widest ml-1">End Time</label>
+                                <input 
+                                    type="time" 
+                                    className="w-full px-4 py-3 rounded-xl bg-white border border-[#E2E8F0] outline-none focus:border-[#0F172A] transition-colors"
+                                    value={examData.endTime} 
+                                    onChange={e => {
+                                        const selectedEndTime = e.target.value;
+                                        if (examData.startTime) {
+                                            const start = new Date(`2000-01-01T${examData.startTime}`);
+                                            const end = new Date(`2000-01-01T${selectedEndTime}`);
                                             
-                                            if (examData.startDate && examData.startTime && examData.endDate && examData.endTime) {
-                                                const startDateTime = new Date(`${examData.startDate}T${examData.startTime}`);
-                                                const endDateTime = new Date(`${examData.endDate}T${examData.endTime}`);
-                                                const availableMinutes = Math.floor((endDateTime - startDateTime) / (1000 * 60));
-                                                
-                                                if (newDuration > availableMinutes) {
-                                                    alert(`❌ Exam duration (${newDuration} min) cannot exceed the time between start and end (${availableMinutes} min).\n\nPlease adjust the duration or extend the end time.`);
-                                                    return;
-                                                }
+                                            if (end <= start) {
+                                                alert('⚠️ End time must be after start time.');
+                                                return;
                                             }
                                             
-                                            updateField('duration', newDuration);
-                                        }} 
-                                    />
-                                    <p className="text-[10px] text-[#64748B] ml-1">Time given to complete exam once started</p>
-                                </div>
+                                            // Auto-calculate duration
+                                            const durationMin = Math.floor((end - start) / (1000 * 60));
+                                            updateField('duration', durationMin);
+                                        }
+                                        updateField('endTime', selectedEndTime);
+                                    }} 
+                                />
+                            </div>
                         </div>
+                        
+                        {examData.duration > 0 && (
+                            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                                <p className="text-sm font-semibold text-blue-900">⏱️ Exam Duration: {examData.duration} minutes</p>
+                                <p className="text-xs text-blue-700 mt-1">Calculated from start and end time</p>
+                            </div>
+                        )}
                     </div>
                 </FormSection>
 
@@ -212,38 +176,50 @@ const Examiner_DraftConfigure = () => {
                             <div className="space-y-2">
                                 <label className="text-[11px] font-bold text-[#64748B] uppercase tracking-widest ml-1">Face Detection Limit</label>
                                 <input 
-                                    type="number" 
-                                    min="1"
-                                    max="20"
+                                    type="text" 
+                                    inputMode="numeric"
+                                    pattern="[0-9]*"
                                     className="w-full px-4 py-3 rounded-xl bg-white border border-[#E2E8F0] outline-none focus:border-[#0F172A] transition-colors"
-                                    value={examData.violationLimits?.faceLimit || 5}
-                                    onChange={e => updateField('violationLimits', { ...examData.violationLimits, faceLimit: parseInt(e.target.value, 10) || 5 })}
+                                    value={examData.violationLimits?.faceLimit ?? 5}
+                                    onChange={e => {
+                                        const value = e.target.value.replace(/[^0-9]/g, '');
+                                        const numValue = value === '' ? 0 : parseInt(value, 10);
+                                        updateField('violationLimits', { ...examData.violationLimits, faceLimit: numValue });
+                                    }}
                                 />
-                                <p className="text-[10px] text-[#64748B] ml-1">Max face violations before action</p>
+                                <p className="text-[10px] text-[#64748B] ml-1">Max face violations before action (0 = disabled)</p>
                             </div>
                             <div className="space-y-2">
                                 <label className="text-[11px] font-bold text-[#64748B] uppercase tracking-widest ml-1">Sound Detection Limit</label>
                                 <input 
-                                    type="number" 
-                                    min="1"
-                                    max="20"
+                                    type="text" 
+                                    inputMode="numeric"
+                                    pattern="[0-9]*"
                                     className="w-full px-4 py-3 rounded-xl bg-white border border-[#E2E8F0] outline-none focus:border-[#0F172A] transition-colors"
-                                    value={examData.violationLimits?.soundLimit || 5}
-                                    onChange={e => updateField('violationLimits', { ...examData.violationLimits, soundLimit: parseInt(e.target.value, 10) || 5 })}
+                                    value={examData.violationLimits?.soundLimit ?? 5}
+                                    onChange={e => {
+                                        const value = e.target.value.replace(/[^0-9]/g, '');
+                                        const numValue = value === '' ? 0 : parseInt(value, 10);
+                                        updateField('violationLimits', { ...examData.violationLimits, soundLimit: numValue });
+                                    }}
                                 />
-                                <p className="text-[10px] text-[#64748B] ml-1">Max sound violations before action</p>
+                                <p className="text-[10px] text-[#64748B] ml-1">Max sound violations before action (0 = disabled)</p>
                             </div>
                             <div className="space-y-2">
                                 <label className="text-[11px] font-bold text-[#64748B] uppercase tracking-widest ml-1">Fullscreen Exit Limit</label>
                                 <input 
-                                    type="number" 
-                                    min="1"
-                                    max="20"
+                                    type="text" 
+                                    inputMode="numeric"
+                                    pattern="[0-9]*"
                                     className="w-full px-4 py-3 rounded-xl bg-white border border-[#E2E8F0] outline-none focus:border-[#0F172A] transition-colors"
-                                    value={examData.violationLimits?.fullscreenLimit || 5}
-                                    onChange={e => updateField('violationLimits', { ...examData.violationLimits, fullscreenLimit: parseInt(e.target.value, 10) || 5 })}
+                                    value={examData.violationLimits?.fullscreenLimit ?? 5}
+                                    onChange={e => {
+                                        const value = e.target.value.replace(/[^0-9]/g, '');
+                                        const numValue = value === '' ? 0 : parseInt(value, 10);
+                                        updateField('violationLimits', { ...examData.violationLimits, fullscreenLimit: numValue });
+                                    }}
                                 />
-                                <p className="text-[10px] text-[#64748B] ml-1">Max fullscreen exits before action</p>
+                                <p className="text-[10px] text-[#64748B] ml-1">Max fullscreen exits before action (0 = disabled)</p>
                             </div>
                         </div>
                     </FormSection>
@@ -331,15 +307,16 @@ const Examiner_DraftConfigure = () => {
                 <div className="flex justify-end gap-4 pt-10 border-t border-[#E2E8F0]">
                     <button
                         onClick={async () => {
-                            if (!examData.startDate || !examData.endDate || !examData.startTime || !examData.endTime || !examData.duration) {
-                                alert('❌ Please fill in all exam date, time, and duration fields before publishing');
+                            if (!examData.startDate || !examData.startTime || !examData.endTime || !examData.duration) {
+                                alert('❌ Please fill in exam date, start time, and end time');
                                 return;
                             }
                             setIsPublishing(true);
                             try {
                                 const token = localStorage.getItem('token');
                                 const updatedData = { 
-                                    ...examData, 
+                                    ...examData,
+                                    endDate: examData.startDate,
                                     status: 'published',
                                     violationLimits: examData.violationLimits
                                 };
@@ -364,7 +341,7 @@ const Examiner_DraftConfigure = () => {
                                     
                                     const emailData = await emailResponse.json();
                                     if (emailData.success) {
-                                        alert(`✅ Exam Published Successfully!\n\nEmail invitations sent to ${emailData.results.sent} candidates.\n\nExam Details:\n📅 Date: ${examData.startDate}\n⏰ Time: ${examData.startTime}\n⏱️ Duration: ${examData.duration} minutes`);
+                                        alert(`✅ Exam Published Successfully!\n\nEmail invitations sent to ${emailData.results.sent} candidates.\n\nExam Details:\n📅 Date: ${examData.startDate}\n⏰ Time: ${examData.startTime} - ${examData.endTime}\n⏱️ Duration: ${examData.duration} minutes`);
                                     } else {
                                         alert('✅ Exam Published! But failed to send some email invitations.');
                                     }
@@ -395,8 +372,8 @@ const Examiner_DraftConfigure = () => {
                     </button>
                     <button
                         onClick={() => {
-                            if (!examData.startDate || !examData.endDate || !examData.startTime || !examData.endTime || !examData.duration) {
-                                alert('❌ Please fill in all exam date, time, and duration fields before scheduling');
+                            if (!examData.startDate || !examData.startTime || !examData.endTime || !examData.duration) {
+                                alert('❌ Please fill in exam date, start time, and end time');
                                 return;
                             }
                             setShowScheduleModal(true);
@@ -474,7 +451,8 @@ const Examiner_DraftConfigure = () => {
                                     try {
                                         const token = localStorage.getItem('token');
                                         const updatedData = { 
-                                            ...examData, 
+                                            ...examData,
+                                            endDate: examData.startDate,
                                             status: 'published',
                                             violationLimits: examData.violationLimits,
                                             scheduleEmailDate: examData.scheduleEmailDate,

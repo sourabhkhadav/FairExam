@@ -196,7 +196,12 @@ const Examiner_AddQuestions = () => {
                 description: metaData.description || metaData.category,
                 status: status,
                 sections: sections,
-                questions: questions
+                questions: questions,
+                violationLimits: metaData.violationLimits || {
+                    faceLimit: 5,
+                    soundLimit: 5,
+                    fullscreenLimit: 5
+                }
             };
 
             let url = 'http://localhost:5000/api/exams';

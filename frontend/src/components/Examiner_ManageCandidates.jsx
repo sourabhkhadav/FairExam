@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Edit2, Trash2, Save, X, PlusCircle } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 const Examiner_ManageCandidates = () => {
     const navigate = useNavigate();
@@ -40,7 +41,7 @@ const Examiner_ManageCandidates = () => {
 
     const handleManualAdd = async () => {
         if (!manualCandidate.name || !manualCandidate.email || !manualCandidate.phone) {
-            alert('Please fill all fields');
+            toast.error('Please fill all fields');
             return;
         }
         setIsAddingCandidate(true);
@@ -59,38 +60,55 @@ const Examiner_ManageCandidates = () => {
             });
             const data = await response.json();
             if (data.success) {
-                alert('Candidate added successfully');
+                toast.success('Candidate added successfully');
                 setShowManualAddModal(false);
                 setManualCandidate({ name: '', email: '', phone: '' });
                 fetchCandidates(); // Refresh the list
             } else {
-                alert(data.message);
+                toast.error(data.message);
             }
         } catch (error) {
-            alert('Failed to add candidate');
+            toast.error('Failed to add candidate');
         } finally {
             setIsAddingCandidate(false);
         }
     };
 
     const handleDelete = async (candidateId) => {
-        if (!window.confirm('Are you sure you want to delete this candidate?')) return;
-        try {
-            const token = localStorage.getItem('token');
-            const response = await fetch(`http://localhost:5000/api/candidates/${candidateId}`, {
-                method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await response.json();
-            if (data.success) {
-                setCandidates(candidates.filter(c => c._id !== candidateId));
-            } else {
-                alert(data.message);
-            }
-        } catch (error) {
-            console.error('Delete error:', error);
-            alert('Failed to delete candidate');
-        }
+        toast((t) => (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <span style={{ fontWeight: 500 }}>Are you sure you want to delete this candidate?</span>
+                <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                    <button
+                        onClick={() => toast.dismiss(t.id)}
+                        style={{ padding: '6px 16px', borderRadius: '8px', border: '1px solid #E2E8F0', background: '#fff', color: '#0F172A', fontWeight: 600, cursor: 'pointer' }}
+                    >Cancel</button>
+                    <button
+                        onClick={async () => {
+                            toast.dismiss(t.id);
+                            try {
+                                const token = localStorage.getItem('token');
+                                const response = await fetch(`http://localhost:5000/api/candidates/${candidateId}`, {
+                                    method: 'DELETE',
+                                    headers: { 'Authorization': `Bearer ${token}` }
+                                });
+                                const data = await response.json();
+                                if (data.success) {
+                                    setCandidates(candidates.filter(c => c._id !== candidateId));
+                                    toast.success('Candidate deleted successfully');
+                                } else {
+                                    toast.error(data.message);
+                                }
+                            } catch (error) {
+                                console.error('Delete error:', error);
+                                toast.error('Failed to delete candidate');
+                            }
+                        }}
+                        style={{ padding: '6px 16px', borderRadius: '8px', border: 'none', background: '#EF4444', color: '#fff', fontWeight: 600, cursor: 'pointer' }}
+                    >Delete</button>
+                </div>
+            </div>
+        ), { duration: Infinity, style: { maxWidth: '400px', background: '#fff', color: '#0F172A' } });
     };
 
     const startEdit = (candidate) => {
@@ -123,11 +141,11 @@ const Examiner_ManageCandidates = () => {
                 setCandidates(candidates.map(c => c._id === candidateId ? data.data : c));
                 setEditingId(null);
             } else {
-                alert(data.message);
+                toast.error(data.message);
             }
         } catch (error) {
             console.error('Update error:', error);
-            alert('Failed to update candidate');
+            toast.error('Failed to update candidate');
         }
     };
 

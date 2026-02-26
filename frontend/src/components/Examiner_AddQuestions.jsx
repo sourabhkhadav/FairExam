@@ -7,6 +7,7 @@ import {
     Target, Clock, BarChart, Info, AlertTriangle, Pencil
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 const Examiner_AddQuestions = () => {
     const navigate = useNavigate();
@@ -146,11 +147,11 @@ const Examiner_AddQuestions = () => {
                 nextQs.splice(insertIdx, 0, ...importedQuestions);
                 setQuestions(nextQs);
                 setFocusedIndex(insertIdx);
-                alert(`Successfully imported ${data.count} questions to ${sections.find(s => s.id === activeSectionId)?.name || 'Section'}.`);
+                toast.success(`Successfully imported ${data.count} questions to ${sections.find(s => s.id === activeSectionId)?.name || 'Section'}.`);
             }
         } catch (error) {
             console.error('Import error:', error);
-            alert(`Error importing file: ${error.message}`);
+            toast.error(`Error importing file: ${error.message}`);
         } finally {
             setIsLoading(false);
             e.target.value = null;
@@ -184,12 +185,12 @@ const Examiner_AddQuestions = () => {
 
     const saveExamToBackend = async (status) => {
         if (!metaData?.title) {
-            alert("Title is missing");
+            toast.error("Title is missing");
             return;
         }
 
         if (questions.length === 0) {
-            alert("Please add at least one question before submitting");
+            toast.error("Please add at least one question before submitting");
             return;
         }
 
@@ -197,17 +198,17 @@ const Examiner_AddQuestions = () => {
         for (let i = 0; i < questions.length; i++) {
             const q = questions[i];
             if (!q.text.trim()) {
-                alert(`Question ${i + 1} is missing content`);
+                toast.error(`Question ${i + 1} is missing content`);
                 return;
             }
             if (q.type === 'MCQ') {
                 const validOptions = q.options.filter(opt => opt.trim());
                 if (validOptions.length < 2) {
-                    alert(`Question ${i + 1} needs at least 2 options`);
+                    toast.error(`Question ${i + 1} needs at least 2 options`);
                     return;
                 }
                 if (!q.options[q.correct]?.trim()) {
-                    alert(`Question ${i + 1} has invalid correct answer`);
+                    toast.error(`Question ${i + 1} has invalid correct answer`);
                     return;
                 }
             }
@@ -254,18 +255,18 @@ const Examiner_AddQuestions = () => {
             }
 
             if (status === 'published') {
-                alert('Exam published successfully!');
+                toast.success('Exam published successfully!');
                 localStorage.removeItem('examDraft');
                 navigate('/manage-exams');
             } else {
-                alert('Draft saved successfully!');
+                toast.success('Draft saved successfully!');
                 localStorage.removeItem('examDraft');
                 navigate('/manage-exams');
             }
 
         } catch (error) {
             console.error('Save error:', error);
-            alert(`Error saving exam: ${error.message}`);
+            toast.error(`Error saving exam: ${error.message}`);
         } finally {
             setIsLoading(false);
         }
@@ -383,26 +384,23 @@ const Examiner_AddQuestions = () => {
                     <div className="flex-1 overflow-y-auto p-5 space-y-8 custom-scrollbar">
                         {sections.map((section, sIdx) => (
                             <div key={section.id} className="space-y-4">
-                                <div 
-                                    className={`flex items-center justify-between px-3 py-2 rounded-xl group/section cursor-pointer transition-all ${
-                                        activeSectionId === section.id 
-                                            ? 'bg-slate-100 border border-[#0F172A]/20' 
+                                <div
+                                    className={`flex items-center justify-between px-3 py-2 rounded-xl group/section cursor-pointer transition-all ${activeSectionId === section.id
+                                            ? 'bg-slate-100 border border-[#0F172A]/20'
                                             : 'hover:bg-slate-50'
-                                    }`}
+                                        }`}
                                     onClick={() => setActiveSectionId(section.id)}
                                 >
                                     <div className="flex items-center gap-2.5 flex-1 min-w-0">
-                                        <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${
-                                            activeSectionId === section.id ? 'bg-[#0F172A]' : 'bg-[#94A3B8]'
-                                        }`} />
+                                        <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${activeSectionId === section.id ? 'bg-[#0F172A]' : 'bg-[#94A3B8]'
+                                            }`} />
                                         <input
                                             id={`section-input-${section.id}`}
                                             value={section.name}
                                             onChange={(e) => updateSectionName(section.id, e.target.value)}
                                             onClick={(e) => e.stopPropagation()}
-                                            className={`text-[10px] font-bold uppercase tracking-[0.15em] bg-transparent border-none outline-none w-full ${
-                                                activeSectionId === section.id ? 'text-[#0F172A]' : 'text-[#64748B]'
-                                            }`}
+                                            className={`text-[10px] font-bold uppercase tracking-[0.15em] bg-transparent border-none outline-none w-full ${activeSectionId === section.id ? 'text-[#0F172A]' : 'text-[#64748B]'
+                                                }`}
                                         />
                                     </div>
                                     <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
@@ -543,91 +541,91 @@ const Examiner_AddQuestions = () => {
                                 </button>
                             </div>
                         ) : (
-                        <div className="bg-white rounded-2xl sm:rounded-[32px] border border-[#E2E8F0] shadow-sm p-6 sm:p-10 space-y-6 sm:space-y-8 relative overflow-hidden">
-                            <div className="absolute top-0 right-0 p-10 opacity-[0.03] pointer-events-none hidden sm:block">
-                                <Zap className="w-64 h-64 text-[#0F172A]" />
-                            </div>
+                            <div className="bg-white rounded-2xl sm:rounded-[32px] border border-[#E2E8F0] shadow-sm p-6 sm:p-10 space-y-6 sm:space-y-8 relative overflow-hidden">
+                                <div className="absolute top-0 right-0 p-10 opacity-[0.03] pointer-events-none hidden sm:block">
+                                    <Zap className="w-64 h-64 text-[#0F172A]" />
+                                </div>
 
-                            <div className="space-y-4">
-                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
-                                    <div className="flex items-center gap-3">
-                                        <label className="text-[11px] font-medium text-[#0F172A] uppercase tracking-[0.1em]">
-                                            {sections.find(s => s.id === currentQuestion.sectionId)?.name || 'No Section'}
-                                        </label>
-                                        <div className="w-1 h-1 bg-[#E2E8F0] rounded-full" />
-                                        <label className="text-[11px] font-medium text-[#0F172A] uppercase tracking-[0.1em]">Question Context</label>
-                                    </div>
-                                    <div className="flex items-center gap-3">
-                                        <select
-                                            className="bg-[#F8FAFC] border border-[#E2E8F0] text-[12px] font-medium text-[#0F172A] outline-none cursor-pointer px-3 py-1.5 rounded-xl hover:bg-white transition-colors"
-                                            value={currentQuestion.difficulty}
-                                            onChange={(e) => updateQuestion(focusedIndex, 'difficulty', e.target.value)}
-                                        >
-                                            <option>Easy</option>
-                                            <option>Medium</option>
-                                            <option>Hard</option>
-                                        </select>
-                                        <div className="flex items-center gap-2.5 bg-[#F8FAFC] border border-[#E2E8F0] px-3.5 py-1.5 rounded-xl">
-                                            <span className="text-[12px] font-normal text-[#475569]">Marks:</span>
-                                            <input
-                                                type="number"
-                                                className="w-8 bg-transparent border-none text-[12px] font-medium text-[#0F172A] outline-none"
-                                                value={currentQuestion.marks}
-                                                onChange={(e) => updateQuestion(focusedIndex, 'marks', e.target.value)}
-                                            />
+                                <div className="space-y-4">
+                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
+                                        <div className="flex items-center gap-3">
+                                            <label className="text-[11px] font-medium text-[#0F172A] uppercase tracking-[0.1em]">
+                                                {sections.find(s => s.id === currentQuestion.sectionId)?.name || 'No Section'}
+                                            </label>
+                                            <div className="w-1 h-1 bg-[#E2E8F0] rounded-full" />
+                                            <label className="text-[11px] font-medium text-[#0F172A] uppercase tracking-[0.1em]">Question Context</label>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <select
+                                                className="bg-[#F8FAFC] border border-[#E2E8F0] text-[12px] font-medium text-[#0F172A] outline-none cursor-pointer px-3 py-1.5 rounded-xl hover:bg-white transition-colors"
+                                                value={currentQuestion.difficulty}
+                                                onChange={(e) => updateQuestion(focusedIndex, 'difficulty', e.target.value)}
+                                            >
+                                                <option>Easy</option>
+                                                <option>Medium</option>
+                                                <option>Hard</option>
+                                            </select>
+                                            <div className="flex items-center gap-2.5 bg-[#F8FAFC] border border-[#E2E8F0] px-3.5 py-1.5 rounded-xl">
+                                                <span className="text-[12px] font-normal text-[#475569]">Marks:</span>
+                                                <input
+                                                    type="number"
+                                                    className="w-8 bg-transparent border-none text-[12px] font-medium text-[#0F172A] outline-none"
+                                                    value={currentQuestion.marks}
+                                                    onChange={(e) => updateQuestion(focusedIndex, 'marks', e.target.value)}
+                                                />
+                                            </div>
                                         </div>
                                     </div>
+                                    <textarea
+                                        className="w-full p-0 text-lg sm:text-[21px] font-medium text-[#0F172A] bg-transparent border-none outline-none placeholder:text-[#64748B] resize-none leading-relaxed tracking-tight"
+                                        placeholder="Type your question here..."
+                                        rows="3"
+                                        value={currentQuestion.text}
+                                        onChange={(e) => updateQuestion(focusedIndex, 'text', e.target.value)}
+                                    />
                                 </div>
-                                <textarea
-                                    className="w-full p-0 text-lg sm:text-[21px] font-medium text-[#0F172A] bg-transparent border-none outline-none placeholder:text-[#64748B] resize-none leading-relaxed tracking-tight"
-                                    placeholder="Type your question here..."
-                                    rows="3"
-                                    value={currentQuestion.text}
-                                    onChange={(e) => updateQuestion(focusedIndex, 'text', e.target.value)}
-                                />
-                            </div>
 
-                            <div className="space-y-5">
-                                <label className="text-[11px] font-medium text-[#0F172A] uppercase tracking-[0.15em]">Answers & Options</label>
-                                <div className="space-y-4">
-                                    {currentQuestion.options.map((opt, oIdx) => (
-                                        <div
-                                            key={oIdx}
-                                            className={`flex items-start sm:items-center gap-4 sm:gap-6 p-5 sm:p-6 rounded-2xl border transition-all ${currentQuestion.correct === oIdx
-                                                ? 'border-[#0F172A]/30 bg-slate-50'
-                                                : 'border-[#E2E8F0]/80 hover:border-[#0F172A]/50 bg-white'
-                                                }`}
-                                        >
+                                <div className="space-y-5">
+                                    <label className="text-[11px] font-medium text-[#0F172A] uppercase tracking-[0.15em]">Answers & Options</label>
+                                    <div className="space-y-4">
+                                        {currentQuestion.options.map((opt, oIdx) => (
                                             <div
-                                                onClick={() => updateQuestion(focusedIndex, 'correct', oIdx)}
-                                                className={`mt-1 sm:mt-0 w-6 h-6 rounded-full border-2 flex items-center justify-center cursor-pointer transition-all ${currentQuestion.correct === oIdx
-                                                    ? 'bg-[#0F172A] border-[#0F172A]'
-                                                    : 'border-[#E2E8F0] hover:border-[#0F172A]'
+                                                key={oIdx}
+                                                className={`flex items-start sm:items-center gap-4 sm:gap-6 p-5 sm:p-6 rounded-2xl border transition-all ${currentQuestion.correct === oIdx
+                                                    ? 'border-[#0F172A]/30 bg-slate-50'
+                                                    : 'border-[#E2E8F0]/80 hover:border-[#0F172A]/50 bg-white'
                                                     }`}
                                             >
-                                                {currentQuestion.correct === oIdx && <div className="w-2 h-2 bg-white rounded-full" />}
+                                                <div
+                                                    onClick={() => updateQuestion(focusedIndex, 'correct', oIdx)}
+                                                    className={`mt-1 sm:mt-0 w-6 h-6 rounded-full border-2 flex items-center justify-center cursor-pointer transition-all ${currentQuestion.correct === oIdx
+                                                        ? 'bg-[#0F172A] border-[#0F172A]'
+                                                        : 'border-[#E2E8F0] hover:border-[#0F172A]'
+                                                        }`}
+                                                >
+                                                    {currentQuestion.correct === oIdx && <div className="w-2 h-2 bg-white rounded-full" />}
+                                                </div>
+                                                <input
+                                                    className="flex-1 bg-transparent border-none outline-none text-sm sm:text-[15.5px] font-medium text-[#0F172A] placeholder:text-[#64748B]"
+                                                    placeholder={`Option ${String.fromCharCode(65 + oIdx)}...`}
+                                                    value={opt}
+                                                    onChange={(e) => updateOption(focusedIndex, oIdx, e.target.value)}
+                                                />
                                             </div>
-                                            <input
-                                                className="flex-1 bg-transparent border-none outline-none text-sm sm:text-[15.5px] font-medium text-[#0F172A] placeholder:text-[#64748B]"
-                                                placeholder={`Option ${String.fromCharCode(65 + oIdx)}...`}
-                                                value={opt}
-                                                onChange={(e) => updateOption(focusedIndex, oIdx, e.target.value)}
-                                            />
-                                        </div>
-                                    ))}
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className="pt-6 flex flex-wrap items-center gap-6 text-[#475569]">
+                                    <button className="flex items-center gap-2.5 text-[13px] font-medium hover:text-[#6366F1] transition-colors">
+                                        <Plus className="w-4 h-4" /> Add Option
+                                    </button>
+                                    <div className="w-[1px] h-4 bg-[#E2E8F0]" />
+                                    <button className="flex items-center gap-2.5 text-[13px] font-medium hover:text-[#6366F1] transition-colors">
+                                        <Info className="w-4 h-4" /> Add Rationale
+                                    </button>
                                 </div>
                             </div>
-
-                            <div className="pt-6 flex flex-wrap items-center gap-6 text-[#475569]">
-                                <button className="flex items-center gap-2.5 text-[13px] font-medium hover:text-[#6366F1] transition-colors">
-                                    <Plus className="w-4 h-4" /> Add Option
-                                </button>
-                                <div className="w-[1px] h-4 bg-[#E2E8F0]" />
-                                <button className="flex items-center gap-2.5 text-[13px] font-medium hover:text-[#6366F1] transition-colors">
-                                    <Info className="w-4 h-4" /> Add Rationale
-                                </button>
-                            </div>
-                        </div>
                         )}
 
                     </div>

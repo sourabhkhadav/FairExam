@@ -4,6 +4,7 @@ import {
     ShieldCheck, Save, Users, Database, FileCheck, Info, Play
 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 const FormSection = ({ title, icon: Icon, children }) => (
     <div className="bg-white p-5 sm:p-8 rounded-2xl sm:rounded-[32px] border border-[#E2E8F0] shadow-sm">
@@ -120,7 +121,7 @@ const Examiner_DraftConfigure = () => {
 
     const handleManualAdd = async () => {
         if (!manualCandidate.name || !manualCandidate.email || !manualCandidate.phone) {
-            alert('Please fill all fields');
+            toast.error('Please fill all fields');
             return;
         }
         setIsAddingCandidate(true);
@@ -139,16 +140,16 @@ const Examiner_DraftConfigure = () => {
             });
             const data = await response.json();
             if (data.success) {
-                alert('Candidate added successfully');
+                toast.success('Candidate added successfully');
                 setShowManualAddModal(false);
                 setManualCandidate({ name: '', email: '', phone: '' });
                 // Refresh real count from server
                 fetchCandidateCount();
             } else {
-                alert(data.message);
+                toast.error(data.message);
             }
         } catch (error) {
-            alert('Failed to add candidate');
+            toast.error('Failed to add candidate');
         } finally {
             setIsAddingCandidate(false);
         }
@@ -218,7 +219,7 @@ const Examiner_DraftConfigure = () => {
                                         const selectedDateTime = new Date(`${selectedDate}T${selectedTime}`);
 
                                         if (selectedDate === now.toISOString().split('T')[0] && selectedDateTime <= now) {
-                                            alert('⚠️ Start time cannot be in the past.');
+                                            toast.error('Start time cannot be in the past.');
                                             return;
                                         }
                                         updateField('startTime', selectedTime);
@@ -248,7 +249,7 @@ const Examiner_DraftConfigure = () => {
                                             const end = new Date(`2000-01-01T${selectedEndTime}`);
 
                                             if (end <= start) {
-                                                alert('⚠️ End time must be after start time.');
+                                                toast.error('End time must be after start time.');
                                                 return;
                                             }
 
@@ -370,12 +371,12 @@ const Examiner_DraftConfigure = () => {
                                                     updateField('candidateFile', file.name);
                                                     // Refresh real count from server
                                                     fetchCandidateCount();
-                                                    alert(`✅ Successfully uploaded ${data.count} candidates!`);
+                                                    toast.success(`Successfully uploaded ${data.count} candidates!`);
                                                 } else {
-                                                    alert(`❌ Error: ${data.message}`);
+                                                    toast.error(`Error: ${data.message}`);
                                                 }
                                             } catch (error) {
-                                                alert(`❌ Upload failed: ${error.message}`);
+                                                toast.error(`Upload failed: ${error.message}`);
                                             }
                                         }
                                     }}
@@ -422,7 +423,7 @@ const Examiner_DraftConfigure = () => {
                         type="button"
                         onClick={async () => {
                             if (!examData.startDate || !examData.startTime || !examData.endTime || !examData.duration) {
-                                alert('❌ Please fill in exam date, start time, and end time');
+                                toast.error('Please fill in exam date, start time, and end time');
                                 return;
                             }
                             setIsPublishing(true);
@@ -457,18 +458,18 @@ const Examiner_DraftConfigure = () => {
 
                                     const emailData = await emailResponse.json();
                                     if (emailData.success) {
-                                        alert(`✅ Exam Published Successfully!\n\nEmail notifications sent to ${emailData.results.sent} candidates.\n\nExam Details:\n📅 Date: ${examData.startDate}\n⏰ Time: ${examData.startTime} - ${examData.endTime}\n⏱️ Duration: ${examData.duration} minutes`);
+                                        toast.success(`Exam Published Successfully! Email sent to ${emailData.results.sent} candidates. Date: ${examData.startDate}, Time: ${examData.startTime} - ${examData.endTime}, Duration: ${examData.duration} min`);
                                     } else {
-                                        alert('✅ Exam Published! But failed to send some email notifications.');
+                                        toast.success('Exam Published! But failed to send some email notifications.');
                                     }
                                     navigate('/manage-exams');
                                 } else {
                                     const error = await response.json();
-                                    alert(`Failed to publish exam: ${error.message || 'Unknown error'}`);
+                                    toast.error(`Failed to publish exam: ${error.message || 'Unknown error'}`);
                                 }
                             } catch (error) {
                                 console.error('Publish error:', error);
-                                alert('Failed to publish exam');
+                                toast.error('Failed to publish exam');
                             } finally {
                                 setIsPublishing(false);
                             }
@@ -490,7 +491,7 @@ const Examiner_DraftConfigure = () => {
                         type="button"
                         onClick={() => {
                             if (!examData.startDate || !examData.startTime || !examData.endTime || !examData.duration) {
-                                alert('❌ Please fill in exam date, start time, and end time');
+                                toast.error('Please fill in exam date, start time, and end time');
                                 return;
                             }
                             setShowScheduleModal(true);
@@ -553,7 +554,7 @@ const Examiner_DraftConfigure = () => {
                                     <button
                                         onClick={async () => {
                                             if (!examData.scheduleEmailDate || !examData.scheduleEmailTime) {
-                                                alert('❌ Please select date and time for sending email notifications');
+                                                toast.error('Please select date and time for sending email notifications');
                                                 return;
                                             }
 
@@ -561,7 +562,7 @@ const Examiner_DraftConfigure = () => {
                                             const now = new Date();
 
                                             if (scheduleDateTime <= now) {
-                                                alert('❌ Schedule date/time must be in the future');
+                                                toast.error('Schedule date/time must be in the future');
                                                 return;
                                             }
 
@@ -587,15 +588,15 @@ const Examiner_DraftConfigure = () => {
 
                                                 if (response.ok) {
                                                     setShowScheduleModal(false);
-                                                    alert(`✅ Exam Scheduled Successfully!\n\nEmail notifications will be sent on:\n📅 ${examData.scheduleEmailDate}\n⏰ ${examData.scheduleEmailTime}\n\nExam Details:\n📅 Date: ${examData.startDate}\n⏰ Time: ${examData.startTime}`);
+                                                    toast.success(`Exam Scheduled Successfully! Email will be sent on: ${examData.scheduleEmailDate} at ${examData.scheduleEmailTime}. Exam: ${examData.startDate} at ${examData.startTime}`);
                                                     navigate('/manage-exams');
                                                 } else {
                                                     const error = await response.json();
-                                                    alert(`Failed to schedule exam: ${error.message || 'Unknown error'}`);
+                                                    toast.error(`Failed to schedule exam: ${error.message || 'Unknown error'}`);
                                                 }
                                             } catch (error) {
                                                 console.error('Schedule error:', error);
-                                                alert('Failed to schedule exam');
+                                                toast.error('Failed to schedule exam');
                                             }
                                         }}
                                         className="flex-1 px-6 py-3 bg-[#0F172A] text-white font-medium rounded-xl hover:bg-[#1E293B] transition-all"

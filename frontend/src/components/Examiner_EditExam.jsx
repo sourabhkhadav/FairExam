@@ -3,6 +3,7 @@ import {
     PlusCircle, ArrowLeft, Shield, Eye, Lock, Monitor, Scissors, ChevronRight, Trash2
 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 const FormSection = ({ title, icon: Icon, children }) => (
     <div className="bg-white p-5 sm:p-8 rounded-[32px] border border-[#E2E8F0] shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
@@ -51,7 +52,7 @@ const Examiner_EditExam = () => {
                 }
             } catch (e) {
                 console.error("Failed to load exam data", e);
-                alert("Could not load exam details.");
+                toast.error("Could not load exam details.");
                 navigate('/manage-exams');
             } finally {
                 setLoading(false);
@@ -69,7 +70,7 @@ const Examiner_EditExam = () => {
 
     const handleContinue = async () => {
         if (!examData.title) {
-            alert("Please enter an exam title");
+            toast.error("Please enter an exam title");
             return;
         }
 
@@ -99,7 +100,7 @@ const Examiner_EditExam = () => {
             }
         } catch (error) {
             console.error("Update error:", error);
-            alert("Failed to save changes.");
+            toast.error("Failed to save changes.");
         }
     };
 

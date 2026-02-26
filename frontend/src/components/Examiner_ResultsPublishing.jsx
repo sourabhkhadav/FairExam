@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Send, CheckCircle2, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 const Examiner_ResultsPublishing = () => {
     const navigate = useNavigate();
@@ -10,20 +11,20 @@ const Examiner_ResultsPublishing = () => {
 
     const formatDateTime = (date, time) => {
         if (!date || !time) return null;
-        
+
         const dateObj = new Date(date);
-        const formattedDate = dateObj.toLocaleDateString('en-US', { 
-            month: 'short', 
-            day: 'numeric', 
-            year: 'numeric' 
+        const formattedDate = dateObj.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric'
         });
-        
+
         const [hours, minutes] = time.split(':');
         const hour = parseInt(hours);
         const ampm = hour >= 12 ? 'PM' : 'AM';
         const hour12 = hour % 12 || 12;
         const formattedTime = `${hour12}:${minutes} ${ampm}`;
-        
+
         return `${formattedDate}, ${formattedTime}`;
     };
 
@@ -60,18 +61,18 @@ const Examiner_ResultsPublishing = () => {
                 },
                 body: JSON.stringify({ passingPercentage: 40 })
             });
-            
+
             const data = await response.json();
-            
+
             if (data.success) {
-                alert(`Results sent successfully! ${data.results.sent} emails sent, ${data.results.failed} failed.`);
+                toast.success(`Results sent successfully! ${data.results.sent} emails sent, ${data.results.failed} failed.`);
                 fetchExams();
             } else {
-                alert('Failed to send results: ' + (data.message || 'Unknown error'));
+                toast.error('Failed to send results: ' + (data.message || 'Unknown error'));
             }
         } catch (error) {
             console.error('Error sending results:', error);
-            alert('Failed to send results. Please try again.');
+            toast.error('Failed to send results. Please try again.');
         } finally {
             setSendingExamId(null);
         }
@@ -133,9 +134,8 @@ const Examiner_ResultsPublishing = () => {
                                             </td>
                                             <td className="py-6 text-center text-[#0F172A]/70 font-medium whitespace-nowrap">{exam.participants}</td>
                                             <td className="py-6 text-center whitespace-nowrap">
-                                                <span className={`px-4 py-1.5 rounded-full text-[11px] sm:text-[12px] font-bold flex items-center gap-1.5 justify-center w-fit mx-auto ${
-                                                    exam.isCalculated ? 'bg-slate-50 text-slate-800 border border-slate-200' : 'bg-slate-100 text-slate-500 border border-slate-200'
-                                                }`}>
+                                                <span className={`px-4 py-1.5 rounded-full text-[11px] sm:text-[12px] font-bold flex items-center gap-1.5 justify-center w-fit mx-auto ${exam.isCalculated ? 'bg-slate-50 text-slate-800 border border-slate-200' : 'bg-slate-100 text-slate-500 border border-slate-200'
+                                                    }`}>
                                                     {exam.isCalculated ? <CheckCircle2 className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
                                                     {exam.isCalculated ? 'Exam Ended' : 'In Progress'}
                                                 </span>
@@ -152,13 +152,12 @@ const Examiner_ResultsPublishing = () => {
                                                         <button
                                                             onClick={() => handlePublish(exam.id)}
                                                             disabled={!exam.isCalculated || sendingExamId === exam.id}
-                                                            className={`px-6 py-2 font-medium text-[11px] rounded-lg transition-all shadow-sm flex items-center gap-2 cursor-pointer ${
-                                                                sendingExamId === exam.id
+                                                            className={`px-6 py-2 font-medium text-[11px] rounded-lg transition-all shadow-sm flex items-center gap-2 cursor-pointer ${sendingExamId === exam.id
                                                                     ? 'bg-slate-400 text-white cursor-not-allowed'
                                                                     : exam.isCalculated
-                                                                    ? 'bg-[#0F172A] text-white hover:bg-[#1E293B]'
-                                                                    : 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                                                            }`}
+                                                                        ? 'bg-[#0F172A] text-white hover:bg-[#1E293B]'
+                                                                        : 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                                                                }`}
                                                         >
                                                             {sendingExamId === exam.id ? (
                                                                 <>
@@ -174,7 +173,7 @@ const Examiner_ResultsPublishing = () => {
                                                     </div>
                                                 ) : (
                                                     <div className="flex items-center gap-2 justify-end">
-                                                        <button 
+                                                        <button
                                                             onClick={() => navigate(`/exam-results/${exam.id}`)}
                                                             className="px-4 py-2 bg-white border border-[#E2E8F0] text-[#0F172A] font-medium text-[11px] rounded-lg hover:bg-[#F8FAFC] transition-all flex items-center gap-2 cursor-pointer"
                                                         >

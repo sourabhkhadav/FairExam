@@ -2,6 +2,36 @@ import { v2 as cloudinary } from 'cloudinary';
 import Violation from '../models/Violation.js';
 import Exam from '../models/Exam.js';
 
+// Calculate severity by comparing each violation count against the exam's violation limits
+// High   = any violation type reached its limit (100%+)  → auto-submit, direct fail
+// Medium = any violation type at 50%+ of its limit        → check cutoff
+// Low    = any violations but below 50% of all limits     → check cutoff
+const calculateSeverity = async (counts, examId) => {
+    try {
+        const exam = await Exam.findById(examId).select('violationLimits').lean();
+        const limits = exam?.violationLimits || { faceLimit: 5, soundLimit: 5, fullscreenLimit: 5 };
+
+        const faceRatio = limits.faceLimit > 0 ? (counts.faceDetection || 0) / limits.faceLimit : 0;
+        const soundRatio = limits.soundLimit > 0 ? (counts.soundDetection || 0) / limits.soundLimit : 0;
+        const fullscreenRatio = limits.fullscreenLimit > 0 ? (counts.fullscreenExit || 0) / limits.fullscreenLimit : 0;
+
+        const maxRatio = Math.max(faceRatio, soundRatio, fullscreenRatio);
+
+        if (maxRatio >= 1) return 'High';       // Reached or exceeded any limit
+        if (maxRatio >= 0.5) return 'Medium';    // 50%+ of any limit
+        if (maxRatio > 0) return 'Low';          // Some violations but under 50%
+        return 'Low';
+    } catch (error) {
+        console.error('Severity calc fallback:', error.message);
+        // Fallback if exam lookup fails
+        const total = (counts.faceDetection || 0) + (counts.soundDetection || 0) +
+                      (counts.fullscreenExit || 0) + (counts.tabSwitch || 0);
+        if (total >= 10) return 'High';
+        if (total >= 5) return 'Medium';
+        return 'Low';
+    }
+};
+
 // Record a violation
 export const recordViolation = async (req, res) => {
     try {
@@ -20,14 +50,8 @@ export const recordViolation = async (req, res) => {
                 if (violationType === 'tab_switch') violation.violationCount.tabSwitch++;
             }
 
-            const total = violation.violationCount.faceDetection +
-                violation.violationCount.soundDetection +
-                violation.violationCount.fullscreenExit +
-                violation.violationCount.tabSwitch;
-
-            if (total >= 10) violation.severity = 'High';
-            else if (total >= 5) violation.severity = 'Medium';
-            else violation.severity = 'Low';
+            // Calculate severity using exam-specific limits
+            violation.severity = await calculateSeverity(violation.violationCount, examId);
 
             if (screenshotUrl) violation.screenshotUrl = screenshotUrl;
             violation.timestamp = Date.now();
@@ -41,14 +65,8 @@ export const recordViolation = async (req, res) => {
                 tabSwitch: violationType === 'tab_switch' ? 1 : 0
             };
 
-            const total = newViolationCount.faceDetection +
-                newViolationCount.soundDetection +
-                newViolationCount.fullscreenExit +
-                newViolationCount.tabSwitch;
-
-            let severity = 'Low';
-            if (total >= 10) severity = 'High';
-            else if (total >= 5) severity = 'Medium';
+            // Calculate severity using exam-specific limits
+            const severity = await calculateSeverity(newViolationCount, examId);
 
             violation = await Violation.create({
                 candidateId,

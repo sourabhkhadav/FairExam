@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
     ChevronLeft, Search, Filter, ArrowUpDown, MoreHorizontal,
     UserCheck, UserX, BarChart3, PieChart, TrendingUp, CheckCircle,
-    XCircle, Clock, AlertCircle, FileText, Download, User, Send
+    XCircle, Clock, AlertCircle, FileText, Download, User, Send, AlertTriangle
 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
@@ -120,7 +120,7 @@ const Examiner_ExamResultDetails = () => {
     };
 
     // Calculate dynamic stats based on cutoff (mock data is limited to 10 students)
-    const passedCount = students.filter(s => s.percentage >= cutoff).length;
+    const passedCount = students.filter(s => s.violationLevel !== 'High' && s.percentage >= cutoff).length;
     const failedCount = students.length - passedCount;
     const totalStudents = students.length;
 
@@ -175,7 +175,7 @@ const Examiner_ExamResultDetails = () => {
                         </div>
                         <div className="flex items-center gap-1.5">
                             <span className={`w-2 h-2 rounded-full ${examStatus === 'Live' ? 'bg-amber-500 animate-pulse' :
-                                    examStatus === 'Completed' ? 'bg-emerald-500' : 'bg-slate-400'
+                                examStatus === 'Completed' ? 'bg-emerald-500' : 'bg-slate-400'
                                 }`}></span>
                             {examStatus}
                         </div>
@@ -201,8 +201,8 @@ const Examiner_ExamResultDetails = () => {
                         onClick={handlePublishResults}
                         disabled={sending || examStatus === 'Live'}
                         className={`px-5 py-2.5 font-medium text-sm rounded-xl transition-colors shadow-lg shadow-slate-100 flex items-center gap-2 ${sending || examStatus === 'Live'
-                                ? 'bg-slate-400 text-white cursor-not-allowed'
-                                : 'bg-[#0F172A] text-white hover:bg-[#1E293B] cursor-pointer'
+                            ? 'bg-slate-400 text-white cursor-not-allowed'
+                            : 'bg-[#0F172A] text-white hover:bg-[#1E293B] cursor-pointer'
                             }`}
                     >
                         {sending ? (
@@ -278,6 +278,7 @@ const Examiner_ExamResultDetails = () => {
                                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Roll Number</th>
                                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">Marks Obtained</th>
                                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">Percentage</th>
+                                <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">Violation</th>
                                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">Status</th>
                                 <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Time Taken</th>
                             </tr>
@@ -317,13 +318,40 @@ const Examiner_ExamResultDetails = () => {
                                         </div>
                                     </td>
                                     <td className="px-6 py-4 text-center">
-                                        <span className={`inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-bold border ${student.percentage >= cutoff
-                                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                                            : 'bg-rose-50 text-rose-700 border-rose-200'
-                                            }`}>
-                                            {student.percentage >= cutoff ? <CheckCircle className="w-3 h-3 mr-1.5" /> : <XCircle className="w-3 h-3 mr-1.5" />}
-                                            {student.status}
-                                        </span>
+                                        {(() => {
+                                            const level = student.violationLevel || 'None';
+                                            const styles = {
+                                                'None': 'bg-slate-50 text-slate-500 border-slate-200',
+                                                'Low': 'bg-yellow-50 text-yellow-700 border-yellow-200',
+                                                'Medium': 'bg-orange-50 text-orange-700 border-orange-200',
+                                                'High': 'bg-red-50 text-red-700 border-red-200'
+                                            };
+                                            return (
+                                                <span className={`inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-bold border ${styles[level] || styles['None']}`}>
+                                                    {level === 'High' && <AlertTriangle className="w-3 h-3 mr-1" />}
+                                                    {level}
+                                                </span>
+                                            );
+                                        })()}
+                                    </td>
+                                    <td className="px-6 py-4 text-center">
+                                        {(() => {
+                                            const isHighViolation = student.violationLevel === 'High';
+                                            const passed = !isHighViolation && student.percentage >= cutoff;
+                                            const statusText = isHighViolation ? 'Cheating' : (passed ? 'Pass' : 'Fail');
+                                            const statusStyle = isHighViolation
+                                                ? 'bg-red-100 text-red-800 border-red-300'
+                                                : passed
+                                                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                                    : 'bg-rose-50 text-rose-700 border-rose-200';
+                                            const StatusIcon = isHighViolation ? AlertTriangle : (passed ? CheckCircle : XCircle);
+                                            return (
+                                                <span className={`inline-flex items-center justify-center px-3 py-1 rounded-full text-xs font-bold border ${statusStyle}`}>
+                                                    <StatusIcon className="w-3 h-3 mr-1.5" />
+                                                    {statusText}
+                                                </span>
+                                            );
+                                        })()}
                                     </td>
                                     <td className="px-6 py-4 text-right text-slate-500 text-sm font-medium">
                                         {student.timeTaken}

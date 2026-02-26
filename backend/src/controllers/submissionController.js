@@ -163,35 +163,46 @@ export const sendExamResults = asyncHandler(async (req, res) => {
         }
 
         try {
-            const violations = await Violation.find({
+            // Get violation data for this candidate
+            const violation = await Violation.findOne({
                 candidateId: candidate._id.toString(),
                 examId: examId
             });
 
-            const totalViolations = violations.reduce((sum, v) => {
-                return sum + (v.violationCount?.faceDetection || 0) +
-                    (v.violationCount?.soundDetection || 0) +
-                    (v.violationCount?.fullscreenExit || 0) +
-                    (v.violationCount?.tabSwitch || 0);
-            }, 0);
+            const violationLevel = violation ? violation.severity : 'None';
+            const screenshotUrl = violation ? violation.screenshotUrl : null;
+            const violationCounts = violation ? violation.violationCount : null;
 
-            const isPassed = submission.percentage >= passingPercentage;
+            // Determine pass/fail based on violation level
+            let isPassed;
+            let failReason = '';
+
+            if (violationLevel === 'High') {
+                // High violation = automatic fail due to cheating
+                isPassed = false;
+                failReason = 'cheating';
+            } else {
+                // Low/Medium/None: pass/fail based on cutoff
+                isPassed = submission.percentage >= passingPercentage;
+                if (!isPassed) {
+                    failReason = 'marks_insufficient';
+                }
+            }
 
             const resultDetails = {
                 examTitle: exam.title,
                 candidateName: candidate.name,
+                candidateId: candidate.candidateId,
                 score: submission.score,
                 totalMarks: submission.totalMarks,
                 percentage: submission.percentage,
                 timeTaken: submission.timeTaken,
                 isPassed,
+                failReason,
                 passingPercentage,
-                totalViolations,
-                violations: violations.map(v => ({
-                    type: v.violationType,
-                    count: v.violationCount,
-                    timestamp: v.timestamp
-                })),
+                violationLevel,
+                violationCounts,
+                screenshotUrl,
                 submittedAt: submission.submittedAt
             };
 

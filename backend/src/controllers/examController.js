@@ -565,25 +565,39 @@ export const getExamResults = asyncHandler(async (req, res) => {
         .populate('candidateId', 'name email candidateId')
         .sort({ score: -1 });
 
-    const students = submissions.map(sub => ({
-        id: sub._id,
-        name: sub.candidateId?.name || 'Unknown',
-        roll: sub.candidateId?.candidateId || 'N/A',
-        email: sub.candidateId?.email || '',
-        marks: sub.score,
-        total: sub.totalMarks,
-        percentage: sub.percentage,
-        timeTaken: (() => {
-            const timeInSeconds = sub.timeTaken || 0;
-            const minutes = Math.floor(timeInSeconds / 60);
-            const seconds = timeInSeconds % 60;
-            return minutes > 0 ? `${minutes} min ${seconds} sec` : `${seconds} sec`;
-        })(),
-        status: sub.percentage >= 40 ? 'Pass' : 'Fail'
-    }));
+    // Fetch all violations for this exam at once
+    const allViolations = await Violation.find({ examId: req.params.id }).lean();
+
+    const students = submissions.map(sub => {
+        const candidateIdStr = sub.candidateId?._id?.toString() || '';
+        const violation = allViolations.find(v => v.candidateId === candidateIdStr);
+        const violationLevel = violation ? violation.severity : 'None';
+        const violationCounts = violation ? violation.violationCount : null;
+        const screenshotUrl = violation ? violation.screenshotUrl : null;
+
+        return {
+            id: sub._id,
+            name: sub.candidateId?.name || 'Unknown',
+            roll: sub.candidateId?.candidateId || 'N/A',
+            email: sub.candidateId?.email || '',
+            marks: sub.score,
+            total: sub.totalMarks,
+            percentage: sub.percentage,
+            timeTaken: (() => {
+                const timeInSeconds = sub.timeTaken || 0;
+                const minutes = Math.floor(timeInSeconds / 60);
+                const seconds = timeInSeconds % 60;
+                return minutes > 0 ? `${minutes} min ${seconds} sec` : `${seconds} sec`;
+            })(),
+            status: violationLevel === 'High' ? 'Cheating' : (sub.percentage >= 40 ? 'Pass' : 'Fail'),
+            violationLevel,
+            violationCounts,
+            screenshotUrl
+        };
+    });
 
     const totalCandidates = students.length;
-    const passedStudents = students.filter(s => s.percentage >= 40).length;
+    const passedStudents = students.filter(s => s.violationLevel !== 'High' && s.percentage >= 40).length;
     const failedStudents = totalCandidates - passedStudents;
     const avgScore = totalCandidates > 0
         ? Math.round(students.reduce((acc, s) => acc + s.marks, 0) / totalCandidates)
@@ -637,11 +651,22 @@ export const exportExamResults = asyncHandler(async (req, res) => {
         .populate('candidateId', 'name email candidateId')
         .sort({ score: -1 });
 
+    // Fetch all violations for this exam
+    const allViolations = await Violation.find({ examId: req.params.id }).lean();
+
     const excelData = submissions.map((sub, index) => {
         const timeInSeconds = sub.timeTaken || 0;
         const minutes = Math.floor(timeInSeconds / 60);
         const seconds = timeInSeconds % 60;
         const timeDisplay = minutes > 0 ? `${minutes} min ${seconds} sec` : `${seconds} sec`;
+
+        const candidateIdStr = sub.candidateId?._id?.toString() || '';
+        const violation = allViolations.find(v => v.candidateId === candidateIdStr);
+        const violationLevel = violation ? violation.severity : 'None';
+
+        let status;
+        if (violationLevel === 'High') status = 'Cheating';
+        else status = sub.percentage >= 40 ? 'Pass' : 'Fail';
 
         return {
             'S.No': index + 1,
@@ -651,8 +676,9 @@ export const exportExamResults = asyncHandler(async (req, res) => {
             'Marks Obtained': sub.score,
             'Total Marks': sub.totalMarks,
             'Percentage': sub.percentage + '%',
+            'Violation Level': violationLevel,
             'Time Taken': timeDisplay,
-            'Status': sub.percentage >= 40 ? 'Pass' : 'Fail'
+            'Status': status
         };
     });
 

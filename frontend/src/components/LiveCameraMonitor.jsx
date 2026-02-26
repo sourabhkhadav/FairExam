@@ -39,7 +39,7 @@ const LiveCameraMonitor = ({ onViolationUpdate, candidateId, candidateName, exam
     useEffect(() => {
         loadModels();
         requestCameraPermission();
-        
+
         return () => {
             if (detectionIntervalRef.current) {
                 clearInterval(detectionIntervalRef.current);
@@ -120,7 +120,7 @@ const LiveCameraMonitor = ({ onViolationUpdate, candidateId, candidateName, exam
                 const videoHeight = video.videoHeight;
                 const faceHeight = faceBox.height;
                 const faceRatio = faceHeight / videoHeight;
-                
+
                 // Face should be 15-50% of video height for proper body visibility
                 bodyVisible = faceRatio >= 0.15 && faceRatio <= 0.5;
                 console.log('📏 Face ratio:', faceRatio.toFixed(2), 'Body visible:', bodyVisible);
@@ -162,7 +162,7 @@ const LiveCameraMonitor = ({ onViolationUpdate, candidateId, candidateName, exam
                     video,
                     new faceapi.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.2 })
                 ).withFaceLandmarks();
-                
+
                 if (detectionWithLandmarks) {
                     checkLookingAway(detectionWithLandmarks.landmarks, currentTime);
                     trackEyeGaze(detectionWithLandmarks.landmarks, currentTime);
@@ -224,14 +224,14 @@ const LiveCameraMonitor = ({ onViolationUpdate, candidateId, candidateName, exam
         const nose = landmarks.getNose();
         const leftEye = landmarks.getLeftEye();
         const rightEye = landmarks.getRightEye();
-        
+
         const eyeY = (leftEye[0].y + rightEye[0].y) / 2;
         const noseY = nose[3].y;
         const verticalDiff = noseY - eyeY;
-        
+
         // Increased threshold to reduce false positives
         const isLookingDown = verticalDiff > 60;
-        
+
         if (isLookingDown) {
             handleLookingAway(currentTime);
         } else {
@@ -265,7 +265,7 @@ const LiveCameraMonitor = ({ onViolationUpdate, candidateId, candidateName, exam
         const leftEye = landmarks.getLeftEye();
         const rightEye = landmarks.getRightEye();
         const nose = landmarks.getNose();
-        
+
         const leftEyeCenter = {
             x: leftEye.reduce((sum, p) => sum + p.x, 0) / leftEye.length,
             y: leftEye.reduce((sum, p) => sum + p.y, 0) / leftEye.length
@@ -275,18 +275,18 @@ const LiveCameraMonitor = ({ onViolationUpdate, candidateId, candidateName, exam
             y: rightEye.reduce((sum, p) => sum + p.y, 0) / rightEye.length
         };
         const noseCenter = { x: nose[3].x, y: nose[3].y };
-        
+
         const eyeMidpoint = {
             x: (leftEyeCenter.x + rightEyeCenter.x) / 2,
             y: (leftEyeCenter.y + rightEyeCenter.y) / 2
         };
-        
+
         const horizontalDiff = eyeMidpoint.x - noseCenter.x;
         const eyeDistance = Math.abs(rightEyeCenter.x - leftEyeCenter.x);
-        
+
         let gazeDirection = 'center';
         const threshold = eyeDistance * 0.25; // Increased threshold
-        
+
         if (Math.abs(horizontalDiff) > threshold) {
             if (horizontalDiff > 0) {
                 gazeDirection = 'left';
@@ -294,7 +294,7 @@ const LiveCameraMonitor = ({ onViolationUpdate, candidateId, candidateName, exam
                 gazeDirection = 'right';
             }
         }
-        
+
         if (gazeDirection !== 'center') {
             handleEyeGazeAway(gazeDirection, currentTime);
         } else {
@@ -385,21 +385,18 @@ const LiveCameraMonitor = ({ onViolationUpdate, candidateId, candidateName, exam
 
     const captureScreenshot = async () => {
         if (!webcamRef.current) return null;
-        
+
         try {
             const screenshot = webcamRef.current.getScreenshot();
             if (!screenshot) {
                 console.error('No screenshot captured');
                 return null;
             }
-            
-            const token = localStorage.getItem('token');
-            
+
             const uploadResponse = await fetch('http://localhost:5000/api/violations/upload-screenshot', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
                     image: screenshot,
@@ -410,9 +407,9 @@ const LiveCameraMonitor = ({ onViolationUpdate, candidateId, candidateName, exam
                     violationCount: violations.length + 1
                 })
             });
-            
+
             const data = await uploadResponse.json();
-            
+
             if (data.success && data.url) {
                 console.log('✅ Screenshot uploaded:', data.url);
                 toast.success('Screenshot captured!', {
@@ -438,18 +435,18 @@ const LiveCameraMonitor = ({ onViolationUpdate, candidateId, candidateName, exam
         };
         setViolations(prev => {
             const updated = [...prev, violation];
-            
+
             // Capture screenshot on every 5th violation
             if (updated.length % 5 === 0) {
                 setTimeout(async () => {
                     const screenshotUrl = await captureScreenshot();
                     if (screenshotUrl) {
                         // Update the violation record with screenshot URL
-                        await recordViolationToBackend(screenshotUrl, updated.length);
+                        await recordViolationToBackend(screenshotUrl);
                     }
                 }, 100);
             }
-            
+
             if (onViolationUpdate) {
                 onViolationUpdate(updated);
             }
@@ -458,14 +455,15 @@ const LiveCameraMonitor = ({ onViolationUpdate, candidateId, candidateName, exam
         console.log('🚨 VIOLATION:', violation);
     };
 
-    const recordViolationToBackend = async (screenshotUrl, violationCount) => {
+    const recordViolationToBackend = async (screenshotUrl) => {
         try {
-            const token = localStorage.getItem('token');
+            // Only send the screenshot and violationType — do NOT send violationCount here
+            // because it would overwrite sound/fullscreen counts to 0.
+            // The final accurate counts for all three types are sent by handleSubmit().
             await fetch('http://localhost:5000/api/violations/record', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
                     candidateId,
@@ -473,16 +471,10 @@ const LiveCameraMonitor = ({ onViolationUpdate, candidateId, candidateName, exam
                     examId,
                     examName,
                     violationType: 'face',
-                    screenshotUrl,
-                    violationCount: {
-                        faceDetection: violationCount,
-                        soundDetection: 0,
-                        fullscreenExit: 0,
-                        tabSwitch: 0
-                    }
+                    screenshotUrl
                 })
             });
-            console.log('✅ Violation recorded with screenshot');
+            console.log('✅ Violation screenshot recorded');
         } catch (error) {
             console.error('❌ Failed to record violation:', error);
         }
@@ -508,7 +500,7 @@ const LiveCameraMonitor = ({ onViolationUpdate, candidateId, candidateName, exam
                         <canvas ref={canvasRef} className="hidden" />
                     </>
                 );
-            
+
             case 'denied':
                 return (
                     <div className="flex flex-col items-center justify-center h-full bg-red-50 rounded p-2 border border-red-300">
@@ -517,13 +509,13 @@ const LiveCameraMonitor = ({ onViolationUpdate, candidateId, candidateName, exam
                         <p className="text-[8px] text-red-600 text-center mt-0.5">Enable camera</p>
                     </div>
                 );
-            
+
             case 'error':
                 return (
                     <div className="flex flex-col items-center justify-center h-full bg-yellow-50 rounded p-2 border border-yellow-300">
                         <AlertTriangle className="w-6 h-6 text-yellow-600 mb-1" />
                         <p className="text-[10px] font-bold text-yellow-700 text-center">⚠️ Error</p>
-                        <button 
+                        <button
                             onClick={requestCameraPermission}
                             className="text-[8px] text-yellow-600 underline mt-0.5"
                         >
@@ -531,7 +523,7 @@ const LiveCameraMonitor = ({ onViolationUpdate, candidateId, candidateName, exam
                         </button>
                     </div>
                 );
-            
+
             default:
                 return (
                     <div className="flex items-center justify-center h-full bg-gray-100 rounded">
@@ -552,7 +544,7 @@ const LiveCameraMonitor = ({ onViolationUpdate, candidateId, candidateName, exam
                             {modelsLoaded ? 'AI Active' : 'Loading'}
                         </span>
                     </div>
-                    <button 
+                    <button
                         onClick={() => setIsCameraEnabled(!isCameraEnabled)}
                         className="text-white text-xs hover:bg-white/10 px-2 py-1 rounded font-medium"
                     >
@@ -570,7 +562,7 @@ const LiveCameraMonitor = ({ onViolationUpdate, candidateId, candidateName, exam
                             <p className="text-gray-400 text-sm">Camera Off</p>
                         </div>
                     )}
-                    
+
                     {/* Detection Overlay */}
                     {cameraStatus === 'active' && isCameraEnabled && (
                         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2">

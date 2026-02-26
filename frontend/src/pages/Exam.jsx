@@ -268,6 +268,8 @@ const Exam = () => {
         setTimeout(enterFullscreen, 500);
 
         const handleFullscreenChange = () => {
+            // Ignore fullscreen exit if exam is already being submitted
+            if (isSubmittingRef.current) return;
             if (!document.fullscreenElement) {
                 addViolation('Fullscreen Exit!');
                 setForceFullscreenModal(true);
@@ -326,6 +328,7 @@ const Exam = () => {
     const soundLockRef = useRef(false);
     const baselineRef = useRef(0);
     const calibrationDoneRef = useRef(false);
+    const isSubmittingRef = useRef(false); // Guard: prevent duplicate submissions
 
     if (loading) {
         return (
@@ -376,6 +379,13 @@ const Exam = () => {
     };
 
     const handleSubmit = async () => {
+        // 🔒 Prevent duplicate submissions (timer + violation race condition)
+        if (isSubmittingRef.current) {
+            console.log('⚠️ Submission already in progress, ignoring duplicate call.');
+            return;
+        }
+        isSubmittingRef.current = true;
+
         try {
             const token = localStorage.getItem('token');
 
@@ -434,12 +444,18 @@ const Exam = () => {
                 });
             }
 
-            alert("Exam Submitted Successfully!");
+            // Exit fullscreen silently before navigating (prevents fullscreen modal flash)
+            if (document.fullscreenElement) {
+                await document.exitFullscreen().catch(() => { });
+            }
             localStorage.clear();
             navigate('/');
         } catch (error) {
             console.error('Submit error:', error);
-            alert("Exam Submitted Successfully!");
+            // Exit fullscreen silently before navigating
+            if (document.fullscreenElement) {
+                await document.exitFullscreen().catch(() => { });
+            }
             localStorage.clear();
             navigate('/');
         }
@@ -779,8 +795,8 @@ const Exam = () => {
             {showFullscreenWarning && (
                 <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 animate-in fade-in slide-in-from-top duration-300">
                     <div className={`rounded-lg shadow-2xl px-6 py-4 border-2 ${violations >= 3
-                            ? 'bg-red-600 border-red-800 text-white'
-                            : 'bg-amber-500 border-amber-700 text-white'
+                        ? 'bg-red-600 border-red-800 text-white'
+                        : 'bg-amber-500 border-amber-700 text-white'
                         }`}>
                         <div className="flex items-center gap-3">
                             <AlertTriangle className="h-6 w-6 animate-pulse" />

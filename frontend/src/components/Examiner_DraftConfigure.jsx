@@ -155,6 +155,30 @@ const Examiner_DraftConfigure = () => {
         }
     };
 
+    const validateExam = () => {
+        if (!examData.title) {
+            toast.error('Please enter an exam title');
+            return false;
+        }
+        if (!examData.startDate || !examData.startTime || !examData.endTime) {
+            toast.error('Please fill in exam date, start time, and end time');
+            return false;
+        }
+        if (!examData.duration || examData.duration <= 0) {
+            toast.error('Invalid exam duration. Check start and end times.');
+            return false;
+        }
+        if (candidateCount === 0) {
+            toast.error('Cannot publish without candidates. Please add at least one candidate.');
+            return false;
+        }
+        if (!examData.questions || examData.questions.length === 0) {
+            toast.error('Cannot publish without questions. Please add questions first.');
+            return false;
+        }
+        return true;
+    };
+
     return (
         <div className="max-w-5xl mx-auto px-4 sm:px-0 py-10">
             <div className="flex items-center gap-4 sm:gap-6 mb-8 sm:mb-10">
@@ -422,10 +446,8 @@ const Examiner_DraftConfigure = () => {
                     <button
                         type="button"
                         onClick={async () => {
-                            if (!examData.startDate || !examData.startTime || !examData.endTime || !examData.duration) {
-                                toast.error('Please fill in exam date, start time, and end time');
-                                return;
-                            }
+                            if (!validateExam()) return;
+
                             setIsPublishing(true);
                             try {
                                 const token = localStorage.getItem('token');
@@ -490,10 +512,7 @@ const Examiner_DraftConfigure = () => {
                     <button
                         type="button"
                         onClick={() => {
-                            if (!examData.startDate || !examData.startTime || !examData.endTime || !examData.duration) {
-                                toast.error('Please fill in exam date, start time, and end time');
-                                return;
-                            }
+                            if (!validateExam()) return;
                             setShowScheduleModal(true);
                         }}
                         className="px-10 py-3 bg-[#334155] text-white font-medium rounded-xl hover:bg-[#475569] transition-all shadow-sm"

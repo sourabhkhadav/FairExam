@@ -165,10 +165,6 @@ const Exam = () => {
                                 duration: 500,
                             });
                             console.log('🔊 SOUND! Level:', average.toFixed(2), 'Threshold:', threshold.toFixed(2));
-                            if (newCount >= violationLimits.soundLimit) {
-                                setViolationAutoSubmitMessage('Sound detection violation limit exceeded. Your exam has been auto-submitted.');
-                                setShowViolationAutoSubmitModal(true);
-                            }
                             return newCount;
                         });
 
@@ -245,10 +241,6 @@ const Exam = () => {
                     id: 'violation',
                     duration: 500,
                 });
-                if (newCount >= violationLimits.fullscreenLimit) {
-                    setViolationAutoSubmitMessage('Fullscreen exit violation limit exceeded. Your exam has been auto-submitted.');
-                    setShowViolationAutoSubmitModal(true);
-                }
                 return newCount;
             });
 
@@ -805,6 +797,12 @@ const Exam = () => {
                                 onClick={async () => {
                                     await handleSubmit();
                                     setShowViolationAutoSubmitModal(false);
+                                    // Exit fullscreen before navigating
+                                    if (document.fullscreenElement) {
+                                        await document.exitFullscreen().catch(() => { });
+                                    }
+                                    localStorage.clear();
+                                    navigate('/');
                                 }}
                                 className="w-full px-6 py-3 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 transition-colors shadow-lg text-lg"
                             >

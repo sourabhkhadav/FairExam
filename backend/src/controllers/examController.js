@@ -177,6 +177,34 @@ export const updateExam = asyncHandler(async (req, res) => {
     // Check if exam is being published
     const isPublishing = req.body.status === 'published' && exam.status !== 'published';
 
+    // Server-side validation for publishing
+    if (isPublishing) {
+        // 1. Check for required basic details
+        const title = req.body.title || exam.title;
+        const startDate = req.body.startDate || exam.startDate;
+        const startTime = req.body.startTime || exam.startTime;
+        const endTime = req.body.endTime || exam.endTime;
+
+        if (!title || !startDate || !startTime || !endTime) {
+            res.status(400);
+            throw new Error('Exam title, date, start time, and end time are required for publishing');
+        }
+
+        // 2. Check for questions (either in update body or existing)
+        const questions = req.body.questions || exam.questions;
+        if (!questions || questions.length === 0) {
+            res.status(400);
+            throw new Error('Cannot publish an exam without questions');
+        }
+
+        // 3. Check for candidates
+        const candidateCount = await Candidate.countDocuments({ examId: req.params.id });
+        if (candidateCount === 0) {
+            res.status(400);
+            throw new Error('Cannot publish an exam without candidates. Please add candidates first.');
+        }
+    }
+
     // Ensure violationLimits are preserved and properly formatted
     if (req.body.violationLimits) {
         req.body.violationLimits = {

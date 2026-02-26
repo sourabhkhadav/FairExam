@@ -215,20 +215,7 @@ const Instructions = () => {
                                         </div>
                                     ))}
 
-                                    {/* If there are also un-sectioned questions */}
-                                    {unsectionedCount > 0 && (
-                                        <div className="flex items-start gap-4 p-4 rounded-lg border border-dashed border-slate-200 bg-white">
-                                            <div className="flex-shrink-0 w-10 h-10 rounded-md bg-white border border-slate-200 flex items-center justify-center text-slate-400 shadow-sm">
-                                                <BookOpen className="w-5 h-5" />
-                                            </div>
-                                            <div>
-                                                <h4 className="font-semibold text-slate-700 text-sm">General / Unsectioned</h4>
-                                                <p className="text-sm text-slate-500 mt-0.5">
-                                                    {unsectionedCount} Question{unsectionedCount !== 1 ? 's' : ''} &bull; Single correct option
-                                                </p>
-                                            </div>
-                                        </div>
-                                    )}
+
                                 </div>
                             ) : (
                                 /* ── No named sections – single unified MCQ block ── */

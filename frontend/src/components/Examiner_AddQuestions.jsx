@@ -386,8 +386,8 @@ const Examiner_AddQuestions = () => {
                             <div key={section.id} className="space-y-4">
                                 <div
                                     className={`flex items-center justify-between px-3 py-2 rounded-xl group/section cursor-pointer transition-all ${activeSectionId === section.id
-                                            ? 'bg-slate-100 border border-[#0F172A]/20'
-                                            : 'hover:bg-slate-50'
+                                        ? 'bg-slate-100 border border-[#0F172A]/20'
+                                        : 'hover:bg-slate-50'
                                         }`}
                                     onClick={() => setActiveSectionId(section.id)}
                                 >
@@ -478,6 +478,7 @@ const Examiner_AddQuestions = () => {
                                 accept=".xlsx,.xls,.pdf"
                                 onChange={handleImport}
                                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                disabled={isLoading}
                             />
                             <button
                                 disabled={isLoading}

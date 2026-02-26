@@ -18,14 +18,21 @@ const Exam = () => {
     const userName = candidateData.name || location.state?.name || 'Candidate';
     // Support all possible field names set by the login flow
     const candidateId = candidateData._id || candidateData.id || candidateData.candidateId || localStorage.getItem('candidateId') || 'UNKNOWN';
-    const examId = candidateData.examId || storedExamData.examId || storedExamData._id || urlExamId || 'UNKNOWN';
-    const examName = storedExamData.title || 'Exam';
+    // examId: check every possible location the login flow stores it
+    const examId = candidateData.examId
+        || storedExamData._id
+        || storedExamData.id
+        || storedExamData.examId
+        || urlExamId
+        || 'UNKNOWN';
+    const examName = storedExamData.title || candidateData.examTitle || 'Exam';
 
     // State Management
     const [examData, setExamData] = useState(null);
     const [allQuestions, setAllQuestions] = useState([]);
     const [sections, setSections] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [isSubmitting, setIsSubmitting] = useState(false); // shows full-screen overlay
     const [timeLeft, setTimeLeft] = useState(5400);
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [answers, setAnswers] = useState({});
@@ -165,6 +172,11 @@ const Exam = () => {
                                 duration: 500,
                             });
                             console.log('🔊 SOUND! Level:', average.toFixed(2), 'Threshold:', threshold.toFixed(2));
+                            // Trigger auto-submit if sound violation limit reached
+                            if (newCount >= violationLimits.soundLimit) {
+                                setViolationAutoSubmitMessage('Sound detection violation limit exceeded. Your exam has been auto-submitted.');
+                                setShowViolationAutoSubmitModal(true);
+                            }
                             return newCount;
                         });
 
@@ -263,8 +275,8 @@ const Exam = () => {
         setTimeout(enterFullscreen, 500);
 
         const handleFullscreenChange = () => {
-            // Ignore fullscreen exit if exam is already being submitted
-            if (isSubmittingRef.current) return;
+            // Ignore fullscreen exit if exam is already being submitted or navigating away
+            if (isSubmittingRef.current || navigatingRef.current) return;
             if (!document.fullscreenElement) {
                 addViolation('Fullscreen Exit!');
                 setForceFullscreenModal(true);
@@ -324,6 +336,7 @@ const Exam = () => {
     const baselineRef = useRef(0);
     const calibrationDoneRef = useRef(false);
     const isSubmittingRef = useRef(false); // Guard: prevent duplicate submissions
+    const navigatingRef = useRef(false);   // Guard: prevent fullscreen modal after redirect
 
     if (loading) {
         return (
@@ -381,14 +394,25 @@ const Exam = () => {
         }
         isSubmittingRef.current = true;
 
-        try {
-            const token = localStorage.getItem('token');
+        // Show full-screen submitting overlay IMMEDIATELY – user never sees exam page
+        setIsSubmitting(true);
+        setIsSubmitModalOpen(false);
+        setShowViolationAutoSubmitModal(false);
 
-            if (!candidateData || !candidateData.id) {
-                toast.error('Session expired. Please login again.');
-                navigate('/candidate-login');
-                return;
-            }
+        // Snap navigatingRef so fullscreen events are suppressed right away
+        navigatingRef.current = true;
+
+        // Exit fullscreen silently right now (before awaiting APIs)
+        if (document.fullscreenElement) {
+            await document.exitFullscreen().catch(() => { });
+        }
+
+        try {
+            // Read fresh from localStorage since we haven't cleared it yet
+            const freshCandidate = JSON.parse(localStorage.getItem('candidate') || '{}');
+            const freshExam = JSON.parse(localStorage.getItem('examData') || '{}');
+            const resolvedCandidateId = freshCandidate._id || freshCandidate.id || freshCandidate.candidateId || localStorage.getItem('candidateId');
+            const resolvedExamId = freshCandidate.examId || freshExam._id || freshExam.id || freshExam.examId || examId;
 
             // Prepare answers for submission
             const submissionAnswers = Object.entries(answers).map(([questionId, selectedOption]) => {
@@ -400,31 +424,29 @@ const Exam = () => {
                 };
             });
 
-            // Submit exam with auto-grading (no auth header - public route)
-            await fetch(`${API_BASE_URL}/submissions`, {
+            // Submit exam
+            const submitRes = await fetch(`${API_BASE_URL}/submissions`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    examId: examId,
-                    candidateId: candidateData._id || candidateData.id || candidateData.candidateId || localStorage.getItem('candidateId'),
+                    examId: resolvedExamId,
+                    candidateId: resolvedCandidateId,
                     answers: submissionAnswers,
-                    timeTaken: (examData.duration * 60) - timeLeft
+                    timeTaken: examData ? (examData.duration * 60) - timeLeft : 0
                 })
             });
+            const submitData = await submitRes.json();
+            console.log('✅ Submit response:', submitData);
 
-            // Record violations if any exist (no auth header - public route)
+            // Record violations if any exist
             if (faceViolations > 0 || soundViolations > 0 || violations > 0) {
                 await fetch(`${API_BASE_URL}/violations/record`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        candidateId,
+                        candidateId: resolvedCandidateId,
                         candidateName: userName,
-                        examId,
+                        examId: resolvedExamId,
                         examName,
                         violationType: 'face',
                         violationCount: {
@@ -434,23 +456,19 @@ const Exam = () => {
                             tabSwitch: 0
                         }
                     })
-                });
+                }).catch(() => { }); // don't block navigation on violation record failure
             }
 
-            // Exit fullscreen silently before navigating (prevents fullscreen modal flash)
-            if (document.fullscreenElement) {
-                await document.exitFullscreen().catch(() => { });
-            }
+            // 🎉 Success — clear storage and redirect
             localStorage.clear();
-            setTimeout(() => navigate('/'), 1000);
+            toast.success('✅ Exam submitted successfully!', { duration: 2000, style: { background: '#16a34a', color: '#fff', fontWeight: 'bold' } });
+            navigate('/');
         } catch (error) {
             console.error('Submit error:', error);
-            // Exit fullscreen silently before navigating
-            if (document.fullscreenElement) {
-                await document.exitFullscreen().catch(() => { });
-            }
+            // Even on error, exit cleanly
             localStorage.clear();
-            setTimeout(() => navigate('/'), 1500);
+            toast.error('Submission failed, redirecting...', { duration: 1500 });
+            navigate('/');
         }
     };
 
@@ -467,7 +485,30 @@ const Exam = () => {
     return (
         <div className="flex flex-col h-screen bg-white font-sans text-slate-900 overflow-hidden">
 
-
+            {/* ── Submitting full-screen overlay ── */}
+            {isSubmitting && (
+                <div className="fixed inset-0 z-[99999] flex flex-col items-center justify-center bg-gradient-to-br from-slate-900 to-blue-950">
+                    <div className="flex flex-col items-center gap-6">
+                        {/* Spinner */}
+                        <div className="relative">
+                            <div className="w-20 h-20 rounded-full border-4 border-blue-900 border-t-blue-400 animate-spin"></div>
+                            <div className="absolute inset-0 flex items-center justify-center">
+                                <CheckCircle className="w-8 h-8 text-blue-400" />
+                            </div>
+                        </div>
+                        <div className="text-center">
+                            <h2 className="text-2xl font-bold text-white mb-2">Submitting Your Exam…</h2>
+                            <p className="text-blue-300 text-sm">Please wait. Do not close this window.</p>
+                        </div>
+                        {/* Animated dots */}
+                        <div className="flex gap-2">
+                            <div className="w-2 h-2 rounded-full bg-blue-400 animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                            <div className="w-2 h-2 rounded-full bg-blue-400 animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                            <div className="w-2 h-2 rounded-full bg-blue-400 animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Live Camera Monitor - Always Visible */}
             <LiveCameraMonitor
@@ -795,12 +836,15 @@ const Exam = () => {
                             </div>
                             <button
                                 onClick={async () => {
-                                    await handleSubmit();
+                                    // Mark navigating immediately so fullscreen handler is suppressed
+                                    navigatingRef.current = true;
                                     setShowViolationAutoSubmitModal(false);
-                                    // Exit fullscreen before navigating
+                                    // Exit fullscreen silently
                                     if (document.fullscreenElement) {
                                         await document.exitFullscreen().catch(() => { });
                                     }
+                                    // Submit in background (fire and forget) then go to landing
+                                    handleSubmit();
                                     localStorage.clear();
                                     navigate('/');
                                 }}

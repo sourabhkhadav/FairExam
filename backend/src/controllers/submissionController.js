@@ -11,8 +11,6 @@ import { sendDetailedExamResult } from '../utils/emailService.js';
 export const submitExam = asyncHandler(async (req, res) => {
     const { examId, candidateId, answers, timeTaken } = req.body;
 
-    console.log('Submission received:', { examId, candidateId, answersCount: answers?.length, timeTaken });
-
     if (!examId || !candidateId || !answers) {
         res.status(400);
         throw new Error('Missing required fields: examId, candidateId, or answers');
@@ -45,8 +43,6 @@ export const submitExam = asyncHandler(async (req, res) => {
         });
     }
 
-    console.log(`Exam: ${exam.title}, Total Marks: ${exam.totalMarks}, Questions: ${exam.questions.length}`);
-
     // Auto-grade the exam
     let score = 0;
     const gradedAnswers = answers.map(answer => {
@@ -66,7 +62,6 @@ export const submitExam = asyncHandler(async (req, res) => {
                 console.warn(`Q${questionId}: Found by index ${questionIndex} instead of ID`);
                 const isCorrect = answer.selectedOption === questionByIndex.correct;
                 if (isCorrect) score += questionByIndex.marks || 0;
-                console.log(`Q${questionId}: Selected=${answer.selectedOption}, Correct=${questionByIndex.correct}, IsCorrect=${isCorrect}, Marks=${questionByIndex.marks}`);
                 return { questionId: answer.questionId, selectedOption: answer.selectedOption, isCorrect };
             }
 
@@ -77,12 +72,8 @@ export const submitExam = asyncHandler(async (req, res) => {
         const isCorrect = answer.selectedOption === question.correct;
         if (isCorrect) score += question.marks || 0;
 
-        console.log(`Q${questionId}: Selected=${answer.selectedOption}, Correct=${question.correct}, IsCorrect=${isCorrect}, Marks=${question.marks}`);
-
         return { questionId: answer.questionId, selectedOption: answer.selectedOption, isCorrect };
     });
-
-    console.log(`Candidate: ${candidate.name}, Score: ${score}/${exam.totalMarks}`);
 
     const submission = await Submission.create({
         examId,
@@ -92,8 +83,6 @@ export const submitExam = asyncHandler(async (req, res) => {
         totalMarks: exam.totalMarks,
         timeTaken: timeTaken || 0
     });
-
-    console.log('✅ Submission saved:', submission._id);
 
     res.status(201).json({
         success: true,
@@ -112,7 +101,7 @@ export const submitExam = asyncHandler(async (req, res) => {
 export const checkSubmission = asyncHandler(async (req, res) => {
     const { examId, candidateId } = req.params;
 
-    const submission = await Submission.findOne({ examId, candidateId });
+    const submission = await Submission.findOne({ examId, candidateId }).lean();
 
     res.status(200).json({
         success: true,

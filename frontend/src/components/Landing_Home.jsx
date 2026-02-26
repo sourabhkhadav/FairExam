@@ -473,7 +473,7 @@ function Landing_Home() {
 
 
 
-function MetricItem({ icon, label, value, image }) {
+const MetricItem = React.memo(function MetricItem({ icon, label, value, image }) {
     return (
         <div className="glass-card rounded-[32px] p-8 flex items-center justify-between group bg-white border-black/10 relative overflow-hidden shadow-xl shadow-slate-100/50">
             {/* Visual Background Snippet */}
@@ -495,19 +495,19 @@ function MetricItem({ icon, label, value, image }) {
             <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-[#0F172A] group-hover:translate-x-1 transition-all relative z-10" />
         </div>
     );
-}
+});
 
 
 
-function SocialLink({ icon }) {
+const SocialLink = React.memo(function SocialLink({ icon }) {
     return (
         <div className="w-10 h-10 rounded-full border border-black/5 bg-white flex items-center justify-center text-slate-400 hover:text-white hover:bg-[#1E293B] transition-all cursor-pointer shadow-sm hover:scale-110">
             {icon}
         </div>
     );
-}
+});
 
-function FooterList({ title, links }) {
+const FooterList = React.memo(function FooterList({ title, links }) {
     return (
         <div className="space-y-6 text-left">
             <h5 className="text-[10px] font-black tracking-[0.3em] uppercase text-slate-900">{title}</h5>
@@ -520,9 +520,9 @@ function FooterList({ title, links }) {
             </ul>
         </div>
     );
-}
+});
 
-function HowItWorksStep({ number, title, desc, icon }) {
+const HowItWorksStep = React.memo(function HowItWorksStep({ number, title, desc, icon }) {
     return (
         <div className="flex flex-col items-center text-center space-y-6 relative group">
             <div className="w-20 h-20 rounded-3xl bg-white shadow-xl shadow-slate-200/50 flex items-center justify-center border border-black/5 group-hover:scale-110 group-hover:bg-[#1E293B] transition-all duration-500 relative z-10">
@@ -539,9 +539,9 @@ function HowItWorksStep({ number, title, desc, icon }) {
             </div>
         </div>
     );
-}
+});
 
-function TestimonialCard({ quote, author, role, institution, image }) {
+const TestimonialCard = React.memo(function TestimonialCard({ quote, author, role, institution, image }) {
     return (
         <div className="glass-card rounded-[40px] p-10 bg-white border-black/5 flex flex-col justify-between space-y-8 hover:shadow-2xl hover:shadow-slate-200 transition-all duration-500">
             <div className="space-y-6">
@@ -562,9 +562,9 @@ function TestimonialCard({ quote, author, role, institution, image }) {
             </div>
         </div>
     );
-}
+});
 
-function FAQItem({ question, answer, isOpen, onClick }) {
+const FAQItem = React.memo(function FAQItem({ question, answer, isOpen, onClick }) {
     return (
         <div className={`rounded-3xl border transition-all duration-500 overflow-hidden ${isOpen ? 'bg-slate-50 border-slate-200 shadow-lg shadow-slate-100' : 'bg-white border-black/5 hover:border-slate-200'}`}>
             <button
@@ -581,6 +581,6 @@ function FAQItem({ question, answer, isOpen, onClick }) {
             </div>
         </div>
     );
-}
+});
 
 export default Landing_Home;

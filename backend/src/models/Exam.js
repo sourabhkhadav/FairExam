@@ -134,4 +134,8 @@ examSchema.pre('findOneAndUpdate', function (next) {
     next();
 });
 
+// Indexes for fast examiner-scoped and status-filtered queries
+examSchema.index({ examiner: 1 });
+examSchema.index({ status: 1 });
+
 export default mongoose.model('Exam', examSchema);

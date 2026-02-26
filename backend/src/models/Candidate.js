@@ -37,4 +37,7 @@ const candidateSchema = new mongoose.Schema({
     timestamps: true
 });
 
+// Index for fast candidate lookups by exam
+candidateSchema.index({ examId: 1 });
+
 export default mongoose.model('Candidate', candidateSchema);

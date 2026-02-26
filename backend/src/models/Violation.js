@@ -40,4 +40,8 @@ const violationSchema = new mongoose.Schema({
     }
 });
 
+// Index for fast violation lookups (upsert pattern + per-exam queries)
+violationSchema.index({ candidateId: 1, examId: 1 });
+violationSchema.index({ examId: 1 });
+
 export default mongoose.model('Violation', violationSchema);

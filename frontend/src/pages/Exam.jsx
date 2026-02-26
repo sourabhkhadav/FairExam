@@ -1,9 +1,9 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { Clock, Menu, X, ChevronLeft, ChevronRight, Flag, AlertTriangle, CheckCircle, ImageIcon, Save, Maximize } from 'lucide-react';
+import { Clock, Menu, X, ChevronRight, Flag, AlertTriangle, CheckCircle } from 'lucide-react';
 import LiveCameraMonitor from '../components/LiveCameraMonitor';
-import { Toaster, toast } from 'react-hot-toast';
+import toast from 'react-hot-toast';
 import { API_BASE_URL } from '../config/api';
 
 const Exam = () => {

@@ -38,11 +38,14 @@ const submissionSchema = new mongoose.Schema({
     }
 });
 
-submissionSchema.pre('save', function(next) {
+submissionSchema.pre('save', function (next) {
     if (this.totalMarks > 0) {
         this.percentage = Math.round((this.score / this.totalMarks) * 100);
     }
     next();
 });
+
+// Compound index for fast submission lookups and duplicate checks
+submissionSchema.index({ examId: 1, candidateId: 1 });
 
 export default mongoose.model('Submission', submissionSchema);

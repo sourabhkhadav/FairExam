@@ -17,7 +17,8 @@ export const getDashboardStats = asyncHandler(async (req, res) => {
     const recentExams = await Exam.find({ examiner: examinerId })
         .sort({ createdAt: -1 })
         .limit(10)
-        .select('title startDate startTime endDate endTime status createdAt');
+        .select('title startDate startTime endDate endTime status createdAt')
+        .lean();
 
     // Get student count for each exam
     const examsWithStudents = await Promise.all(
@@ -79,7 +80,7 @@ export const createExam = asyncHandler(async (req, res) => {
 // @access  Private (Examiner)
 export const getExams = asyncHandler(async (req, res) => {
     const examinerId = req.user.id === 'demo-user-id' ? '507f1f77bcf86cd799439011' : req.user.id;
-    const exams = await Exam.find({ examiner: examinerId });
+    const exams = await Exam.find({ examiner: examinerId }).lean();
 
     res.status(200).json({
         success: true,
@@ -92,7 +93,7 @@ export const getExams = asyncHandler(async (req, res) => {
 // @route   GET /api/exams/public/:id
 // @access  Public
 export const getPublicExam = asyncHandler(async (req, res) => {
-    const exam = await Exam.findById(req.params.id).select('title description duration violationLimits questions sections');
+    const exam = await Exam.findById(req.params.id).select('title description duration violationLimits questions sections').lean();
 
     if (!exam) {
         res.status(404);
@@ -472,21 +473,14 @@ export const getExamsForResults = asyncHandler(async (req, res) => {
 // @route   GET /api/exams/public/:id/questions
 // @access  Public
 export const getExamQuestions = asyncHandler(async (req, res) => {
-    console.log('Fetching questions for exam ID:', req.params.id);
-
-    const exam = await Exam.findById(req.params.id).select('title duration questions sections violationLimits');
+    const exam = await Exam.findById(req.params.id).select('title duration questions sections violationLimits').lean();
 
     if (!exam) {
-        console.log('Exam not found with ID:', req.params.id);
         res.status(404);
         throw new Error('Exam not found');
     }
 
-    console.log('Exam found:', exam.title);
-    console.log('Number of questions:', exam.questions?.length || 0);
-
     if (!exam.questions || exam.questions.length === 0) {
-        console.log('No questions in exam');
         res.status(200).json({
             success: true,
             data: {
@@ -508,8 +502,6 @@ export const getExamQuestions = asyncHandler(async (req, res) => {
         options: q.options || [],
         marks: q.marks || 1
     }));
-
-    console.log('Sending', formattedQuestions.length, 'questions');
 
     res.status(200).json({
         success: true,

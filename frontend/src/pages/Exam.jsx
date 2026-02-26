@@ -16,7 +16,8 @@ const Exam = () => {
     const storedExamData = JSON.parse(localStorage.getItem('examData') || '{}');
 
     const userName = candidateData.name || location.state?.name || 'Candidate';
-    const candidateId = candidateData.id || candidateData._id || 'UNKNOWN';
+    // Support all possible field names set by the login flow
+    const candidateId = candidateData._id || candidateData.id || candidateData.candidateId || localStorage.getItem('candidateId') || 'UNKNOWN';
     const examId = candidateData.examId || storedExamData.examId || storedExamData._id || urlExamId || 'UNKNOWN';
     const examName = storedExamData.title || 'Exam';
 
@@ -407,28 +408,26 @@ const Exam = () => {
                 };
             });
 
-            // Submit exam with auto-grading
+            // Submit exam with auto-grading (no auth header - public route)
             await fetch(`${API_BASE_URL}/submissions`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
                     examId: examId,
-                    candidateId: candidateData.id,
+                    candidateId: candidateData._id || candidateData.id || candidateData.candidateId || localStorage.getItem('candidateId'),
                     answers: submissionAnswers,
                     timeTaken: (examData.duration * 60) - timeLeft
                 })
             });
 
-            // Record violations if any exist
+            // Record violations if any exist (no auth header - public route)
             if (faceViolations > 0 || soundViolations > 0 || violations > 0) {
                 await fetch(`${API_BASE_URL}/violations/record`, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
+                        'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
                         candidateId,

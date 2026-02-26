@@ -8,6 +8,7 @@ import {
     Lock, Scissors, ClipboardX
 } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 const FormSection = ({ title, icon: Icon, children }) => (
     <div className="bg-white p-5 sm:p-8 rounded-[32px] border border-[#E2E8F0] shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
@@ -50,7 +51,7 @@ const Examiner_CreateExam = () => {
 
     const handleContinue = () => {
         if (!examData.title) {
-            alert("Please enter an exam title");
+            toast.error("Please enter an exam title");
             return;
         }
         localStorage.setItem('examDraft', JSON.stringify(examData));

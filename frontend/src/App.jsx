@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Link, Navigate } from 'react-router-dom'
+import { Toaster } from 'react-hot-toast'
 import Landing_Home from './components/Landing_Home'
 import AuthForm from './components/AuthForm'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -24,6 +25,26 @@ import Exam from './pages/Exam'
 function App() {
   return (
     <BrowserRouter>
+      <Toaster
+        position="top-center"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            background: '#0F172A',
+            color: '#fff',
+            borderRadius: '12px',
+            padding: '14px 20px',
+            fontSize: '14px',
+            fontWeight: '500',
+          },
+          success: {
+            iconTheme: { primary: '#22C55E', secondary: '#fff' },
+          },
+          error: {
+            iconTheme: { primary: '#EF4444', secondary: '#fff' },
+          },
+        }}
+      />
       <Routes>
         <Route path="/" element={<Landing_Home />} />
         <Route path="/login" element={<AuthForm initialMode="login" />} />

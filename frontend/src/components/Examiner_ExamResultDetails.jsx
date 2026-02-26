@@ -5,6 +5,7 @@ import {
     XCircle, Clock, AlertCircle, FileText, Download, User, Send
 } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 const Examiner_ExamResultDetails = () => {
     const navigate = useNavigate();
@@ -25,7 +26,7 @@ const Examiner_ExamResultDetails = () => {
         const now = new Date();
         const startDateTime = new Date(`${exam.startDate}T${exam.startTime}`);
         const endDateTime = new Date(`${exam.endDate}T${exam.endTime}`);
-        
+
         if (now < startDateTime) return 'Scheduled';
         if (now >= startDateTime && now <= endDateTime) return 'Live';
         return 'Completed';
@@ -67,7 +68,7 @@ const Examiner_ExamResultDetails = () => {
             const response = await fetch(`http://localhost:5000/api/exams/${examId}/results/export`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
-            
+
             const blob = await response.blob();
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -79,7 +80,7 @@ const Examiner_ExamResultDetails = () => {
             document.body.removeChild(a);
         } catch (error) {
             console.error('Error exporting report:', error);
-            alert('Failed to export report');
+            toast.error('Failed to export report');
         } finally {
             setExporting(false);
         }
@@ -97,22 +98,22 @@ const Examiner_ExamResultDetails = () => {
                 },
                 body: JSON.stringify({ passingPercentage: cutoff })
             });
-            
+
             const data = await response.json();
-            
+
             if (data.success) {
                 const storedStatuses = JSON.parse(localStorage.getItem('exam_statuses') || '{}');
                 storedStatuses[examId] = "Results Sent";
                 localStorage.setItem('exam_statuses', JSON.stringify(storedStatuses));
-                
-                alert(`Results sent successfully! ${data.results.sent} emails sent, ${data.results.failed} failed.`);
+
+                toast.success(`Results sent successfully! ${data.results.sent} emails sent, ${data.results.failed} failed.`);
                 navigate(-1);
             } else {
-                alert('Failed to send results: ' + (data.message || 'Unknown error'));
+                toast.error('Failed to send results: ' + (data.message || 'Unknown error'));
             }
         } catch (error) {
             console.error('Error sending results:', error);
-            alert('Failed to send results. Please try again.');
+            toast.error('Failed to send results. Please try again.');
         } finally {
             setSending(false);
         }
@@ -173,10 +174,9 @@ const Examiner_ExamResultDetails = () => {
                             {examDetails.date}
                         </div>
                         <div className="flex items-center gap-1.5">
-                            <span className={`w-2 h-2 rounded-full ${
-                                examStatus === 'Live' ? 'bg-amber-500 animate-pulse' :
-                                examStatus === 'Completed' ? 'bg-emerald-500' : 'bg-slate-400'
-                            }`}></span>
+                            <span className={`w-2 h-2 rounded-full ${examStatus === 'Live' ? 'bg-amber-500 animate-pulse' :
+                                    examStatus === 'Completed' ? 'bg-emerald-500' : 'bg-slate-400'
+                                }`}></span>
                             {examStatus}
                         </div>
                     </div>
@@ -200,11 +200,10 @@ const Examiner_ExamResultDetails = () => {
                     <button
                         onClick={handlePublishResults}
                         disabled={sending || examStatus === 'Live'}
-                        className={`px-5 py-2.5 font-medium text-sm rounded-xl transition-colors shadow-lg shadow-slate-100 flex items-center gap-2 ${
-                            sending || examStatus === 'Live'
-                                ? 'bg-slate-400 text-white cursor-not-allowed' 
+                        className={`px-5 py-2.5 font-medium text-sm rounded-xl transition-colors shadow-lg shadow-slate-100 flex items-center gap-2 ${sending || examStatus === 'Live'
+                                ? 'bg-slate-400 text-white cursor-not-allowed'
                                 : 'bg-[#0F172A] text-white hover:bg-[#1E293B] cursor-pointer'
-                        }`}
+                            }`}
                     >
                         {sending ? (
                             <>

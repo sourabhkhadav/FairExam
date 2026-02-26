@@ -36,6 +36,8 @@ const Exam = () => {
     const [faceViolations, setFaceViolations] = useState(0);
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [violationLimits, setViolationLimits] = useState({ faceLimit: 5, soundLimit: 5, fullscreenLimit: 5 });
+    const [showViolationAutoSubmitModal, setShowViolationAutoSubmitModal] = useState(false);
+    const [violationAutoSubmitMessage, setViolationAutoSubmitMessage] = useState('');
 
     useEffect(() => {
         if (!examId) {
@@ -103,8 +105,8 @@ const Exam = () => {
         const count = violationsList.length;
         setFaceViolations(count);
         if (count >= violationLimits.faceLimit) {
-            toast.error(`🚨 Face violation limit exceeded! Auto-submitting...`, { duration: 3000 });
-            setTimeout(() => handleSubmit(), 2000);
+            setViolationAutoSubmitMessage('Face detection violation limit exceeded. Your exam has been auto-submitted.');
+            setShowViolationAutoSubmitModal(true);
         }
     };
 
@@ -163,8 +165,8 @@ const Exam = () => {
                             });
                             console.log('🔊 SOUND! Level:', average.toFixed(2), 'Threshold:', threshold.toFixed(2));
                             if (newCount >= violationLimits.soundLimit) {
-                                toast.error(`🚨 Sound violation limit exceeded! Auto-submitting...`, { duration: 3000 });
-                                setTimeout(() => handleSubmit(), 2000);
+                                setViolationAutoSubmitMessage('Sound detection violation limit exceeded. Your exam has been auto-submitted.');
+                                setShowViolationAutoSubmitModal(true);
                             }
                             return newCount;
                         });
@@ -243,8 +245,8 @@ const Exam = () => {
                     duration: 500,
                 });
                 if (newCount >= violationLimits.fullscreenLimit) {
-                    toast.error(`🚨 Fullscreen violation limit exceeded! Auto-submitting...`, { duration: 3000 });
-                    setTimeout(() => handleSubmit(), 2000);
+                    setViolationAutoSubmitMessage('Fullscreen exit violation limit exceeded. Your exam has been auto-submitted.');
+                    setShowViolationAutoSubmitModal(true);
                 }
                 return newCount;
             });
@@ -377,10 +379,13 @@ const Exam = () => {
 
     const handleSubmit = async () => {
         try {
+            // Close any open modals first
+            setIsSubmitModalOpen(false);
+
             const token = localStorage.getItem('token');
 
             if (!candidateData || !candidateData.id) {
-                alert('Session expired. Please login again.');
+                toast.error('Session expired. Please login again.');
                 navigate('/candidate-login');
                 return;
             }
@@ -434,14 +439,23 @@ const Exam = () => {
                 });
             }
 
-            alert("Exam Submitted Successfully!");
+            // Exit fullscreen before navigating
+            if (document.fullscreenElement) {
+                try { await document.exitFullscreen(); } catch (_) { }
+            }
+
+            toast.success("Exam Submitted Successfully!");
             localStorage.clear();
-            navigate('/');
+            setTimeout(() => navigate('/'), 1000);
         } catch (error) {
             console.error('Submit error:', error);
-            alert("Exam Submitted Successfully!");
+            // Exit fullscreen before navigating
+            if (document.fullscreenElement) {
+                try { await document.exitFullscreen(); } catch (_) { }
+            }
+            toast.error("Something went wrong, but your exam was recorded.");
             localStorage.clear();
-            navigate('/');
+            setTimeout(() => navigate('/'), 1500);
         }
     };
 
@@ -458,45 +472,7 @@ const Exam = () => {
     return (
         <div className="flex flex-col h-screen bg-white font-sans text-slate-900 overflow-hidden">
 
-            <Toaster
-                position="top-center"
-                toastOptions={{
-                    duration: 1500,
-                    style: {
-                        background: '#fee2e2',
-                        color: '#991b1b',
-                        padding: '6px 14px',
-                        borderRadius: '6px',
-                        border: '1.5px solid #ef4444',
-                        boxShadow: '0 2px 8px rgba(239, 68, 68, 0.2)',
-                        fontWeight: '600',
-                        fontSize: '11px',
-                        maxWidth: '400px',
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                    },
-                    success: {
-                        style: {
-                            background: '#d1fae5',
-                            color: '#065f46',
-                            border: '1.5px solid #10b981',
-                            whiteSpace: 'nowrap',
-                        },
-                        iconTheme: {
-                            primary: '#10b981',
-                            secondary: '#fff',
-                        },
-                    },
-                    error: {
-                        iconTheme: {
-                            primary: '#ef4444',
-                            secondary: '#fff',
-                        },
-                    },
-                }}
-                containerStyle={{ top: 70 }}
-            />
+
 
             {/* Live Camera Monitor - Always Visible */}
             <LiveCameraMonitor
@@ -779,8 +755,8 @@ const Exam = () => {
             {showFullscreenWarning && (
                 <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 animate-in fade-in slide-in-from-top duration-300">
                     <div className={`rounded-lg shadow-2xl px-6 py-4 border-2 ${violations >= 3
-                            ? 'bg-red-600 border-red-800 text-white'
-                            : 'bg-amber-500 border-amber-700 text-white'
+                        ? 'bg-red-600 border-red-800 text-white'
+                        : 'bg-amber-500 border-amber-700 text-white'
                         }`}>
                         <div className="flex items-center gap-3">
                             <AlertTriangle className="h-6 w-6 animate-pulse" />
@@ -795,6 +771,42 @@ const Exam = () => {
                                     Returning to fullscreen...
                                 </p>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Violation Auto-Submit Modal */}
+            {showViolationAutoSubmitModal && (
+                <div className="fixed inset-0 bg-red-900/95 backdrop-blur-md z-[9999] flex items-center justify-center p-4">
+                    <div className="bg-white rounded-xl shadow-2xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                        <div className="bg-red-600 p-6 text-center">
+                            <AlertTriangle className="h-14 w-14 text-white mx-auto mb-3 animate-pulse" />
+                            <h3 className="text-2xl font-bold text-white">Exam Auto-Submitted</h3>
+                        </div>
+                        <div className="p-8 text-center">
+                            <p className="text-lg font-semibold text-slate-900 mb-3">
+                                Due to violations, your exam has been auto-submitted.
+                            </p>
+                            <p className="text-sm text-slate-600 mb-6">
+                                {violationAutoSubmitMessage}
+                            </p>
+                            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                                <div className="flex justify-center gap-6 text-xs font-semibold text-red-700">
+                                    <span>Face: {faceViolations}/{violationLimits.faceLimit}</span>
+                                    <span>Sound: {soundViolations}/{violationLimits.soundLimit}</span>
+                                    <span>Fullscreen: {violations}/{violationLimits.fullscreenLimit}</span>
+                                </div>
+                            </div>
+                            <button
+                                onClick={async () => {
+                                    await handleSubmit();
+                                    setShowViolationAutoSubmitModal(false);
+                                }}
+                                className="w-full px-6 py-3 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 transition-colors shadow-lg text-lg"
+                            >
+                                OK
+                            </button>
                         </div>
                     </div>
                 </div>

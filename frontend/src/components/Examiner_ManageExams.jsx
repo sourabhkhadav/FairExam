@@ -5,6 +5,7 @@ import {
     Search, Calendar, Clock, Users, Edit3, Trash2, ChevronDown, Settings, Mail
 } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 const Examiner_ManageExams = () => {
     const navigate = useNavigate();
@@ -27,11 +28,11 @@ const Examiner_ManageExams = () => {
                 const formattedExams = await Promise.all(data.data.map(async (e) => {
                     const now = new Date();
                     let status = "Draft";
-                    
+
                     if (e.status === 'published') {
                         const start = new Date(`${e.startDate}T${e.startTime || '00:00'}`);
                         const end = new Date(`${e.endDate}T${e.endTime || '23:59'}`);
-                        
+
                         if (now < start) {
                             status = 'Scheduled';
                         } else if (now >= start && now <= end) {
@@ -113,50 +114,57 @@ const Examiner_ManageExams = () => {
     const handleDelete = async (id) => {
         const exam = exams.find(e => e.id === id);
         const isPublishedOrScheduled = exam && (exam.status === 'Public' || exam.status === 'Scheduled');
-        
-        const confirmMessage = isPublishedOrScheduled 
+
+        const confirmMessage = isPublishedOrScheduled
             ? "This exam is published/scheduled. Deleting will send cancellation emails to all candidates. Are you sure?"
             : "Are you sure you want to delete this exam?";
-        
-        if (!window.confirm(confirmMessage)) return;
 
-        try {
-            const token = localStorage.getItem('token');
-            
-            // Send cancellation emails if published/scheduled
-            if (isPublishedOrScheduled) {
-                try {
-                    await fetch(`http://localhost:5000/api/email/cancel-exam/${id}`, {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': `Bearer ${token}`
-                        }
-                    });
-                } catch (emailError) {
-                    console.error('Failed to send cancellation emails:', emailError);
-                }
-            }
-            
-            const response = await fetch(`http://localhost:5000/api/exams/${id}`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-
-            if (response.ok) {
-                setExams(prev => prev.filter(e => e.id !== id));
-                if (isPublishedOrScheduled) {
-                    alert('✅ Exam deleted and cancellation emails sent to candidates.');
-                } else {
-                    alert('✅ Exam deleted successfully.');
-                }
-            } else {
-                alert("Failed to delete exam");
-            }
-        } catch (error) {
-            console.error("Delete error:", error);
-        }
+        toast((t) => (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <span style={{ fontWeight: 500 }}>{confirmMessage}</span>
+                <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                    <button
+                        onClick={() => toast.dismiss(t.id)}
+                        style={{ padding: '6px 16px', borderRadius: '8px', border: '1px solid #E2E8F0', background: '#fff', color: '#0F172A', fontWeight: 600, cursor: 'pointer' }}
+                    >Cancel</button>
+                    <button
+                        onClick={async () => {
+                            toast.dismiss(t.id);
+                            try {
+                                const token = localStorage.getItem('token');
+                                if (isPublishedOrScheduled) {
+                                    try {
+                                        await fetch(`http://localhost:5000/api/email/cancel-exam/${id}`, {
+                                            method: 'POST',
+                                            headers: { 'Authorization': `Bearer ${token}` }
+                                        });
+                                    } catch (emailError) {
+                                        console.error('Failed to send cancellation emails:', emailError);
+                                    }
+                                }
+                                const response = await fetch(`http://localhost:5000/api/exams/${id}`, {
+                                    method: 'DELETE',
+                                    headers: { 'Authorization': `Bearer ${token}` }
+                                });
+                                if (response.ok) {
+                                    setExams(prev => prev.filter(e => e.id !== id));
+                                    if (isPublishedOrScheduled) {
+                                        toast.success('Exam deleted and cancellation emails sent to candidates.');
+                                    } else {
+                                        toast.success('Exam deleted successfully.');
+                                    }
+                                } else {
+                                    toast.error('Failed to delete exam');
+                                }
+                            } catch (error) {
+                                console.error('Delete error:', error);
+                            }
+                        }}
+                        style={{ padding: '6px 16px', borderRadius: '8px', border: 'none', background: '#EF4444', color: '#fff', fontWeight: 600, cursor: 'pointer' }}
+                    >Delete</button>
+                </div>
+            </div>
+        ), { duration: Infinity, style: { maxWidth: '400px', background: '#fff', color: '#0F172A' } });
     };
 
     const filteredExams = exams.filter(exam => {
@@ -221,13 +229,12 @@ const Examiner_ManageExams = () => {
                                 <div className="space-y-4">
                                     <div className="flex flex-wrap items-center gap-3">
                                         <h3 className="text-lg sm:text-[19px] font-medium text-[#0F172A]">{exam.title}</h3>
-                                        <span className={`px-3 py-1 rounded-full text-[10px] sm:text-[12px] font-medium ${
-                                            exam.status === 'Scheduled' ? 'bg-[#F0F9FF] text-[#0369A1] border border-[#BAE6FD]' :
-                                            exam.status === 'Live' ? 'bg-[#DCFCE7] text-[#15803D] border border-[#BBF7D0]' :
-                                            exam.status === 'Public' ? 'bg-[#F0FDF4] text-[#15803D] border border-[#BBF7D0]' :
-                                            exam.status === 'Finished' ? 'bg-[#F8FAFC] text-[#64748B] border border-[#E2E8F0]' :
-                                            'bg-orange-50 text-orange-700 border border-orange-200'
-                                        }`}>
+                                        <span className={`px-3 py-1 rounded-full text-[10px] sm:text-[12px] font-medium ${exam.status === 'Scheduled' ? 'bg-[#F0F9FF] text-[#0369A1] border border-[#BAE6FD]' :
+                                                exam.status === 'Live' ? 'bg-[#DCFCE7] text-[#15803D] border border-[#BBF7D0]' :
+                                                    exam.status === 'Public' ? 'bg-[#F0FDF4] text-[#15803D] border border-[#BBF7D0]' :
+                                                        exam.status === 'Finished' ? 'bg-[#F8FAFC] text-[#64748B] border border-[#E2E8F0]' :
+                                                            'bg-orange-50 text-orange-700 border border-orange-200'
+                                            }`}>
                                             {exam.status}
                                         </span>
                                     </div>

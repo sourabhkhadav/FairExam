@@ -21,6 +21,7 @@ const Examiner_ExamResultDetails = lazy(() => import('./components/Examiner_Exam
 const Examiner_ManageCandidates = lazy(() => import('./components/Examiner_ManageCandidates'))
 
 // Candidate Pages
+const CandidateProtectedRoute = lazy(() => import('./components/CandidateProtectedRoute'))
 const CandidateLogin = lazy(() => import('./pages/Login'))
 const Instructions = lazy(() => import('./pages/Instructions'))
 const Exam = lazy(() => import('./pages/Exam'))
@@ -64,8 +65,8 @@ function App() {
 
           {/* Candidate Routes */}
           <Route path="/candidate-login" element={<CandidateLogin />} />
-          <Route path="/instructions" element={<Instructions />} />
-          <Route path="/exam" element={<Exam />} />
+          <Route path="/instructions" element={<CandidateProtectedRoute><Instructions /></CandidateProtectedRoute>} />
+          <Route path="/exam" element={<CandidateProtectedRoute><Exam /></CandidateProtectedRoute>} />
 
           {/* Examiner Routes */}
           <Route element={<ProtectedRoute><Examiner_Layout /></ProtectedRoute>}>

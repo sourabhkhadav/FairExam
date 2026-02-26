@@ -18,15 +18,6 @@ const Login = () => {
         if (candidateId) setFormData(prev => ({ ...prev, candidateId }));
     }, [searchParams]);
 
-    // Redirect if already logged in as candidate
-    useEffect(() => {
-        const candidate = localStorage.getItem('candidate');
-        const examData = localStorage.getItem('examData');
-        if (candidate && examData) {
-            navigate('/instructions', { replace: true });
-        }
-    }, [navigate]);
-
     const handleLogin = async (e) => {
         e.preventDefault();
         setError('');
@@ -124,67 +115,67 @@ const Login = () => {
                         <p className="text-slate-500 text-sm">Enter your credentials to access the examination portal.</p>
                     </div>
 
-                    <form onSubmit={handleLogin} className="space-y-5">
-                        <div className="space-y-4">
-                            <div>
-                                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1.5">
-                                    Candidate ID
-                                </label>
-                                <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <User className="h-5 w-5 text-slate-400" />
+                            <form onSubmit={handleLogin} className="space-y-5">
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1.5">
+                                            Candidate ID
+                                        </label>
+                                        <div className="relative">
+                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <User className="h-5 w-5 text-slate-400" />
+                                            </div>
+                                            <input
+                                                type="text"
+                                                required
+                                                className="block w-full pl-10 pr-3 py-2.5 border border-slate-300 rounded-md text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 sm:text-sm transition-all"
+                                                placeholder="e.g. CAND67a10001"
+                                                value={formData.candidateId}
+                                                onChange={(e) => setFormData({ ...formData, candidateId: e.target.value })}
+                                                disabled={isLoading}
+                                            />
+                                        </div>
                                     </div>
-                                    <input
-                                        type="text"
-                                        required
-                                        className="block w-full pl-10 pr-3 py-2.5 border border-slate-300 rounded-md text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 sm:text-sm transition-all"
-                                        placeholder="e.g. CAND67a10001"
-                                        value={formData.candidateId}
-                                        onChange={(e) => setFormData({ ...formData, candidateId: e.target.value })}
-                                        disabled={isLoading}
-                                    />
-                                </div>
-                            </div>
 
-                            <div>
-                                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1.5">
-                                    Access Password
-                                </label>
-                                <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <Lock className="h-5 w-5 text-slate-400" />
+                                    <div>
+                                        <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wide mb-1.5">
+                                            Access Password
+                                        </label>
+                                        <div className="relative">
+                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <Lock className="h-5 w-5 text-slate-400" />
+                                            </div>
+                                            <input
+                                                type="password"
+                                                required
+                                                className="block w-full pl-10 pr-3 py-2.5 border border-slate-300 rounded-md text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 sm:text-sm transition-all"
+                                                placeholder="••••••••"
+                                                value={formData.password}
+                                                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                                disabled={isLoading}
+                                            />
+                                        </div>
                                     </div>
-                                    <input
-                                        type="password"
-                                        required
-                                        className="block w-full pl-10 pr-3 py-2.5 border border-slate-300 rounded-md text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600/20 focus:border-blue-600 sm:text-sm transition-all"
-                                        placeholder="••••••••"
-                                        value={formData.password}
-                                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                                        disabled={isLoading}
-                                    />
                                 </div>
-                            </div>
-                        </div>
 
-                        {error && (
-                            <div className="flex items-start gap-3 p-3 text-sm text-red-700 bg-red-50 rounded-md border border-red-200">
-                                <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
-                                <span>{error}</span>
-                            </div>
-                        )}
+                                {error && (
+                                    <div className="flex items-start gap-3 p-3 text-sm text-red-700 bg-red-50 rounded-md border border-red-200">
+                                        <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                                        <span>{error}</span>
+                                    </div>
+                                )}
 
-                        <button
-                            type="submit"
-                            disabled={isLoading}
-                            className={`w-full flex justify-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-semibold text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all
+                                <button
+                                    type="submit"
+                                    disabled={isLoading}
+                                    className={`w-full flex justify-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-semibold text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all
                                         ${!isLoading
-                                    ? 'bg-blue-600 hover:bg-blue-700'
-                                    : 'bg-slate-400 cursor-not-allowed'}`}
-                        >
-                            {isLoading ? 'Authenticating...' : 'Start Exam'}
-                        </button>
-                    </form>
+                                            ? 'bg-blue-600 hover:bg-blue-700'
+                                            : 'bg-slate-400 cursor-not-allowed'}`}
+                                >
+                                    {isLoading ? 'Authenticating...' : 'Start Exam'}
+                                </button>
+                            </form>
 
                     <div className="mt-6 text-center">
                         <a href="#" className="text-xs text-slate-500 hover:text-blue-600 flex items-center justify-center gap-1">

@@ -1,19 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Shield, Mail, Lock, User, Eye, EyeOff, ArrowRight, ArrowLeft, AlertTriangle, Key, CheckCircle } from 'lucide-react';
 
 const AuthForm = ({ initialMode = 'login' }) => {
     const navigate = useNavigate();
-
-    // Redirect if already logged in
-    useEffect(() => {
-        const token = localStorage.getItem('token');
-        const user = localStorage.getItem('user');
-        if (token && user) {
-            navigate('/dashboard', { replace: true });
-        }
-    }, [navigate]);
-
     const [isLogin, setIsLogin] = useState(initialMode === 'login');
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -332,123 +322,123 @@ const AuthForm = ({ initialMode = 'login' }) => {
                             </button>
                         </div>
                     ) : (
-                        <form className="space-y-6" onSubmit={handleSubmit}>
-                            {error && (
-                                <div className="p-4 rounded-xl bg-red-50 border border-red-100 text-red-600 text-sm font-bold flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
-                                    <AlertTriangle className="w-4 h-4" />
-                                    {error}
-                                </div>
-                            )}
-                            {success && (
-                                <div className="p-4 rounded-xl bg-green-50 border border-green-100 text-green-600 text-sm font-bold flex items-center gap-3">
-                                    <CheckCircle className="w-4 h-4" />
-                                    {success}
-                                </div>
-                            )}
+                    <form className="space-y-6" onSubmit={handleSubmit}>
+                        {error && (
+                            <div className="p-4 rounded-xl bg-red-50 border border-red-100 text-red-600 text-sm font-bold flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
+                                <AlertTriangle className="w-4 h-4" />
+                                {error}
+                            </div>
+                        )}
+                        {success && (
+                            <div className="p-4 rounded-xl bg-green-50 border border-green-100 text-green-600 text-sm font-bold flex items-center gap-3">
+                                <CheckCircle className="w-4 h-4" />
+                                {success}
+                            </div>
+                        )}
 
-                            {!isLogin && (
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 ml-1">Full Name</label>
-                                    <div className="relative group overflow-hidden">
-                                        <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-charcoal transition-colors duration-300">
-                                            <User className="w-5 h-5" />
-                                        </div>
-                                        <input
-                                            type="text"
-                                            name="name"
-                                            required
-                                            value={formData.name}
-                                            onChange={handleChange}
-                                            placeholder="John Doe"
-                                            className="w-full pl-14 pr-6 py-4 rounded-2xl bg-slate-50 border border-transparent hover:bg-slate-100 focus:bg-white focus:border-charcoal/20 transition-all duration-300 outline-none font-bold text-charcoal placeholder:text-slate-400"
-                                        />
-                                    </div>
-                                </div>
-                            )}
-
+                        {!isLogin && (
                             <div className="space-y-2">
-                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Work Email</label>
+                                <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 ml-1">Full Name</label>
                                 <div className="relative group overflow-hidden">
                                     <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-charcoal transition-colors duration-300">
-                                        <Mail className="w-5 h-5" />
+                                        <User className="w-5 h-5" />
                                     </div>
                                     <input
-                                        type="email"
-                                        name="email"
+                                        type="text"
+                                        name="name"
                                         required
-                                        value={formData.email}
+                                        value={formData.name}
                                         onChange={handleChange}
-                                        placeholder="name@institution.edu"
-                                        className="w-full pl-14 pr-6 py-4 rounded-2xl bg-slate-50 border border-transparent hover:bg-slate-100 focus:bg-white focus:border-charcoal/20 transition-all duration-300 outline-none font-bold text-charcoal placeholder:text-slate-300"
+                                        placeholder="John Doe"
+                                        className="w-full pl-14 pr-6 py-4 rounded-2xl bg-slate-50 border border-transparent hover:bg-slate-100 focus:bg-white focus:border-charcoal/20 transition-all duration-300 outline-none font-bold text-charcoal placeholder:text-slate-400"
                                     />
                                 </div>
                             </div>
+                        )}
 
-                            <div className="space-y-2">
-                                <div className="flex justify-between items-center ml-1">
-                                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Password</label>
-                                    {isLogin && <button type="button" onClick={() => setShowForgotPassword(true)} className="text-[10px] font-black uppercase tracking-[0.2em] text-charcoal hover:underline">Forgot?</button>}
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Work Email</label>
+                            <div className="relative group overflow-hidden">
+                                <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-charcoal transition-colors duration-300">
+                                    <Mail className="w-5 h-5" />
                                 </div>
+                                <input
+                                    type="email"
+                                    name="email"
+                                    required
+                                    value={formData.email}
+                                    onChange={handleChange}
+                                    placeholder="name@institution.edu"
+                                    className="w-full pl-14 pr-6 py-4 rounded-2xl bg-slate-50 border border-transparent hover:bg-slate-100 focus:bg-white focus:border-charcoal/20 transition-all duration-300 outline-none font-bold text-charcoal placeholder:text-slate-300"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <div className="flex justify-between items-center ml-1">
+                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Password</label>
+                                {isLogin && <button type="button" onClick={() => setShowForgotPassword(true)} className="text-[10px] font-black uppercase tracking-[0.2em] text-charcoal hover:underline">Forgot?</button>}
+                            </div>
+                            <div className="relative group overflow-hidden">
+                                <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-charcoal transition-colors duration-300">
+                                    <Lock className="w-5 h-5" />
+                                </div>
+                                <input
+                                    type={showPassword ? "text" : "password"}
+                                    name="password"
+                                    required
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    placeholder="••••••••"
+                                    className="w-full pl-14 pr-14 py-4 rounded-2xl bg-slate-50 border border-transparent hover:bg-slate-100 focus:bg-white focus:border-charcoal/20 transition-all duration-300 outline-none font-bold text-charcoal placeholder:text-slate-300"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    className="absolute inset-y-0 right-5 flex items-center text-slate-300 hover:text-charcoal transition-colors duration-300"
+                                >
+                                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                </button>
+                            </div>
+                        </div>
+
+
+                        {!isLogin && (
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Confirm Password</label>
                                 <div className="relative group overflow-hidden">
-                                    <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-charcoal transition-colors duration-300">
+                                    <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-brand-purple transition-colors duration-300">
                                         <Lock className="w-5 h-5" />
                                     </div>
                                     <input
-                                        type={showPassword ? "text" : "password"}
-                                        name="password"
+                                        type={showConfirmPassword ? "text" : "password"}
+                                        name="confirmPassword"
                                         required
-                                        value={formData.password}
+                                        value={formData.confirmPassword}
                                         onChange={handleChange}
                                         placeholder="••••••••"
-                                        className="w-full pl-14 pr-14 py-4 rounded-2xl bg-slate-50 border border-transparent hover:bg-slate-100 focus:bg-white focus:border-charcoal/20 transition-all duration-300 outline-none font-bold text-charcoal placeholder:text-slate-300"
+                                        className="w-full pl-14 pr-14 py-4 rounded-2xl bg-slate-50 border border-transparent hover:bg-slate-100 focus:bg-white focus:border-brand-purple/20 transition-all duration-300 outline-none font-bold text-charcoal placeholder:text-slate-300"
                                     />
                                     <button
                                         type="button"
-                                        onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute inset-y-0 right-5 flex items-center text-slate-300 hover:text-charcoal transition-colors duration-300"
+                                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                        className="absolute inset-y-0 right-5 flex items-center text-slate-300 hover:text-brand-purple transition-colors duration-300"
                                     >
-                                        {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                        {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                                     </button>
                                 </div>
                             </div>
+                        )}
 
-
-                            {!isLogin && (
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Confirm Password</label>
-                                    <div className="relative group overflow-hidden">
-                                        <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none text-slate-400 group-focus-within:text-brand-purple transition-colors duration-300">
-                                            <Lock className="w-5 h-5" />
-                                        </div>
-                                        <input
-                                            type={showConfirmPassword ? "text" : "password"}
-                                            name="confirmPassword"
-                                            required
-                                            value={formData.confirmPassword}
-                                            onChange={handleChange}
-                                            placeholder="••••••••"
-                                            className="w-full pl-14 pr-14 py-4 rounded-2xl bg-slate-50 border border-transparent hover:bg-slate-100 focus:bg-white focus:border-brand-purple/20 transition-all duration-300 outline-none font-bold text-charcoal placeholder:text-slate-300"
-                                        />
-                                        <button
-                                            type="button"
-                                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                            className="absolute inset-y-0 right-5 flex items-center text-slate-300 hover:text-brand-purple transition-colors duration-300"
-                                        >
-                                            {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
-
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                className="w-full py-4 rounded-2xl bg-charcoal text-white font-bold text-sm uppercase tracking-widest flex items-center justify-center gap-3 shadow-xl shadow-slate-100 cursor-pointer disabled:opacity-70 disabled:cursor-wait transition-all hover:bg-slate-800"
-                            >
-                                {loading ? 'Processing...' : (isLogin ? 'Sign In' : 'Create Account')}
-                                {!loading && <ArrowRight className="w-4 h-4" />}
-                            </button>
-                        </form>
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="w-full py-4 rounded-2xl bg-charcoal text-white font-bold text-sm uppercase tracking-widest flex items-center justify-center gap-3 shadow-xl shadow-slate-100 cursor-pointer disabled:opacity-70 disabled:cursor-wait transition-all hover:bg-slate-800"
+                        >
+                            {loading ? 'Processing...' : (isLogin ? 'Sign In' : 'Create Account')}
+                            {!loading && <ArrowRight className="w-4 h-4" />}
+                        </button>
+                    </form>
                     )}
                 </div>
 

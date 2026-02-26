@@ -270,6 +270,8 @@ const Exam = () => {
         setTimeout(enterFullscreen, 500);
 
         const handleFullscreenChange = () => {
+            // Ignore fullscreen exit if exam is already being submitted
+            if (isSubmittingRef.current) return;
             if (!document.fullscreenElement) {
                 addViolation('Fullscreen Exit!');
                 setForceFullscreenModal(true);
@@ -328,6 +330,7 @@ const Exam = () => {
     const soundLockRef = useRef(false);
     const baselineRef = useRef(0);
     const calibrationDoneRef = useRef(false);
+    const isSubmittingRef = useRef(false); // Guard: prevent duplicate submissions
 
     if (loading) {
         return (
@@ -378,10 +381,14 @@ const Exam = () => {
     };
 
     const handleSubmit = async () => {
-        try {
-            // Close any open modals first
-            setIsSubmitModalOpen(false);
+        // 🔒 Prevent duplicate submissions (timer + violation race condition)
+        if (isSubmittingRef.current) {
+            console.log('⚠️ Submission already in progress, ignoring duplicate call.');
+            return;
+        }
+        isSubmittingRef.current = true;
 
+        try {
             const token = localStorage.getItem('token');
 
             if (!candidateData || !candidateData.id) {
@@ -439,21 +446,18 @@ const Exam = () => {
                 });
             }
 
-            // Exit fullscreen before navigating
+            // Exit fullscreen silently before navigating (prevents fullscreen modal flash)
             if (document.fullscreenElement) {
-                try { await document.exitFullscreen(); } catch (_) { }
+                await document.exitFullscreen().catch(() => { });
             }
-
-            toast.success("Exam Submitted Successfully!");
             localStorage.clear();
             setTimeout(() => navigate('/'), 1000);
         } catch (error) {
             console.error('Submit error:', error);
-            // Exit fullscreen before navigating
+            // Exit fullscreen silently before navigating
             if (document.fullscreenElement) {
-                try { await document.exitFullscreen(); } catch (_) { }
+                await document.exitFullscreen().catch(() => { });
             }
-            toast.error("Something went wrong, but your exam was recorded.");
             localStorage.clear();
             setTimeout(() => navigate('/'), 1500);
         }

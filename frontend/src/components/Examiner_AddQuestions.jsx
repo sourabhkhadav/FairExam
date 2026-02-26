@@ -402,6 +402,12 @@ const Examiner_AddQuestions = () => {
                                             className={`text-[10px] font-bold uppercase tracking-[0.15em] bg-transparent border-none outline-none w-full ${activeSectionId === section.id ? 'text-[#0F172A]' : 'text-[#64748B]'
                                                 }`}
                                         />
+                                        <span className={`shrink-0 text-[9px] font-bold px-1.5 py-0.5 rounded-md ${activeSectionId === section.id
+                                            ? 'bg-[#0F172A] text-white'
+                                            : 'bg-[#F1F5F9] text-[#64748B]'
+                                            }`}>
+                                            {questions.filter(q => q.sectionId === section.id).length} Q
+                                        </span>
                                     </div>
                                     <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
                                         <button
@@ -434,7 +440,7 @@ const Examiner_AddQuestions = () => {
                                     </div>
                                 </div>
                                 <div className="space-y-3">
-                                    {questions.filter(q => q.sectionId === section.id).map((q) => {
+                                    {questions.filter(q => q.sectionId === section.id).map((q, sectionQIdx) => {
                                         const globalIdx = questions.findIndex(item => item.id === q.id);
                                         return (
                                             <div
@@ -451,7 +457,7 @@ const Examiner_AddQuestions = () => {
                                                 <div className="flex items-center justify-between mb-2">
                                                     <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${focusedIndex === globalIdx ? 'bg-[#0F172A] text-white' : 'bg-[#F1F5F9] text-[#64748B]'
                                                         }`}>
-                                                        Q{globalIdx + 1}
+                                                        Q{sectionQIdx + 1}
                                                     </span>
                                                     <div className="flex items-center gap-2">
                                                         <span className="text-[9px] font-medium text-[#0F172A] uppercase tracking-wider">{q.difficulty}</span>

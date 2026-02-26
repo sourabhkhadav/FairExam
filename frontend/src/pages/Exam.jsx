@@ -17,14 +17,14 @@ const Exam = () => {
 
     const userName = candidateData.name || location.state?.name || 'Candidate';
     // Support all possible field names set by the login flow
-    const candidateId = candidateData._id || candidateData.id || candidateData.candidateId || localStorage.getItem('candidateId') || 'UNKNOWN';
+    const candidateId = candidateData._id || candidateData.id || candidateData.candidateId || localStorage.getItem('candidateId') || null;
     // examId: check every possible location the login flow stores it
     const examId = candidateData.examId
         || storedExamData._id
         || storedExamData.id
         || storedExamData.examId
         || urlExamId
-        || 'UNKNOWN';
+        || null;
     const examName = storedExamData.title || candidateData.examTitle || 'Exam';
 
     // State Management
@@ -48,8 +48,8 @@ const Exam = () => {
     const [violationAutoSubmitMessage, setViolationAutoSubmitMessage] = useState('');
 
     useEffect(() => {
-        if (!examId) {
-            toast.error('No exam ID found. Please login again.');
+        if (!examId || !candidateId) {
+            toast.error('Session expired. Please log in again.');
             navigate('/candidate-login');
             return;
         }
@@ -110,6 +110,8 @@ const Exam = () => {
 
     // Handle face violations from LiveCameraMonitor
     const handleViolationUpdate = (violationsList) => {
+        // 🔒 Stop all violation callbacks once exam is being submitted
+        if (isSubmittingRef.current) return;
         const count = violationsList.length;
         setFaceViolations(count);
         if (count >= violationLimits.faceLimit) {
@@ -162,7 +164,7 @@ const Exam = () => {
 
                     const threshold = baselineVolume + 15;
 
-                    if (average > threshold && !soundLockRef.current) {
+                    if (average > threshold && !soundLockRef.current && !isSubmittingRef.current) {
                         soundLockRef.current = true;
 
                         setSoundViolations(prev => {
@@ -394,13 +396,25 @@ const Exam = () => {
         }
         isSubmittingRef.current = true;
 
+        // Dismiss all active toasts immediately
+        toast.dismiss();
+
         // Show full-screen submitting overlay IMMEDIATELY – user never sees exam page
         setIsSubmitting(true);
         setIsSubmitModalOpen(false);
         setShowViolationAutoSubmitModal(false);
+        setForceFullscreenModal(false);
 
         // Snap navigatingRef so fullscreen events are suppressed right away
         navigatingRef.current = true;
+
+        // Stop microphone immediately
+        if (micStreamRef.current) {
+            micStreamRef.current.getTracks().forEach(track => track.stop());
+        }
+        if (audioContextRef.current) {
+            audioContextRef.current.close().catch(() => { });
+        }
 
         // Exit fullscreen silently right now (before awaiting APIs)
         if (document.fullscreenElement) {

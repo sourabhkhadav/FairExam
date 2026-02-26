@@ -4,6 +4,7 @@ import Exam from '../models/Exam.js';
 import Candidate from '../models/Candidate.js';
 import Violation from '../models/Violation.js';
 import { sendDetailedExamResult } from '../utils/emailService.js';
+import mongoose from 'mongoose';
 
 // @desc    Submit exam and auto-grade
 // @route   POST /api/submissions
@@ -14,6 +15,16 @@ export const submitExam = asyncHandler(async (req, res) => {
     if (!examId || !candidateId || !answers) {
         res.status(400);
         throw new Error('Missing required fields: examId, candidateId, or answers');
+    }
+
+    // Validate MongoDB ObjectId format before querying
+    if (!mongoose.isValidObjectId(examId)) {
+        res.status(400);
+        throw new Error(`Invalid examId format: "${examId}". Please ensure you are using a valid exam.`);
+    }
+    if (!mongoose.isValidObjectId(candidateId)) {
+        res.status(400);
+        throw new Error(`Invalid candidateId format: "${candidateId}". Please log in again.`);
     }
 
     const exam = await Exam.findById(examId);

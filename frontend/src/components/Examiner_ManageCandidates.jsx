@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ArrowLeft, Edit2, Trash2, Save, X, PlusCircle } from 'lucide-react';
+import { ArrowLeft, Edit2, Trash2, Save, X, PlusCircle, Upload } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 const Examiner_ManageCandidates = () => {
@@ -12,6 +12,7 @@ const Examiner_ManageCandidates = () => {
     const [editForm, setEditForm] = useState({ name: '', email: '', mobileNumber: '' });
     const [showManualAddModal, setShowManualAddModal] = useState(false);
     const [isAddingCandidate, setIsAddingCandidate] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
     const [manualCandidate, setManualCandidate] = useState({
         name: '',
         email: '',
@@ -149,11 +150,47 @@ const Examiner_ManageCandidates = () => {
         }
     };
 
+    const handleExcelUpload = async (file) => {
+        if (!file) return;
+
+        setIsUploading(true);
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('examId', id);
+
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch('http://localhost:5000/api/candidates/upload', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                toast.success(`${data.message}`);
+                if (data.warnings && data.warnings.length > 0) {
+                    toast(`⚠️ ${data.warnings.length} rows were skipped`, { icon: '⚠️', duration: 5000 });
+                }
+                fetchCandidates();
+            } else {
+                toast.error(data.message || 'Wrong Format! Please use correct Excel format with columns: name, mobileNumber, email');
+            }
+        } catch (error) {
+            toast.error(`Upload failed: ${error.message}`);
+        } finally {
+            setIsUploading(false);
+        }
+    };
+
     if (loading) return <div className="p-10 text-center">Loading candidates...</div>;
 
     return (
         <div className="max-w-4xl mx-auto px-4 py-8">
-            <div className="flex items-center gap-4 mb-8">
+            <div className="flex items-center gap-4 mb-6">
                 <button
                     onClick={() => navigate(`/configure-exam/${id}`)}
                     className="p-2 border border-[#E2E8F0] rounded-lg"
@@ -170,6 +207,34 @@ const Examiner_ManageCandidates = () => {
                     <PlusCircle className="w-4 h-4" />
                     Add Candidate
                 </button>
+            </div>
+
+            {/* Excel Upload & Download Sample Row */}
+            <div className="flex flex-col sm:flex-row gap-3 mb-6">
+                <div className="relative flex-1">
+                    <input
+                        type="file"
+                        accept=".csv,.xlsx,.xls"
+                        onChange={(e) => {
+                            const file = e.target.files[0];
+                            if (file) handleExcelUpload(file);
+                            e.target.value = '';
+                        }}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                        disabled={isUploading}
+                    />
+                    <button className={`w-full py-3 bg-white border border-[#E2E8F0] border-dashed rounded-xl flex items-center justify-center gap-2 hover:bg-slate-50 transition-all text-sm font-medium ${isUploading ? 'opacity-50 cursor-wait' : ''}`}>
+                        {isUploading ? (
+                            <svg className="animate-spin w-4 h-4 text-[#64748B]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        ) : (
+                            <Upload className="w-4 h-4 text-[#64748B]" />
+                        )}
+                        <span className="text-[#0F172A]">{isUploading ? 'Uploading...' : 'Upload Excel / CSV'}</span>
+                    </button>
+                </div>
             </div>
 
             <div className="space-y-4">
@@ -316,6 +381,7 @@ const Examiner_ManageCandidates = () => {
                     </div>
                 </div>
             )}
+
         </div>
     );
 };

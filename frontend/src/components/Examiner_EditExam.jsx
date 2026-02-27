@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../config/api';
 import {
     PlusCircle, ArrowLeft, Shield, Eye, Lock, Monitor, Scissors, ChevronRight, Trash2
 } from 'lucide-react';
@@ -38,7 +39,7 @@ const Examiner_EditExam = () => {
                     return;
                 }
 
-                const response = await fetch(`http://localhost:5000/api/exams/${id}`, {
+                const response = await fetch(`${API_BASE_URL}/exams/${id}`, {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
@@ -76,7 +77,7 @@ const Examiner_EditExam = () => {
 
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`http://localhost:5000/api/exams/${id}`, {
+            const response = await fetch(`${API_BASE_URL}/exams/${id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',

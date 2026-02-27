@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { API_BASE_URL } from '../config/api';
 import {
     ArrowLeft, Plus, Trash2, CheckCircle2, Save, Send,
     Settings2, HelpCircle, GripVertical, Sparkles,
@@ -128,7 +129,7 @@ const Examiner_AddQuestions = () => {
                 throw new Error('Not authorized, please login again');
             }
 
-            const response = await fetch('http://localhost:5000/api/exams/import-questions', {
+            const response = await fetch(`${API_BASE_URL}/exams/import-questions`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -255,11 +256,11 @@ const Examiner_AddQuestions = () => {
                 }
             };
 
-            let url = 'http://localhost:5000/api/exams';
+            let url = `${API_BASE_URL}/exams`;
             let method = 'POST';
 
             if (metaData._id) {
-                url = `http://localhost:5000/api/exams/${metaData._id}`;
+                url = `${API_BASE_URL}/exams/${metaData._id}`;
                 method = 'PUT';
             }
 

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../config/api';
 import {
     PlusCircle, ArrowLeft, Calendar, Clock, Globe, Eye,
     ShieldCheck, Save, Users, Database, FileCheck, Info, Play
@@ -52,7 +53,7 @@ const Examiner_DraftConfigure = () => {
         const fetchExamDetails = async () => {
             try {
                 const token = localStorage.getItem('token');
-                const response = await fetch(`http://localhost:5000/api/exams/${id}`, {
+                const response = await fetch(`${API_BASE_URL}/exams/${id}`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const responseData = await response.json();
@@ -108,7 +109,7 @@ const Examiner_DraftConfigure = () => {
     const fetchCandidateCount = async () => {
         try {
             const token = localStorage.getItem('token');
-            const res = await fetch(`http://localhost:5000/api/candidates/exam/${id}`, {
+            const res = await fetch(`${API_BASE_URL}/candidates/exam/${id}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await res.json();
@@ -128,7 +129,7 @@ const Examiner_DraftConfigure = () => {
         setIsAddingCandidate(true);
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch('http://localhost:5000/api/candidates/manual', {
+            const response = await fetch(`${API_BASE_URL}/candidates/manual`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -166,7 +167,7 @@ const Examiner_DraftConfigure = () => {
 
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch('http://localhost:5000/api/candidates/upload', {
+            const response = await fetch(`${API_BASE_URL}/candidates/upload`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -445,7 +446,7 @@ const Examiner_DraftConfigure = () => {
                                 onClick={async () => {
                                     try {
                                         const token = localStorage.getItem('token');
-                                        await fetch(`http://localhost:5000/api/exams/${id}`, {
+                                        await fetch(`${API_BASE_URL}/exams/${id}`, {
                                             method: 'PUT',
                                             headers: {
                                                 'Content-Type': 'application/json',
@@ -483,7 +484,7 @@ const Examiner_DraftConfigure = () => {
                                     violationLimits: examData.violationLimits
                                 };
 
-                                const response = await fetch(`http://localhost:5000/api/exams/${id}`, {
+                                const response = await fetch(`${API_BASE_URL}/exams/${id}`, {
                                     method: 'PUT',
                                     headers: {
                                         'Content-Type': 'application/json',
@@ -496,7 +497,7 @@ const Examiner_DraftConfigure = () => {
                                     // Clear specific draft upon success
                                     localStorage.removeItem(`examDraft_${id}`);
 
-                                    const emailResponse = await fetch(`http://localhost:5000/api/email/bulk-invitation/${id}`, {
+                                    const emailResponse = await fetch(`${API_BASE_URL}/email/bulk-invitation/${id}`, {
                                         method: 'POST',
                                         headers: {
                                             'Authorization': `Bearer ${token}`
@@ -621,7 +622,7 @@ const Examiner_DraftConfigure = () => {
                                                     scheduleEmailTime: examData.scheduleEmailTime
                                                 };
 
-                                                const response = await fetch(`http://localhost:5000/api/exams/${id}`, {
+                                                const response = await fetch(`${API_BASE_URL}/exams/${id}`, {
                                                     method: 'PUT',
                                                     headers: {
                                                         'Content-Type': 'application/json',

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../config/api';
 import { Search, Filter, X, AlertTriangle, FileText } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -34,7 +35,7 @@ const Examiner_ViolationReports = () => {
     const fetchViolations = async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch('http://localhost:5000/api/violations/all', {
+            const response = await fetch(`${API_BASE_URL}/violations/all`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await response.json();
@@ -52,7 +53,7 @@ const Examiner_ViolationReports = () => {
     const fetchExams = async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch('http://localhost:5000/api/exams', {
+            const response = await fetch(`${API_BASE_URL}/exams`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await response.json();
@@ -73,13 +74,13 @@ const Examiner_ViolationReports = () => {
         }
 
         if (filters.search) {
-            filtered = filtered.filter(v => 
+            filtered = filtered.filter(v =>
                 v.name.toLowerCase().includes(filters.search.toLowerCase())
             );
         }
 
         setFilteredViolations(filtered);
-        
+
         // Recalculate stats based on filtered violations
         const totalViolations = filtered.length;
         const highSeverity = filtered.filter(v => v.severity === 'High').length;
@@ -98,7 +99,7 @@ const Examiner_ViolationReports = () => {
             else if (v.severity === 'Medium') examMap[v.exam].medium++;
             else examMap[v.exam].low++;
         });
-        
+
         const statsArray = Object.entries(examMap).map(([exam, data]) => ({
             exam,
             ...data
@@ -194,11 +195,10 @@ const Examiner_ViolationReports = () => {
                                             <td className="py-5 text-[#0F172A] font-medium italic whitespace-nowrap">"{v.type}"</td>
                                             <td className="py-5 text-[#0F172A]/70 font-medium text-sm whitespace-nowrap">{v.time}</td>
                                             <td className="py-5 text-right whitespace-nowrap">
-                                                <span className={`px-4 py-1.5 rounded-full text-[11px] sm:text-[12px] font-bold ${
-                                                    v.severity === 'High' ? 'bg-[#FEF2F2] text-[#EF4444]' :
-                                                    v.severity === 'Medium' ? 'bg-[#FFFBEB] text-[#D97706]' :
-                                                    'bg-[#EFF6FF] text-[#3B82F6]'
-                                                }`}>
+                                                <span className={`px-4 py-1.5 rounded-full text-[11px] sm:text-[12px] font-bold ${v.severity === 'High' ? 'bg-[#FEF2F2] text-[#EF4444]' :
+                                                        v.severity === 'Medium' ? 'bg-[#FFFBEB] text-[#D97706]' :
+                                                            'bg-[#EFF6FF] text-[#3B82F6]'
+                                                    }`}>
                                                     {v.severity}
                                                 </span>
                                             </td>

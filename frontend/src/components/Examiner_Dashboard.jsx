@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../config/api';
 import {
     LayoutDashboard, PlusCircle, BookOpen, Database, Monitor,
     AlertCircle, FileCheck, BarChart3, UserCircle, Shield,
@@ -11,7 +12,7 @@ const getExamStatus = (exam) => {
     const now = new Date();
     const startDateTime = new Date(`${exam.startDate}T${exam.startTime}`);
     const endDateTime = new Date(`${exam.endDate}T${exam.endTime}`);
-    
+
     if (now < startDateTime) return 'Scheduled';
     if (now >= startDateTime && now <= endDateTime) return 'Live';
     if (now > endDateTime) return 'Completed';
@@ -51,20 +52,20 @@ const Examiner_Dashboard = () => {
     const fetchDashboardData = async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch('http://localhost:5000/api/exams/dashboard/stats', {
+            const response = await fetch(`${API_BASE_URL}/exams/dashboard/stats`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
             });
-            
+
             if (response.status === 401) {
                 localStorage.clear();
                 navigate('/login');
                 return;
             }
-            
+
             const data = await response.json();
-            
+
             if (data.success) {
                 setStats({
                     totalExams: data.data.totalExams,
@@ -108,13 +109,13 @@ const Examiner_Dashboard = () => {
                             >
                                 Create New Exam
                             </button>
-                            <button 
+                            <button
                                 onClick={() => navigate('/violation-reports')}
                                 className="px-8 py-3.5 bg-white border border-[#E2E8F0] text-[#0F172A] font-semibold text-[15px] rounded-xl hover:bg-[#F8FAFC] transition-colors cursor-pointer"
                             >
                                 View Violation Reports
                             </button>
-                            <button 
+                            <button
                                 onClick={() => navigate('/results-publishing')}
                                 className="px-8 py-3.5 bg-white border border-[#E2E8F0] text-[#0F172A] font-semibold text-[15px] rounded-xl hover:bg-[#F8FAFC] transition-colors cursor-pointer"
                             >
@@ -148,33 +149,33 @@ const Examiner_Dashboard = () => {
                                             {recentExams.map((exam, i) => {
                                                 const status = getExamStatus(exam);
                                                 return (
-                                                <tr key={exam._id || i} className="group">
-                                                    <td className="py-5 font-medium text-[#0F172A] whitespace-nowrap">{exam.name}</td>
-                                                    <td className="py-5 text-[#64748B] whitespace-nowrap">{exam.date}</td>
-                                                    <td className="py-5 text-[#64748B] text-center whitespace-nowrap">{exam.students}</td>
-                                                    <td className="py-5 text-center whitespace-nowrap">
-                                                        <span className={`px-4 py-1.5 rounded-full text-[12px] font-semibold ${
-                                                            status === 'Live'
-                                                                ? 'bg-[#FEF3C7] text-[#F59E0B]'
-                                                                : status === 'Scheduled'
-                                                                    ? 'bg-[#F1F5F9] text-[#334155]'
-                                                                    : status === 'Completed'
-                                                                        ? 'bg-[#F0FDF4] text-[#22C55E]'
-                                                                        : 'bg-[#F8FAFC] text-[#64748B]'
-                                                            }`}>
-                                                            {status}
-                                                        </span>
-                                                    </td>
-                                                    <td className="py-5 text-right whitespace-nowrap">
-                                                        <button 
-                                                            onClick={() => navigate(`/exam-results/${exam._id}`)}
-                                                            className="text-[#0F172A] font-semibold text-[14px] hover:underline cursor-pointer"
-                                                        >
-                                                            View Details
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                            )})}
+                                                    <tr key={exam._id || i} className="group">
+                                                        <td className="py-5 font-medium text-[#0F172A] whitespace-nowrap">{exam.name}</td>
+                                                        <td className="py-5 text-[#64748B] whitespace-nowrap">{exam.date}</td>
+                                                        <td className="py-5 text-[#64748B] text-center whitespace-nowrap">{exam.students}</td>
+                                                        <td className="py-5 text-center whitespace-nowrap">
+                                                            <span className={`px-4 py-1.5 rounded-full text-[12px] font-semibold ${status === 'Live'
+                                                                    ? 'bg-[#FEF3C7] text-[#F59E0B]'
+                                                                    : status === 'Scheduled'
+                                                                        ? 'bg-[#F1F5F9] text-[#334155]'
+                                                                        : status === 'Completed'
+                                                                            ? 'bg-[#F0FDF4] text-[#22C55E]'
+                                                                            : 'bg-[#F8FAFC] text-[#64748B]'
+                                                                }`}>
+                                                                {status}
+                                                            </span>
+                                                        </td>
+                                                        <td className="py-5 text-right whitespace-nowrap">
+                                                            <button
+                                                                onClick={() => navigate(`/exam-results/${exam._id}`)}
+                                                                className="text-[#0F172A] font-semibold text-[14px] hover:underline cursor-pointer"
+                                                            >
+                                                                View Details
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                )
+                                            })}
                                         </tbody>
                                     </table>
                                 </div>

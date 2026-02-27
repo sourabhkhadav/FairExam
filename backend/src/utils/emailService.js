@@ -855,7 +855,7 @@ export const sendExamStartEmail = async (to, examDetails, candidateDetails) => {
         return `${formatDate(endDateTime.toISOString().split('T')[0])} at ${formatTime(endDateTime.toTimeString().slice(0, 5))}`;
     };
 
-    const examUrl = `http://localhost:5173/candidate-login?examId=${examDetails.examId}&candidateId=${candidateDetails.candidateId}`;
+    const examUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/candidate-login?examId=${examDetails.examId}&candidateId=${candidateDetails.candidateId}`;
 
     const mailOptions = {
         from: process.env.EMAIL_FROM || 'FairExam <sourabhkhadav2@gmail.com>',

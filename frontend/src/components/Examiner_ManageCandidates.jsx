@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../config/api';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Edit2, Trash2, Save, X, PlusCircle, Upload } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -26,7 +27,7 @@ const Examiner_ManageCandidates = () => {
     const fetchCandidates = async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`http://localhost:5000/api/candidates/exam/${id}`, {
+            const response = await fetch(`${API_BASE_URL}/candidates/exam/${id}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await response.json();
@@ -48,7 +49,7 @@ const Examiner_ManageCandidates = () => {
         setIsAddingCandidate(true);
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch('http://localhost:5000/api/candidates/manual', {
+            const response = await fetch(`${API_BASE_URL}/candidates/manual`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -89,7 +90,7 @@ const Examiner_ManageCandidates = () => {
                             toast.dismiss(t.id);
                             try {
                                 const token = localStorage.getItem('token');
-                                const response = await fetch(`http://localhost:5000/api/candidates/${candidateId}`, {
+                                const response = await fetch(`${API_BASE_URL}/candidates/${candidateId}`, {
                                     method: 'DELETE',
                                     headers: { 'Authorization': `Bearer ${token}` }
                                 });
@@ -129,7 +130,7 @@ const Examiner_ManageCandidates = () => {
     const handleUpdate = async (candidateId) => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`http://localhost:5000/api/candidates/${candidateId}`, {
+            const response = await fetch(`${API_BASE_URL}/candidates/${candidateId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -160,7 +161,7 @@ const Examiner_ManageCandidates = () => {
 
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch('http://localhost:5000/api/candidates/upload', {
+            const response = await fetch(`${API_BASE_URL}/candidates/upload`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`

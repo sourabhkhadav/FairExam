@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../config/api';
 import { Send, CheckCircle2, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
@@ -35,7 +36,7 @@ const Examiner_ResultsPublishing = () => {
     const fetchExams = async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch('http://localhost:5000/api/exams/results/publishing', {
+            const response = await fetch(`${API_BASE_URL}/exams/results/publishing`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await response.json();
@@ -53,7 +54,7 @@ const Examiner_ResultsPublishing = () => {
         setSendingExamId(id);
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`http://localhost:5000/api/submissions/send-results/${id}`, {
+            const response = await fetch(`${API_BASE_URL}/submissions/send-results/${id}`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -153,10 +154,10 @@ const Examiner_ResultsPublishing = () => {
                                                             onClick={() => handlePublish(exam.id)}
                                                             disabled={!exam.isCalculated || sendingExamId === exam.id}
                                                             className={`px-6 py-2 font-medium text-[11px] rounded-lg transition-all shadow-sm flex items-center gap-2 cursor-pointer ${sendingExamId === exam.id
-                                                                    ? 'bg-slate-400 text-white cursor-not-allowed'
-                                                                    : exam.isCalculated
-                                                                        ? 'bg-[#0F172A] text-white hover:bg-[#1E293B]'
-                                                                        : 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                                                                ? 'bg-slate-400 text-white cursor-not-allowed'
+                                                                : exam.isCalculated
+                                                                    ? 'bg-[#0F172A] text-white hover:bg-[#1E293B]'
+                                                                    : 'bg-slate-100 text-slate-400 cursor-not-allowed'
                                                                 }`}
                                                         >
                                                             {sendingExamId === exam.id ? (

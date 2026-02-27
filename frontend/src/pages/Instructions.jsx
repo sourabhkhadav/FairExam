@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../config/api';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
     Shield, Clock, FileText, CheckSquare, ArrowRight,
@@ -84,7 +85,7 @@ const Instructions = () => {
 
                 // ── Check one-attempt gate ───────────────────────────────
                 const checkResponse = await fetch(
-                    `http://localhost:5000/api/submissions/check/${examId}/${candidateId}`
+                    `${API_BASE_URL}/submissions/check/${examId}/${candidateId}`
                 );
                 const checkData = await checkResponse.json();
 
@@ -95,7 +96,7 @@ const Instructions = () => {
                 }
 
                 // ── Load exam details ────────────────────────────────────
-                const response = await fetch(`http://localhost:5000/api/exams/public/${examId}`);
+                const response = await fetch(`${API_BASE_URL}/exams/public/${examId}`);
                 const data = await response.json();
 
                 if (data.success) {

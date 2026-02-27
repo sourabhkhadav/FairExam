@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../config/api';
 import {
     PlusCircle, ArrowLeft, AlertCircle, Calendar, Clock,
     Monitor, Shield, Eye, FileText, BarChart3, ChevronRight,
@@ -36,14 +37,14 @@ const Examiner_StudentViolations = () => {
     const fetchStudentViolations = async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch('http://localhost:5000/api/violations/all', {
+            const response = await fetch(`${API_BASE_URL}/violations/all`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await response.json();
-            
+
             if (data.success) {
                 const filtered = data.data.violations.filter(v => v.name === decodeURIComponent(id));
-                
+
                 if (filtered.length > 0) {
                     setStudentData({
                         name: filtered[0].name,
@@ -124,16 +125,15 @@ const Examiner_StudentViolations = () => {
                                 <div className="p-8">
                                     <div className="flex items-center justify-between mb-4">
                                         <div className="flex items-center gap-3">
-                                            <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                                                v.severity === 'High' ? 'bg-red-500 text-white' :
-                                                v.severity === 'Medium' ? 'bg-amber-500 text-white' :
-                                                'bg-blue-500 text-white'
-                                            }`}>
+                                            <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${v.severity === 'High' ? 'bg-red-500 text-white' :
+                                                    v.severity === 'Medium' ? 'bg-amber-500 text-white' :
+                                                        'bg-blue-500 text-white'
+                                                }`}>
                                                 {v.severity} Severity
                                             </span>
                                             <span className="text-xs font-semibold text-[#64748B]">{v.time}</span>
                                         </div>
-                                        <button 
+                                        <button
                                             onClick={(e) => {
                                                 e.preventDefault();
                                                 console.log('Violation data:', v);
@@ -153,7 +153,7 @@ const Examiner_StudentViolations = () => {
                                             View Clip
                                         </button>
                                     </div>
-                                    
+
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                                         <div className="bg-white p-4 rounded-lg border border-slate-200 hover:shadow-sm transition-all">
                                             <div className="flex items-center gap-2 mb-2">
@@ -214,7 +214,7 @@ const Examiner_StudentViolations = () => {
                 </div>
 
                 {selectedScreenshot && (
-                    <div 
+                    <div
                         className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-50 p-4"
                         onClick={() => setSelectedScreenshot(null)}
                     >
@@ -238,9 +238,9 @@ const Examiner_StudentViolations = () => {
                             </div>
                             <div className="p-6 bg-slate-50">
                                 {selectedScreenshot && selectedScreenshot !== 'placeholder' ? (
-                                    <img 
-                                        src={selectedScreenshot} 
-                                        alt="Violation screenshot" 
+                                    <img
+                                        src={selectedScreenshot}
+                                        alt="Violation screenshot"
                                         className="w-full h-auto rounded-2xl shadow-lg border-4 border-white max-h-[70vh] object-contain"
                                         onError={(e) => {
                                             console.error('Image failed to load:', selectedScreenshot);
@@ -249,7 +249,7 @@ const Examiner_StudentViolations = () => {
                                         }}
                                     />
                                 ) : null}
-                                <div className="w-full h-96 bg-slate-200 rounded-2xl items-center justify-center" style={{display: selectedScreenshot === 'placeholder' ? 'flex' : 'none'}}>
+                                <div className="w-full h-96 bg-slate-200 rounded-2xl items-center justify-center" style={{ display: selectedScreenshot === 'placeholder' ? 'flex' : 'none' }}>
                                     <div className="text-center">
                                         <Camera className="w-16 h-16 text-slate-400 mx-auto mb-4" />
                                         <p className="text-slate-600 font-semibold text-lg">No screenshot available</p>

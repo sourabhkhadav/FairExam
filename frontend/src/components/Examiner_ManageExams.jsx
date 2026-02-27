@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../config/api';
 import {
     LayoutDashboard, PlusCircle, BookOpen, Monitor,
     AlertCircle, FileCheck, BarChart3, UserCircle, Shield,
@@ -17,7 +18,7 @@ const Examiner_ManageExams = () => {
     const fetchExams = async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch('http://localhost:5000/api/exams', {
+            const response = await fetch(`${API_BASE_URL}/exams`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -49,7 +50,7 @@ const Examiner_ManageExams = () => {
                     // Fetch candidate count
                     let candidateCount = 0;
                     try {
-                        const candidateResponse = await fetch(`http://localhost:5000/api/candidates/exam/${e._id}`, {
+                        const candidateResponse = await fetch(`${API_BASE_URL}/candidates/exam/${e._id}`, {
                             headers: { 'Authorization': `Bearer ${token}` }
                         });
                         const candidateData = await candidateResponse.json();
@@ -134,7 +135,7 @@ const Examiner_ManageExams = () => {
                                 const token = localStorage.getItem('token');
                                 if (isPublishedOrScheduled) {
                                     try {
-                                        await fetch(`http://localhost:5000/api/email/cancel-exam/${id}`, {
+                                        await fetch(`${API_BASE_URL}/email/cancel-exam/${id}`, {
                                             method: 'POST',
                                             headers: { 'Authorization': `Bearer ${token}` }
                                         });
@@ -142,7 +143,7 @@ const Examiner_ManageExams = () => {
                                         console.error('Failed to send cancellation emails:', emailError);
                                     }
                                 }
-                                const response = await fetch(`http://localhost:5000/api/exams/${id}`, {
+                                const response = await fetch(`${API_BASE_URL}/exams/${id}`, {
                                     method: 'DELETE',
                                     headers: { 'Authorization': `Bearer ${token}` }
                                 });
@@ -230,10 +231,10 @@ const Examiner_ManageExams = () => {
                                     <div className="flex flex-wrap items-center gap-3">
                                         <h3 className="text-lg sm:text-[19px] font-medium text-[#0F172A]">{exam.title}</h3>
                                         <span className={`px-3 py-1 rounded-full text-[10px] sm:text-[12px] font-medium ${exam.status === 'Scheduled' ? 'bg-[#F0F9FF] text-[#0369A1] border border-[#BAE6FD]' :
-                                                exam.status === 'Live' ? 'bg-[#DCFCE7] text-[#15803D] border border-[#BBF7D0]' :
-                                                    exam.status === 'Public' ? 'bg-[#F0FDF4] text-[#15803D] border border-[#BBF7D0]' :
-                                                        exam.status === 'Finished' ? 'bg-[#F8FAFC] text-[#64748B] border border-[#E2E8F0]' :
-                                                            'bg-orange-50 text-orange-700 border border-orange-200'
+                                            exam.status === 'Live' ? 'bg-[#DCFCE7] text-[#15803D] border border-[#BBF7D0]' :
+                                                exam.status === 'Public' ? 'bg-[#F0FDF4] text-[#15803D] border border-[#BBF7D0]' :
+                                                    exam.status === 'Finished' ? 'bg-[#F8FAFC] text-[#64748B] border border-[#E2E8F0]' :
+                                                        'bg-orange-50 text-orange-700 border border-orange-200'
                                             }`}>
                                             {exam.status}
                                         </span>

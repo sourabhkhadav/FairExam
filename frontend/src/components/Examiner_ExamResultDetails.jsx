@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../config/api';
 import {
     ChevronLeft, Search, Filter, ArrowUpDown, MoreHorizontal,
     UserCheck, UserX, BarChart3, PieChart, TrendingUp, CheckCircle,
@@ -39,7 +40,7 @@ const Examiner_ExamResultDetails = () => {
     const fetchExamResults = async () => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`http://localhost:5000/api/exams/${examId}/results`, {
+            const response = await fetch(`${API_BASE_URL}/exams/${examId}/results`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await response.json();
@@ -65,7 +66,7 @@ const Examiner_ExamResultDetails = () => {
         setExporting(true);
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`http://localhost:5000/api/exams/${examId}/results/export`, {
+            const response = await fetch(`${API_BASE_URL}/exams/${examId}/results/export`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
@@ -90,7 +91,7 @@ const Examiner_ExamResultDetails = () => {
         setSending(true);
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch(`http://localhost:5000/api/submissions/send-results/${examId}`, {
+            const response = await fetch(`${API_BASE_URL}/submissions/send-results/${examId}`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,

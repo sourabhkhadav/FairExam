@@ -1,4 +1,5 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
+import { API_BASE_URL } from '../config/api';
 import Webcam from 'react-webcam';
 import * as faceapi from 'face-api.js';
 import { Camera, CameraOff, AlertTriangle, Users, EyeOff, Activity } from 'lucide-react';
@@ -393,7 +394,7 @@ const LiveCameraMonitor = ({ onViolationUpdate, candidateId, candidateName, exam
                 return null;
             }
 
-            const uploadResponse = await fetch('http://localhost:5000/api/violations/upload-screenshot', {
+            const uploadResponse = await fetch(`${API_BASE_URL}/violations/upload-screenshot`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -460,7 +461,7 @@ const LiveCameraMonitor = ({ onViolationUpdate, candidateId, candidateName, exam
             // Only send the screenshot and violationType — do NOT send violationCount here
             // because it would overwrite sound/fullscreen counts to 0.
             // The final accurate counts for all three types are sent by handleSubmit().
-            await fetch('http://localhost:5000/api/violations/record', {
+            await fetch(`${API_BASE_URL}/violations/record`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

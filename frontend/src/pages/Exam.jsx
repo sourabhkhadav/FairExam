@@ -46,6 +46,7 @@ const Exam = () => {
     const [violationLimits, setViolationLimits] = useState({ faceLimit: 5, soundLimit: 5, fullscreenLimit: 5 });
     const [showViolationAutoSubmitModal, setShowViolationAutoSubmitModal] = useState(false);
     const [violationAutoSubmitMessage, setViolationAutoSubmitMessage] = useState('');
+    const [autoSubmitCountdown, setAutoSubmitCountdown] = useState(3);
 
     useEffect(() => {
         if (!examId || !candidateId) {
@@ -114,9 +115,10 @@ const Exam = () => {
         if (isSubmittingRef.current) return;
         const count = violationsList.length;
         setFaceViolations(count);
+        faceViolationsRef.current = count;
         if (count >= violationLimits.faceLimit) {
-            setViolationAutoSubmitMessage('Face detection violation limit exceeded. Your exam has been auto-submitted.');
-            setShowViolationAutoSubmitModal(true);
+            // High violation: show warning, then auto-submit (use ref for latest function)
+            if (triggerViolationAutoSubmitRef.current) triggerViolationAutoSubmitRef.current('Face detection violation limit exceeded. Your exam is being auto-submitted.');
         }
     };
 
@@ -169,6 +171,7 @@ const Exam = () => {
 
                         setSoundViolations(prev => {
                             const newCount = prev + 1;
+                            soundViolationsRef.current = newCount;
                             toast.error(`🔊 Sound detected! Violation #${newCount}/${violationLimits.soundLimit}`, {
                                 id: 'sound-warning',
                                 duration: 500,
@@ -176,8 +179,8 @@ const Exam = () => {
                             console.log('🔊 SOUND! Level:', average.toFixed(2), 'Threshold:', threshold.toFixed(2));
                             // Trigger auto-submit if sound violation limit reached
                             if (newCount >= violationLimits.soundLimit) {
-                                setViolationAutoSubmitMessage('Sound detection violation limit exceeded. Your exam has been auto-submitted.');
-                                setShowViolationAutoSubmitModal(true);
+                                // High violation: show warning, then auto-submit (use ref for latest function)
+                                if (triggerViolationAutoSubmitRef.current) triggerViolationAutoSubmitRef.current('Sound detection violation limit exceeded. Your exam is being auto-submitted.');
                             }
                             return newCount;
                         });
@@ -250,11 +253,17 @@ const Exam = () => {
 
             setViolations(prev => {
                 const newCount = prev + 1;
+                violationsRef.current = newCount;
                 playWarningSound();
                 toast.error(`⚠️ ${message} Violation #${newCount}/${violationLimits.fullscreenLimit}`, {
                     id: 'violation',
                     duration: 500,
                 });
+                // Trigger auto-submit if fullscreen violation limit reached
+                if (newCount >= violationLimits.fullscreenLimit) {
+                    // High violation: show warning, then auto-submit (use ref for latest function)
+                    if (triggerViolationAutoSubmitRef.current) triggerViolationAutoSubmitRef.current('Fullscreen exit violation limit exceeded. Your exam is being auto-submitted.');
+                }
                 return newCount;
             });
 
@@ -312,7 +321,8 @@ const Exam = () => {
             setTimeLeft((prev) => {
                 if (prev <= 1) {
                     clearInterval(timer);
-                    handleSubmit();
+                    // Use ref to call fresh handleSubmit
+                    if (handleSubmitRef.current) handleSubmitRef.current();
                     return 0;
                 }
                 return prev - 1;
@@ -339,6 +349,43 @@ const Exam = () => {
     const calibrationDoneRef = useRef(false);
     const isSubmittingRef = useRef(false); // Guard: prevent duplicate submissions
     const navigatingRef = useRef(false);   // Guard: prevent fullscreen modal after redirect
+    const handleSubmitRef = useRef(null);  // Always points to latest handleSubmit
+    const triggerViolationAutoSubmitRef = useRef(null); // Always points to latest triggerViolationAutoSubmit
+
+    // Refs to track latest violation counts (state may not be flushed when handleSubmit is called from setState)
+    const faceViolationsRef = useRef(0);
+    const soundViolationsRef = useRef(0);
+    const violationsRef = useRef(0);
+
+    // Trigger violation auto-submit: show warning modal, then auto-submit after 3 seconds
+    const triggerViolationAutoSubmit = (message) => {
+        if (isSubmittingRef.current) return; // already submitting
+        setViolationAutoSubmitMessage(message);
+        setShowViolationAutoSubmitModal(true);
+        setAutoSubmitCountdown(3);
+    };
+
+    // Keep refs always pointing to the latest versions
+    triggerViolationAutoSubmitRef.current = triggerViolationAutoSubmit;
+
+    // Auto-submit countdown when violation modal is shown
+    useEffect(() => {
+        if (!showViolationAutoSubmitModal) return;
+
+        const countdownTimer = setInterval(() => {
+            setAutoSubmitCountdown(prev => {
+                if (prev <= 1) {
+                    clearInterval(countdownTimer);
+                    // Use ref to call fresh handleSubmit
+                    if (handleSubmitRef.current) handleSubmitRef.current();
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000);
+
+        return () => clearInterval(countdownTimer);
+    }, [showViolationAutoSubmitModal]);
 
     if (loading) {
         return (
@@ -452,9 +499,14 @@ const Exam = () => {
             const submitData = await submitRes.json();
             console.log('✅ Submit response:', submitData);
 
-            // Record violations if any exist
-            if (faceViolations > 0 || soundViolations > 0 || violations > 0) {
-                await fetch(`${API_BASE_URL}/violations/record`, {
+            // Record violations if any exist — use refs for latest counts
+            const finalFace = faceViolationsRef.current;
+            const finalSound = soundViolationsRef.current;
+            const finalFullscreen = violationsRef.current;
+            console.log(`📊 Final violation counts — Face: ${finalFace}, Sound: ${finalSound}, Fullscreen: ${finalFullscreen}`);
+
+            if (finalFace > 0 || finalSound > 0 || finalFullscreen > 0) {
+                const violationRes = await fetch(`${API_BASE_URL}/violations/record`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -464,27 +516,32 @@ const Exam = () => {
                         examName,
                         violationType: 'face',
                         violationCount: {
-                            faceDetection: faceViolations,
-                            soundDetection: soundViolations,
-                            fullscreenExit: violations,
+                            faceDetection: finalFace,
+                            soundDetection: finalSound,
+                            fullscreenExit: finalFullscreen,
                             tabSwitch: 0
                         }
                     })
-                }).catch(() => { }); // don't block navigation on violation record failure
+                });
+                const violationData = await violationRes.json();
+                console.log('✅ Violation record response:', violationData);
             }
 
-            // 🎉 Success — clear storage and redirect
+            // 🎉 Success — clear storage, dismiss ALL toasts, and redirect cleanly
             localStorage.clear();
-            toast.success('✅ Exam submitted successfully!', { duration: 2000, style: { background: '#16a34a', color: '#fff', fontWeight: 'bold' } });
+            toast.dismiss(); // Kill any toasts created during async submission
             navigate('/');
         } catch (error) {
             console.error('Submit error:', error);
             // Even on error, exit cleanly
             localStorage.clear();
-            toast.error('Submission failed, redirecting...', { duration: 1500 });
+            toast.dismiss();
             navigate('/');
         }
     };
+
+    // Keep handleSubmitRef always pointing to the latest handleSubmit
+    handleSubmitRef.current = handleSubmit;
 
     const getStatusColor = (id) => {
         const status = questionStatus[id];
@@ -826,45 +883,40 @@ const Exam = () => {
                 </div>
             )}
 
-            {/* Violation Auto-Submit Modal */}
+            {/* Violation Auto-Submit Modal — shows warning with 3s countdown */}
             {showViolationAutoSubmitModal && (
                 <div className="fixed inset-0 bg-red-900/95 backdrop-blur-md z-[9999] flex items-center justify-center p-4">
                     <div className="bg-white rounded-xl shadow-2xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in-95 duration-200">
                         <div className="bg-red-600 p-6 text-center">
                             <AlertTriangle className="h-14 w-14 text-white mx-auto mb-3 animate-pulse" />
-                            <h3 className="text-2xl font-bold text-white">Exam Auto-Submitted</h3>
+                            <h3 className="text-2xl font-bold text-white">⚠️ Violation Limit Crossed!</h3>
                         </div>
                         <div className="p-8 text-center">
                             <p className="text-lg font-semibold text-slate-900 mb-3">
-                                Due to violations, your exam has been auto-submitted.
+                                You have crossed the violation limit.
                             </p>
-                            <p className="text-sm text-slate-600 mb-6">
+                            <p className="text-sm text-slate-600 mb-4">
                                 {violationAutoSubmitMessage}
                             </p>
-                            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-5">
                                 <div className="flex justify-center gap-6 text-xs font-semibold text-red-700">
                                     <span>Face: {faceViolations}/{violationLimits.faceLimit}</span>
                                     <span>Sound: {soundViolations}/{violationLimits.soundLimit}</span>
                                     <span>Fullscreen: {violations}/{violationLimits.fullscreenLimit}</span>
                                 </div>
                             </div>
+                            <div className="bg-amber-50 border border-amber-300 rounded-lg p-4 mb-6">
+                                <p className="text-amber-800 font-bold text-lg">
+                                    Auto-submitting in {autoSubmitCountdown} second{autoSubmitCountdown !== 1 ? 's' : ''}...
+                                </p>
+                            </div>
                             <button
-                                onClick={async () => {
-                                    // Mark navigating immediately so fullscreen handler is suppressed
-                                    navigatingRef.current = true;
-                                    setShowViolationAutoSubmitModal(false);
-                                    // Exit fullscreen silently
-                                    if (document.fullscreenElement) {
-                                        await document.exitFullscreen().catch(() => { });
-                                    }
-                                    // Submit in background (fire and forget) then go to landing
-                                    handleSubmit();
-                                    localStorage.clear();
-                                    navigate('/');
+                                onClick={() => {
+                                    if (handleSubmitRef.current) handleSubmitRef.current();
                                 }}
                                 className="w-full px-6 py-3 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 transition-colors shadow-lg text-lg"
                             >
-                                OK
+                                Submit Now
                             </button>
                         </div>
                     </div>

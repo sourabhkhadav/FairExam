@@ -441,40 +441,179 @@ export const sendExamResult = async (to, resultDetails) => {
 // Send detailed exam result with violations
 export const sendDetailedExamResult = async (to, resultDetails) => {
     const {
-        examTitle, candidateName, score, totalMarks, percentage, timeTaken,
-        isPassed, passingPercentage, totalViolations, violations, submittedAt
+        examTitle, candidateName, candidateId, score, totalMarks, percentage, timeTaken,
+        isPassed, failReason, passingPercentage, violationLevel, violationCounts, screenshotUrl, submittedAt
     } = resultDetails;
-
-    const formatTime = (timeValue) => {
-        const seconds = timeValue > 10000 ? Math.floor(timeValue / 1000) : timeValue;
-        const mins = Math.floor(seconds / 60);
-        const secs = seconds % 60;
-        return mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
-    };
 
     const formatDate = (date) => {
         return new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     };
 
-    const requiredMarks = Math.ceil((passingPercentage / 100) * totalMarks);
+    const isCheating = failReason === 'cheating';
 
-    const getViolationCounts = () => {
-        if (!violations || violations.length === 0) return { face: 0, sound: 0, fullscreen: 0 };
-        return violations.reduce((acc, v) => {
-            const counts = v.count || {};
-            acc.face += counts.faceDetection || 0;
-            acc.sound += counts.soundDetection || 0;
-            acc.fullscreen += counts.fullscreenExit || 0;
-            return acc;
-        }, { face: 0, sound: 0, fullscreen: 0 });
-    };
+    // Build email content based on outcome
+    let subjectLine, bannerBg, bannerText, bodyContent;
 
-    const violationCounts = getViolationCounts();
+    if (isPassed) {
+        // ======== PASS EMAIL: No marks, just "Ready for next round" ========
+        subjectLine = `✅ Exam Results: ${examTitle} — Ready for Next Round`;
+        bannerBg = '#dcfce7';
+        bannerText = 'Congratulations! You are ready for the Next Round 🎉';
+
+        bodyContent = `
+                            <!-- Student Info -->
+                            <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 16px 0">
+                                <tr>
+                                    <td style="font-size:12px;color:#64748b;padding:0 8px 0 0">
+                                        <strong style="color:#0f172a">${candidateName}</strong>
+                                    </td>
+                                    <td style="font-size:12px;color:#64748b;padding:0 8px">
+                                        ${examTitle}
+                                    </td>
+                                    <td style="font-size:12px;color:#64748b;padding:0 0 0 8px;text-align:right">
+                                        ${formatDate(submittedAt)}
+                                    </td>
+                                </tr>
+                            </table>
+                            <!-- Candidate ID -->
+                            <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0fdf4;border-radius:8px;margin:0 0 16px 0">
+                                <tr>
+                                    <td style="padding:14px;text-align:center;border-right:1px solid #bbf7d0">
+                                        <div style="font-size:11px;color:#065f46;margin:0 0 4px 0">Candidate ID</div>
+                                        <div style="font-size:16px;font-weight:700;color:#064e3b">${candidateId || 'N/A'}</div>
+                                    </td>
+                                    <td style="padding:14px;text-align:center;border-right:1px solid #bbf7d0">
+                                        <div style="font-size:11px;color:#065f46;margin:0 0 4px 0">Exam</div>
+                                        <div style="font-size:16px;font-weight:700;color:#064e3b">${examTitle}</div>
+                                    </td>
+                                    <td style="padding:14px;text-align:center">
+                                        <div style="font-size:11px;color:#065f46;margin:0 0 4px 0">Status</div>
+                                        <div style="font-size:16px;font-weight:700;color:#059669">✅ Qualified</div>
+                                    </td>
+                                </tr>
+                            </table>
+                            <!-- Message -->
+                            <div style="background:#ecfdf5;border-left:3px solid #10b981;padding:14px;border-radius:6px;margin:0">
+                                <div style="font-size:14px;color:#065f46;line-height:1.6;margin:0">
+                                    🎉 <strong>Great work, ${candidateName}!</strong> You have successfully cleared this round. 
+                                    Stay prepared for the next round — further details will be communicated soon.
+                                </div>
+                            </div>`;
+
+    } else if (isCheating) {
+        // ======== FAIL EMAIL (CHEATING): Show cheating reason + screenshot ========
+        subjectLine = `🚫 Exam Results: ${examTitle} — Disqualified`;
+        bannerBg = '#fecaca';
+        bannerText = '⚠️ Disqualified — Cheating Detected';
+
+        const violationBreakdown = violationCounts ? `
+                            <div style="font-size:12px;color:#7f1d1d;background:#fef2f2;padding:10px 14px;border-radius:6px;margin:0 0 14px 0">
+                                <strong>Violation Breakdown:</strong> Face: ${violationCounts.faceDetection || 0} | Sound: ${violationCounts.soundDetection || 0} | Fullscreen: ${violationCounts.fullscreenExit || 0} | Tab Switch: ${violationCounts.tabSwitch || 0}
+                            </div>` : '';
+
+        const screenshotSection = screenshotUrl ? `
+                            <div style="margin:0 0 14px 0;text-align:center">
+                                <div style="font-size:11px;color:#7f1d1d;text-transform:uppercase;letter-spacing:0.8px;font-weight:600;margin:0 0 8px 0">📸 Violation Screenshot</div>
+                                <img src="${screenshotUrl}" alt="Violation Screenshot" style="max-width:100%;border-radius:8px;border:2px solid #fecaca" />
+                            </div>` : '';
+
+        bodyContent = `
+                            <!-- Student Info -->
+                            <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 16px 0">
+                                <tr>
+                                    <td style="font-size:12px;color:#64748b;padding:0 8px 0 0">
+                                        <strong style="color:#0f172a">${candidateName}</strong>
+                                    </td>
+                                    <td style="font-size:12px;color:#64748b;padding:0 8px">
+                                        ${examTitle}
+                                    </td>
+                                    <td style="font-size:12px;color:#64748b;padding:0 0 0 8px;text-align:right">
+                                        ${formatDate(submittedAt)}
+                                    </td>
+                                </tr>
+                            </table>
+                            <!-- Disqualification Card -->
+                            <table width="100%" cellpadding="0" cellspacing="0" style="background:#fef2f2;border:2px solid #ef4444;border-radius:8px;margin:0 0 14px 0">
+                                <tr>
+                                    <td style="padding:16px;text-align:center">
+                                        <div style="font-size:11px;color:#7f1d1d;margin:0 0 4px 0">Result</div>
+                                        <div style="font-size:20px;font-weight:700;color:#dc2626">DISQUALIFIED</div>
+                                        <div style="font-size:13px;color:#991b1b;margin:6px 0 0 0">Reason: Cheating / High Violation Level</div>
+                                    </td>
+                                </tr>
+                            </table>
+                            ${violationBreakdown}
+                            ${screenshotSection}
+                            <!-- Message -->
+                            <div style="background:#fef2f2;border-left:3px solid #ef4444;padding:14px;border-radius:6px;margin:0">
+                                <div style="font-size:13px;color:#991b1b;line-height:1.6;margin:0">
+                                    Your exam has been flagged for <strong>cheating</strong> due to high violation activity detected during proctoring. 
+                                    This decision is final. If you believe this was an error, please contact the examiner.
+                                </div>
+                            </div>`;
+
+    } else {
+        // ======== FAIL EMAIL (MARKS NOT SUFFICIENT): Show marks info ========
+        subjectLine = `📋 Exam Results: ${examTitle}`;
+        bannerBg = '#fed7aa';
+        bannerText = 'You did not pass this time';
+
+        const requiredMarks = Math.ceil((passingPercentage / 100) * totalMarks);
+
+        const violationSection = (violationLevel && violationLevel !== 'None' && violationCounts) ? `
+                            <div style="font-size:12px;color:#7f1d1d;background:#fef2f2;padding:10px 14px;border-radius:6px;margin:0 0 14px 0">
+                                <strong>Proctoring Flags (${violationLevel}):</strong> Face: ${violationCounts.faceDetection || 0} | Sound: ${violationCounts.soundDetection || 0} | Fullscreen: ${violationCounts.fullscreenExit || 0} | Tab Switch: ${violationCounts.tabSwitch || 0}
+                            </div>` : '';
+
+        bodyContent = `
+                            <!-- Student Info -->
+                            <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 16px 0">
+                                <tr>
+                                    <td style="font-size:12px;color:#64748b;padding:0 8px 0 0">
+                                        <strong style="color:#0f172a">${candidateName}</strong>
+                                    </td>
+                                    <td style="font-size:12px;color:#64748b;padding:0 8px">
+                                        ${examTitle}
+                                    </td>
+                                    <td style="font-size:12px;color:#64748b;padding:0 0 0 8px;text-align:right">
+                                        ${formatDate(submittedAt)}
+                                    </td>
+                                </tr>
+                            </table>
+                            <!-- Performance Card -->
+                            <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;border-radius:8px;margin:0 0 14px 0">
+                                <tr>
+                                    <td style="padding:14px;text-align:center;border-right:1px solid #e2e8f0">
+                                        <div style="font-size:11px;color:#64748b;margin:0 0 4px 0">Score</div>
+                                        <div style="font-size:18px;font-weight:700;color:#0f172a">${score}/${totalMarks}</div>
+                                    </td>
+                                    <td style="padding:14px;text-align:center;border-right:1px solid #e2e8f0">
+                                        <div style="font-size:11px;color:#64748b;margin:0 0 4px 0">Percentage</div>
+                                        <div style="font-size:18px;font-weight:700;color:#dc2626">${percentage}%</div>
+                                    </td>
+                                    <td style="padding:14px;text-align:center;border-right:1px solid #e2e8f0">
+                                        <div style="font-size:11px;color:#64748b;margin:0 0 4px 0">Passing</div>
+                                        <div style="font-size:18px;font-weight:700;color:#0f172a">${passingPercentage}%</div>
+                                    </td>
+                                    <td style="padding:14px;text-align:center">
+                                        <div style="font-size:11px;color:#64748b;margin:0 0 4px 0">Required</div>
+                                        <div style="font-size:18px;font-weight:700;color:#dc2626">${requiredMarks}</div>
+                                    </td>
+                                </tr>
+                            </table>
+                            ${violationSection}
+                            <!-- Message -->
+                            <div style="background:#fff7ed;border-left:3px solid #f97316;padding:14px;border-radius:6px;margin:0">
+                                <div style="font-size:13px;color:#9a3412;line-height:1.6;margin:0">
+                                    Don't worry — you can improve in the next attempt. Keep practicing and you'll do better next time!
+                                </div>
+                            </div>`;
+    }
 
     const mailOptions = {
         from: process.env.EMAIL_FROM || 'FairExam <sourabhkhadav2@gmail.com>',
         to,
-        subject: `${isPassed ? '🎉' : '📋'} Exam Results: ${examTitle}`,
+        subject: subjectLine,
         html: `
 <!DOCTYPE html>
 <html>
@@ -496,64 +635,16 @@ export const sendDetailedExamResult = async (to, resultDetails) => {
                     </tr>
                     <!-- Status Banner -->
                     <tr>
-                        <td style="background:${isPassed ? '#dcfce7' : '#fed7aa'};padding:12px 20px;text-align:center">
-                            <div style="font-size:15px;font-weight:600;color:${isPassed ? '#065f46' : '#9a3412'};margin:0">
-                                ${isPassed ? 'Congratulations! You Passed 🎉' : 'You did not pass this time'}
+                        <td style="background:${bannerBg};padding:14px 20px;text-align:center">
+                            <div style="font-size:15px;font-weight:600;color:${isPassed ? '#065f46' : isCheating ? '#7f1d1d' : '#9a3412'};margin:0">
+                                ${bannerText}
                             </div>
                         </td>
                     </tr>
                     <!-- Content -->
                     <tr>
                         <td style="padding:20px">
-                            <!-- Student Info Row -->
-                            <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 16px 0">
-                                <tr>
-                                    <td style="font-size:12px;color:#64748b;padding:0 8px 0 0">
-                                        <strong style="color:#0f172a">${candidateName}</strong>
-                                    </td>
-                                    <td style="font-size:12px;color:#64748b;padding:0 8px">
-                                        ${examTitle}
-                                    </td>
-                                    <td style="font-size:12px;color:#64748b;padding:0 0 0 8px;text-align:right">
-                                        ${formatDate(submittedAt)}
-                                    </td>
-                                </tr>
-                            </table>
-                            <!-- Performance Card -->
-                            <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;border-radius:8px;margin:0 0 12px 0">
-                                <tr>
-                                    <td style="padding:14px;text-align:center;border-right:1px solid #e2e8f0">
-                                        <div style="font-size:11px;color:#64748b;margin:0 0 4px 0">Score</div>
-                                        <div style="font-size:18px;font-weight:700;color:#0f172a">${score}/${totalMarks}</div>
-                                    </td>
-                                    <td style="padding:14px;text-align:center;border-right:1px solid #e2e8f0">
-                                        <div style="font-size:11px;color:#64748b;margin:0 0 4px 0">Percentage</div>
-                                        <div style="font-size:18px;font-weight:700;color:${isPassed ? '#059669' : '#dc2626'}">${percentage}%</div>
-                                    </td>
-                                    <td style="padding:14px;text-align:center${!isPassed ? ';border-right:1px solid #e2e8f0' : ''}">
-                                        <div style="font-size:11px;color:#64748b;margin:0 0 4px 0">Passing</div>
-                                        <div style="font-size:18px;font-weight:700;color:#0f172a">${passingPercentage}%</div>
-                                    </td>
-                                    ${!isPassed ? `
-                                    <td style="padding:14px;text-align:center">
-                                        <div style="font-size:11px;color:#64748b;margin:0 0 4px 0">Required</div>
-                                        <div style="font-size:18px;font-weight:700;color:#dc2626">${requiredMarks}</div>
-                                    </td>
-                                    ` : ''}
-                                </tr>
-                            </table>
-                            ${!isPassed && totalViolations > 0 ? `
-                            <!-- Violations -->
-                            <div style="font-size:11px;color:#7f1d1d;background:#fef2f2;padding:8px 12px;border-radius:6px;margin:0 0 12px 0">
-                                <strong>Proctoring Flags:</strong> Face: ${violationCounts.face} | Sound: ${violationCounts.sound} | Fullscreen: ${violationCounts.fullscreen}
-                            </div>
-                            ` : ''}
-                            <!-- Message -->
-                            <div style="background:${isPassed ? '#ecfdf5' : '#fff7ed'};border-left:3px solid ${isPassed ? '#10b981' : '#f97316'};padding:12px;border-radius:6px;margin:0">">
-                                <div style="font-size:13px;color:${isPassed ? '#065f46' : '#9a3412'};line-height:1.5;margin:0">
-                                    ${isPassed ? 'Great work! Keep achieving more.' : "Don't worry — you can improve in the next attempt."}
-                                </div>
-                            </div>
+                            ${bodyContent}
                         </td>
                     </tr>
                     <!-- Footer -->

@@ -363,6 +363,33 @@ function Landing_Home() {
                         </div>
                     </div>
 
+                    {/* Organization Logos Strip */}
+                    <div className="py-12">
+                        <p className="text-center text-xs font-black tracking-[0.3em] uppercase text-slate-400 mb-10">Trusted by leading organizations worldwide</p>
+                        <div className="flex flex-wrap items-center justify-center gap-8 md:gap-12">
+                            {[
+                                { name: 'Wipro', logo: 'https://upload.wikimedia.org/wikipedia/commons/a/a0/Wipro_Primary_Logo_Color_RGB.svg', color: '#431D7E' },
+                                { name: 'SAP', logo: 'https://upload.wikimedia.org/wikipedia/commons/5/59/SAP_2011_logo.svg', color: '#0070F2' },
+                                { name: 'Infosys', logo: 'https://upload.wikimedia.org/wikipedia/commons/9/95/Infosys_logo.svg', color: '#007CC3' },
+                                { name: 'Accenture', logo: 'https://upload.wikimedia.org/wikipedia/commons/c/cd/Accenture.svg', color: '#A100FF' },
+                                { name: 'Google', logo: 'https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg', color: '#4285F4' },
+                                { name: 'Microsoft', logo: 'https://upload.wikimedia.org/wikipedia/commons/9/96/Microsoft_logo_%282012%29.svg', color: '#00A4EF' },
+                            ].map((org) => (
+                                <div
+                                    key={org.name}
+                                    className="group flex items-center justify-center px-6 py-4 rounded-2xl hover:bg-white hover:shadow-xl hover:shadow-slate-200/60 hover:scale-110 transition-all duration-500 cursor-pointer"
+                                    title={org.name}
+                                >
+                                    <img
+                                        src={org.logo}
+                                        alt={org.name}
+                                        className="h-8 md:h-10 w-auto object-contain transition-all duration-500 group-hover:scale-110"
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                         <TestimonialCard
                             quote="The AI proctoring is remarkably accurate. It has completely transformed our remote examination process."

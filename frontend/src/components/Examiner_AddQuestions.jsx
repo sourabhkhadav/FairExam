@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
     ArrowLeft, Plus, Trash2, CheckCircle2, Save, Send,
     Settings2, HelpCircle, GripVertical, Sparkles,
-    ChevronRight, Layout, ListTodo, BrainCircuit,
+    ChevronRight, ChevronDown, Layout, ListTodo, BrainCircuit,
     Search, Zap, MoreHorizontal, Copy, Eye,
     Target, Clock, BarChart, Info, AlertTriangle, Pencil
 } from 'lucide-react';
@@ -20,6 +20,7 @@ const Examiner_AddQuestions = () => {
         { id: 0, name: 'Section 1' }
     ]);
     const [questions, setQuestions] = useState([]);
+    const [collapsedSections, setCollapsedSections] = useState({});
 
     useEffect(() => {
         const draftStr = localStorage.getItem('examDraft');

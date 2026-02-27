@@ -26,6 +26,7 @@ const Examiner_DraftConfigure = () => {
     const [isPublishing, setIsPublishing] = useState(false);
     const [isAddingCandidate, setIsAddingCandidate] = useState(false);
     const [candidateCount, setCandidateCount] = useState(0);
+    const [isUploading, setIsUploading] = useState(false);
 
     const [examData, setExamData] = useState({
         title: '',
@@ -152,6 +153,43 @@ const Examiner_DraftConfigure = () => {
             toast.error('Failed to add candidate');
         } finally {
             setIsAddingCandidate(false);
+        }
+    };
+
+    const handleExcelUpload = async (file) => {
+        if (!file) return;
+
+        setIsUploading(true);
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('examId', id || 'temp-exam-id');
+
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch('http://localhost:5000/api/candidates/upload', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                updateField('candidateFile', file.name);
+                fetchCandidateCount();
+                toast.success(`${data.message}`);
+                if (data.warnings && data.warnings.length > 0) {
+                    toast(`⚠️ ${data.warnings.length} rows were skipped`, { icon: '⚠️', duration: 5000 });
+                }
+            } else {
+                toast.error(data.message || 'Wrong Format! Please use correct Excel format with columns: name, mobileNumber, email');
+            }
+        } catch (error) {
+            toast.error(`Upload failed: ${error.message}`);
+        } finally {
+            setIsUploading(false);
         }
     };
 
@@ -376,43 +414,30 @@ const Examiner_DraftConfigure = () => {
                                 <input
                                     type="file"
                                     accept=".csv,.xlsx,.xls"
-                                    onChange={async (e) => {
+                                    onChange={(e) => {
                                         const file = e.target.files[0];
-                                        if (file) {
-                                            const formData = new FormData();
-                                            formData.append('file', file);
-                                            formData.append('examId', id || 'temp-exam-id');
-
-                                            try {
-                                                const response = await fetch('http://localhost:5000/api/candidates/upload', {
-                                                    method: 'POST',
-                                                    body: formData
-                                                });
-
-                                                const data = await response.json();
-
-                                                if (data.success) {
-                                                    updateField('candidateFile', file.name);
-                                                    // Refresh real count from server
-                                                    fetchCandidateCount();
-                                                    toast.success(`Successfully uploaded ${data.count} candidates!`);
-                                                } else {
-                                                    toast.error(`Error: ${data.message}`);
-                                                }
-                                            } catch (error) {
-                                                toast.error(`Upload failed: ${error.message}`);
-                                            }
-                                        }
+                                        if (file) handleExcelUpload(file);
+                                        e.target.value = '';
                                     }}
                                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                    disabled={isUploading}
                                 />
-                                <button type="button" className="w-full py-4 bg-white border border-[#E2E8F0] border-dashed rounded-2xl flex items-center justify-start px-5 gap-3 hover:bg-slate-50 transition-all">
-                                    <Database className="w-5 h-5 text-[#64748B]" />
+                                <button type="button" className={`w-full py-4 bg-white border border-[#E2E8F0] border-dashed rounded-2xl flex items-center justify-start px-5 gap-3 hover:bg-slate-50 transition-all ${isUploading ? 'opacity-50 cursor-wait' : ''}`}>
+                                    {isUploading ? (
+                                        <svg className="animate-spin w-5 h-5 text-[#64748B]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                    ) : (
+                                        <Database className="w-5 h-5 text-[#64748B]" />
+                                    )}
                                     <span className="text-[15px] font-medium text-[#0F172A]">
-                                        {examData.candidateFile?.endsWith('.csv') || examData.candidateFile?.endsWith('.xlsx') ? examData.candidateFile : 'Excel / CSV'}
+                                        {isUploading ? 'Uploading...' : (examData.candidateFile?.endsWith('.csv') || examData.candidateFile?.endsWith('.xlsx') ? examData.candidateFile : 'Upload Excel / CSV')}
                                     </span>
                                 </button>
                             </div>
+
+
 
                             {/* Manage Candidates (Replacing PDF List) */}
                             <button
@@ -697,6 +722,7 @@ const Examiner_DraftConfigure = () => {
                         </div>
                     )
                 }
+
             </div>
         </div>
     );

@@ -16,7 +16,7 @@ const AuthForm = ({ initialMode = 'login' }) => {
     const [forgotEmail, setForgotEmail] = useState('');
     const [otp, setOtp] = useState('');
     const [newPassword, setNewPassword] = useState('');
-
+//just a comment to test commit
     const [formData, setFormData] = useState({
         name: '',
         email: '',

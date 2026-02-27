@@ -21,6 +21,7 @@ const Examiner_AddQuestions = () => {
     ]);
     const [questions, setQuestions] = useState([]);
     const [collapsedSections, setCollapsedSections] = useState({});
+    const [editingSectionId, setEditingSectionId] = useState(null);
 
     useEffect(() => {
         const draftStr = localStorage.getItem('examDraft');
@@ -417,14 +418,22 @@ const Examiner_AddQuestions = () => {
                                     <div className="flex items-center gap-2.5 flex-1 min-w-0">
                                         <div className={`w-1.5 h-1.5 rounded-full shrink-0 ${activeSectionId === section.id ? 'bg-[#0F172A]' : 'bg-[#94A3B8]'
                                             }`} />
-                                        <input
-                                            id={`section-input-${section.id}`}
-                                            value={section.name}
-                                            onChange={(e) => updateSectionName(section.id, e.target.value)}
-                                            onClick={(e) => e.stopPropagation()}
-                                            className={`text-[10px] font-bold uppercase tracking-[0.15em] bg-transparent border-none outline-none w-full ${activeSectionId === section.id ? 'text-[#0F172A]' : 'text-[#64748B]'
-                                                }`}
-                                        />
+                                        {editingSectionId === section.id ? (
+                                            <input
+                                                id={`section-input-${section.id}`}
+                                                value={section.name}
+                                                onChange={(e) => updateSectionName(section.id, e.target.value)}
+                                                onClick={(e) => e.stopPropagation()}
+                                                onBlur={() => setEditingSectionId(null)}
+                                                onKeyDown={(e) => { if (e.key === 'Enter') setEditingSectionId(null); }}
+                                                autoFocus
+                                                className={`text-[10px] font-bold uppercase tracking-[0.15em] bg-white border border-[#0F172A]/20 outline-none w-full rounded-md px-1.5 py-0.5 ${activeSectionId === section.id ? 'text-[#0F172A]' : 'text-[#64748B]'}`}
+                                            />
+                                        ) : (
+                                            <span className={`text-[10px] font-bold uppercase tracking-[0.15em] truncate ${activeSectionId === section.id ? 'text-[#0F172A]' : 'text-[#64748B]'}`}>
+                                                {section.name}
+                                            </span>
+                                        )}
                                         <span className={`shrink-0 text-[9px] font-bold px-1.5 py-0.5 rounded-md ${activeSectionId === section.id
                                             ? 'bg-[#0F172A] text-white'
                                             : 'bg-[#F1F5F9] text-[#64748B]'
@@ -445,8 +454,10 @@ const Examiner_AddQuestions = () => {
                                             <span className="text-[9px] font-bold">Add</span>
                                         </button>
                                         <button
-                                            onClick={() => document.getElementById(`section-input-${section.id}`)?.focus()}
-                                            className="p-1 text-[#64748B] hover:text-[#6366F1] transition-colors"
+                                            onClick={() => {
+                                                setEditingSectionId(editingSectionId === section.id ? null : section.id);
+                                            }}
+                                            className={`p-1 transition-colors ${editingSectionId === section.id ? 'text-[#6366F1]' : 'text-[#64748B] hover:text-[#6366F1]'}`}
                                             title="Rename Section"
                                         >
                                             <Pencil className="w-3 h-3" />

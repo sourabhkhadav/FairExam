@@ -116,7 +116,7 @@ const Exam = () => {
         const count = violationsList.length;
         setFaceViolations(count);
         faceViolationsRef.current = count;
-        if (count >= violationLimits.faceLimit) {
+        if (count >= violationLimitsRef.current.faceLimit) {
             // High violation: show warning, then auto-submit (use ref for latest function)
             if (triggerViolationAutoSubmitRef.current) triggerViolationAutoSubmitRef.current('Face detection violation limit exceeded. Your exam is being auto-submitted.');
         }
@@ -172,13 +172,13 @@ const Exam = () => {
                         setSoundViolations(prev => {
                             const newCount = prev + 1;
                             soundViolationsRef.current = newCount;
-                            toast.error(`🔊 Sound detected! Violation #${newCount}/${violationLimits.soundLimit}`, {
+                            toast.error(`🔊 Sound detected! Violation #${newCount}/${violationLimitsRef.current.soundLimit}`, {
                                 id: 'sound-warning',
                                 duration: 500,
                             });
                             console.log('🔊 SOUND! Level:', average.toFixed(2), 'Threshold:', threshold.toFixed(2));
                             // Trigger auto-submit if sound violation limit reached
-                            if (newCount >= violationLimits.soundLimit) {
+                            if (newCount >= violationLimitsRef.current.soundLimit) {
                                 // High violation: show warning, then auto-submit (use ref for latest function)
                                 if (triggerViolationAutoSubmitRef.current) triggerViolationAutoSubmitRef.current('Sound detection violation limit exceeded. Your exam is being auto-submitted.');
                             }
@@ -255,12 +255,12 @@ const Exam = () => {
                 const newCount = prev + 1;
                 violationsRef.current = newCount;
                 playWarningSound();
-                toast.error(`⚠️ ${message} Violation #${newCount}/${violationLimits.fullscreenLimit}`, {
+                toast.error(`⚠️ ${message} Violation #${newCount}/${violationLimitsRef.current.fullscreenLimit}`, {
                     id: 'violation',
                     duration: 500,
                 });
                 // Trigger auto-submit if fullscreen violation limit reached
-                if (newCount >= violationLimits.fullscreenLimit) {
+                if (newCount >= violationLimitsRef.current.fullscreenLimit) {
                     // High violation: show warning, then auto-submit (use ref for latest function)
                     if (triggerViolationAutoSubmitRef.current) triggerViolationAutoSubmitRef.current('Fullscreen exit violation limit exceeded. Your exam is being auto-submitted.');
                 }
@@ -356,6 +356,10 @@ const Exam = () => {
     const faceViolationsRef = useRef(0);
     const soundViolationsRef = useRef(0);
     const violationsRef = useRef(0);
+
+    // Ref to always hold the latest violation limits (closures in useEffect[] can't see state updates)
+    const violationLimitsRef = useRef(violationLimits);
+    violationLimitsRef.current = violationLimits;
 
     // Trigger violation auto-submit: show warning modal, then auto-submit after 3 seconds
     const triggerViolationAutoSubmit = (message) => {

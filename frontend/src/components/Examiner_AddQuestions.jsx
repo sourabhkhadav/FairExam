@@ -35,14 +35,30 @@ const Examiner_AddQuestions = () => {
         }
     }, []);
 
+    // Helper: check if a question is completely empty (no text, all options blank)
+    const isQuestionEmpty = (q) => {
+        const hasText = q.text && q.text.trim().length > 0;
+        const hasAnyOption = q.options && q.options.some(opt => opt && opt.trim().length > 0);
+        return !hasText && !hasAnyOption;
+    };
+
+    // Helper: remove all empty questions and return cleaned list
+    const removeEmptyQuestions = (qList) => {
+        return qList.filter(q => !isQuestionEmpty(q));
+    };
+
     const addSection = () => {
         const newSectionId = sections.length > 0 ? Math.max(...sections.map(s => s.id)) + 1 : 0;
         const newSection = {
             id: newSectionId,
             name: `Section ${sections.length + 1}`
         };
+        // Remove empty questions before adding section
+        const cleanedQuestions = removeEmptyQuestions(questions);
+        setQuestions(cleanedQuestions);
         setSections([...sections, newSection]);
         setActiveSectionId(newSectionId);
+        setFocusedIndex(Math.max(0, cleanedQuestions.length - 1));
     };
 
     const removeSection = (sectionId) => {
@@ -69,12 +85,15 @@ const Examiner_AddQuestions = () => {
             tags: []
         };
 
+        // Remove empty questions before adding a new one
+        const cleanedQuestions = removeEmptyQuestions(questions);
+
         // Find insert index: after the last question of this section
-        const sectionQuestions = questions.filter(q => q.sectionId === sectionId);
+        const sectionQuestions = cleanedQuestions.filter(q => q.sectionId === sectionId);
         let insertIdx;
         if (sectionQuestions.length > 0) {
             const lastOfSection = sectionQuestions[sectionQuestions.length - 1];
-            insertIdx = questions.findIndex(q => q.id === lastOfSection.id) + 1;
+            insertIdx = cleanedQuestions.findIndex(q => q.id === lastOfSection.id) + 1;
         } else {
             // Find insertion point based on section order
             const sectionIdx = sections.findIndex(s => s.id === sectionId);
@@ -82,12 +101,12 @@ const Examiner_AddQuestions = () => {
                 insertIdx = 0;
             } else {
                 const prevSectionsIds = sections.slice(0, sectionIdx).map(s => s.id);
-                const prevQuestions = questions.filter(q => prevSectionsIds.includes(q.sectionId));
+                const prevQuestions = cleanedQuestions.filter(q => prevSectionsIds.includes(q.sectionId));
                 insertIdx = prevQuestions.length;
             }
         }
 
-        const nextQs = [...questions];
+        const nextQs = [...cleanedQuestions];
         nextQs.splice(insertIdx, 0, newQ);
         setQuestions(nextQs);
         setFocusedIndex(insertIdx);
@@ -127,23 +146,26 @@ const Examiner_AddQuestions = () => {
                     sectionId: activeSectionId
                 }));
 
-                const sectionQuestions = questions.filter(q => q.sectionId === activeSectionId);
+                // Remove empty questions before importing
+                const cleanedQuestions = removeEmptyQuestions(questions);
+
+                const sectionQuestions = cleanedQuestions.filter(q => q.sectionId === activeSectionId);
                 let insertIdx;
                 if (sectionQuestions.length > 0) {
                     const lastOfSection = sectionQuestions[sectionQuestions.length - 1];
-                    insertIdx = questions.findIndex(q => q.id === lastOfSection.id) + 1;
+                    insertIdx = cleanedQuestions.findIndex(q => q.id === lastOfSection.id) + 1;
                 } else {
                     const sectionIdx = sections.findIndex(s => s.id === activeSectionId);
                     if (sectionIdx === 0) {
                         insertIdx = 0;
                     } else {
                         const prevSectionsIds = sections.slice(0, sectionIdx).map(s => s.id);
-                        const prevQuestions = questions.filter(q => prevSectionsIds.includes(q.sectionId));
+                        const prevQuestions = cleanedQuestions.filter(q => prevSectionsIds.includes(q.sectionId));
                         insertIdx = prevQuestions.length;
                     }
                 }
 
-                const nextQs = [...questions];
+                const nextQs = [...cleanedQuestions];
                 nextQs.splice(insertIdx, 0, ...importedQuestions);
                 setQuestions(nextQs);
                 setFocusedIndex(insertIdx);
